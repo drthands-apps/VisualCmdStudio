@@ -1,15 +1,20 @@
 ﻿using System;
+using System.Collections.ObjectModel;
+using System.ComponentModel;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Text;
-using System.Windows;
-using System.Text.Json;
-using System.Diagnostics;
-using System.Windows.Data;
-using System.ComponentModel;
-using VisualCommander.Models;
-using System.Collections.ObjectModel;
 using System.Runtime.CompilerServices;
+using System.Text;
+using System.Text.Json;
+using System.Windows;
+using System.Windows.Data;
+using VisualCommander.Collections;
+using VisualCommander.Models;
+
+// Registrar el provider de codificaciones antiguas (ANSI 1252, etc.)
+System.Text.Encoding.RegisterProvider(
+    System.Text.CodePagesEncodingProvider.Instance);
 
 namespace VisualCommander.ViewModels
 {
@@ -18,7 +23,12 @@ namespace VisualCommander.ViewModels
     /// de líneas de comandos y coordina la línea activa.
     /// </summary>
     public class MainViewModel : INotifyPropertyChanged
+
     {
+
+
+        private bool _ignorarSalida;
+
         // ==== Catálogo ====
 
         public ObservableCollection<Comando> Comandos { get; } = new();
@@ -132,9 +142,11 @@ namespace VisualCommander.ViewModels
         // ==== Estado de ejecución ====
 
         /// <summary>Líneas de salida del último comando ejecutado.</summary>
-        public ObservableCollection<string> Salida { get; } = new();
+        
 
-        private bool _estaEjecutando;
+        public RangeObservableCollection<string> Salida { get; } = new();
+
+    private bool _estaEjecutando;
         public bool EstaEjecutando
         {
             get => _estaEjecutando;
@@ -149,6 +161,83 @@ namespace VisualCommander.ViewModels
         }
 
         private Process? _procesoActual;
+
+        // ==== Buffer de salida ====
+
+        private readonly System.Text.StringBuilder _bufferSalida = new();
+        private readonly object _bufferLock = new();
+        private System.Windows.Threading.DispatcherTimer? _timerVolcado;
+
+        private void IniciarVolcadoSalida()
+        {
+            _timerVolcado = new System.Windows.Threading.DispatcherTimer
+            {
+                Interval = TimeSpan.FromMilliseconds(200)
+            };
+            _timerVolcado.Tick += (_, _) => VolcarBuffer();
+            _timerVolcado.Start();
+        }
+
+        private void DetenerVolcadoSalida()
+        {
+            _timerVolcado?.Stop();
+            _timerVolcado = null;
+            VolcarBuffer();
+        }
+
+        private void VolcarBuffer()
+        {
+            string texto;
+            lock (_bufferLock)
+            {
+                if (_bufferSalida.Length == 0) return;
+                texto = _bufferSalida.ToString();
+                _bufferSalida.Clear();
+            }
+
+            var lineas = texto.Split('\n')
+                .Select(l => l.TrimEnd('\r'))
+                .Where(l => l.Length > 0)
+                .ToList();
+
+            if (lineas.Count == 0) return;
+
+            // Un solo evento para todas las líneas del tick.
+            Salida.AddRange(lineas);
+        }
+
+        private void EncolarSalida(string linea)
+        {
+            lock (_bufferLock)
+            {
+                _bufferSalida.AppendLine(linea);
+            }
+        }
+
+
+        /// <summary>¿Se debe detener la ejecución del plan?</summary>
+        private bool _detenerSolicitado;
+
+        /// <summary>¿Detener el plan completo si una línea falla?</summary>
+        private bool _detenerEnError = true;
+        public bool DetenerEnError
+        {
+            get => _detenerEnError;
+            set { _detenerEnError = value; OnPropertyChanged(); }
+        }
+
+        /// <summary>¿Está ejecutándose el plan completo (no solo una línea)?</summary>
+        private bool _ejecutandoPlan;
+        public bool EjecutandoPlan
+        {
+            get => _ejecutandoPlan;
+            private set
+            {
+                _ejecutandoPlan = value; OnPropertyChanged();
+            }
+        }
+
+
 
         // ==== Estado de selección de catálogo ====
 
@@ -256,9 +345,12 @@ namespace VisualCommander.ViewModels
             // Si la línea actual está vacía, no creamos una nueva: la reutilizamos.
             if (string.IsNullOrWhiteSpace(actual.Texto))
             {
-                SetStatus("La línea actual ya está vacía");
+                SetStatus("La línea actual ya está vacía. Escribe algo o usa ✓ Cerrar para saltar a la siguiente.");
                 return;
             }
+            
+
+
 
             // ¿Cambio de directorio declarado? (cd / pushd)
             var nuevoDir = actual.CalcularDirectorioSiguiente();
@@ -418,6 +510,26 @@ namespace VisualCommander.ViewModels
             });
             SetStatus($"Añadido: {cmd.Nombre}");
         }
+        /// <summary>
+/// Inserta un texto (palabra, ruta, comando) en la posición indicada
+/// dentro de los tokens de la línea activa.
+/// </summary>
+public void InsertarTextoEnPosicion(string texto, int indice)
+{
+    var tokens = LineaActiva.Tokens.ToList();
+
+    if (indice < 0) indice = 0;
+    if (indice > tokens.Count) indice = tokens.Count;
+
+    // Recolectamos los textos de los tokens actuales.
+    var textos = tokens.Select(t => t.Texto).ToList();
+    textos.Insert(indice, texto);
+
+    LineaActiva.ActualizarDesdeTexto(string.Join(" ", textos));
+    LineaActiva.ConfirmarEstado();
+
+    SetStatus($"Insertado en posición {indice}: {texto}");
+}
 
         public void AgregarComandoSeleccionado()
         {
@@ -561,6 +673,8 @@ namespace VisualCommander.ViewModels
         /// </summary>
         public async Task EjecutarAsync()
         {
+            _ignorarSalida = false;
+
             if (EstaEjecutando) return;
 
             var comando = LineaActiva.Texto;
@@ -609,21 +723,163 @@ namespace VisualCommander.ViewModels
             EstaEjecutando = true;
             MensajeCmd = "EJECUTANDO...";
             SetStatus("Ejecutando...");
-
+            IniciarVolcadoSalida();
             try
             {
                 await EjecutarInternoAsync(comando);
             }
             catch (Exception ex)
             {
+
                 AgregarSalida($"ERROR: {ex.Message}");
                 MensajeCmd = "ERROR AL EJECUTAR";
                 SetStatus("Error");
             }
             finally
             {
+                DetenerVolcadoSalida();
                 EstaEjecutando = false;
                 _procesoActual = null;
+            }
+        }
+
+        /// <summary>
+        /// Ejecuta todas las líneas del plan en secuencia.
+        /// Antes de empezar, comprueba si hay comandos peligrosos y pide confirmación.
+        /// </summary>
+        public async Task EjecutarPlanAsync()
+        {
+            _ignorarSalida = false;
+            if (EstaEjecutando) return;
+
+            if (Lineas.Count == 0)
+            {
+                SetStatus("No hay líneas que ejecutar");
+                return;
+            }
+
+            // Resetear estados previos.
+            foreach (var l in Lineas)
+                l.ResetearEstado();
+
+            // ¿Hay líneas peligrosas sin "no preguntar"?
+            var lineasPeligrosas = Lineas
+                .Where(l => !_lineasNoPreguntar.Contains(l))
+                .Select(l => new { Linea = l, Simulacion = SimuladorComando.Simular(l) })
+                .Where(x => x.Simulacion.Aplica)
+                .ToList();
+
+            if (lineasPeligrosas.Count > 0)
+            {
+                var dialogo = new ConfirmarPlanDialog(lineasPeligrosas
+                    .Select(x => (x.Linea, x.Simulacion))
+                    .ToList())
+                {
+                    Owner = System.Windows.Application.Current?.MainWindow
+                };
+
+                if (dialogo.ShowDialog() != true)
+                {
+                    SetStatus("Ejecución del plan cancelada por el usuario");
+                    return;
+                }
+
+                if (dialogo.NoPreguntarMas)
+                {
+                    foreach (var x in lineasPeligrosas)
+                        _lineasNoPreguntar.Add(x.Linea);
+                }
+            }
+
+            // ----- Comienza la ejecución -----
+            _detenerSolicitado = false;
+            EjecutandoPlan = true;
+            EstaEjecutando = true;
+            MensajeCmd = "EJECUTANDO PLAN...";
+            SetStatus("Ejecutando plan...");
+
+            Salida.Clear();
+            AgregarSalida("╔══════════════════════════════════════════════════════╗");
+            AgregarSalida($"║  EJECUCIÓN DEL PLAN — {Lineas.Count} línea(s)            ");
+            AgregarSalida("╚══════════════════════════════════════════════════════╝");
+            AgregarSalida("");
+
+            int errores = 0;
+            int exitos = 0;
+
+            IniciarVolcadoSalida();
+            try
+            {
+                for (int i = 0; i < Lineas.Count; i++)
+                {
+                    if (_detenerSolicitado) break;
+
+                    var linea = Lineas[i];
+                    var texto = linea.Texto;
+
+                    // Si la línea está vacía, la saltamos.
+                    if (string.IsNullOrWhiteSpace(texto))
+                    {
+                        linea.Estado = EstadoEjecucion.Cancelada;
+                        continue;
+                    }
+
+                    // Cambiamos la activa a esta línea para que el editor la siga.
+                    LineaActiva = linea;
+
+                    AgregarSalida("═══════════════════════════════════════════════════════");
+                    AgregarSalida($"📂 Línea {i + 1}/{Lineas.Count} · {linea.DirectorioTrabajo}");
+                    AgregarSalida($"> {texto}");
+                    AgregarSalida("───────────────────────────────────────────────────────");
+
+                    var codigo = await EjecutarLineaAsync(linea);
+
+                    if (codigo == 0)
+                    {
+                        linea.Estado = EstadoEjecucion.Exito;
+                        exitos++;
+                    }
+                    else if (codigo == -1)
+                    {
+                        linea.Estado = EstadoEjecucion.Cancelada;
+                        AgregarSalida("[Línea cancelada por el usuario]");
+                        break;
+                    }
+                    else
+                    {
+                        linea.Estado = EstadoEjecucion.Error;
+                        errores++;
+
+                        if (_detenerEnError)
+                        {
+                            AgregarSalida("");
+                            AgregarSalida("⛔ Ejecución detenida por error.");
+                            SetStatus($"Error en línea {i + 1}. Ejecución detenida.");
+                            break;
+                        }
+                    }
+
+                    AgregarSalida("");
+                }
+            }
+            catch (Exception ex)
+            {
+                AgregarSalida($"ERROR: {ex.Message}");
+                SetStatus("Error al ejecutar el plan");
+            }
+            finally
+            {
+                DetenerVolcadoSalida();
+                EstaEjecutando = false;
+                EjecutandoPlan = false;
+                _procesoActual = null;
+                MensajeCmd = _detenerSolicitado ? "PLAN CANCELADO" : "PLAN COMPLETADO";
+
+                AgregarSalida("╔══════════════════════════════════════════════════════╗");
+                AgregarSalida($"║  RESULTADO: {exitos} OK · {errores} error(es)");
+                AgregarSalida("╚══════════════════════════════════════════════════════╝");
+
+                SetStatus($"Plan terminado: {exitos} OK, {errores} con error");
             }
         }
 
@@ -649,13 +905,13 @@ namespace VisualCommander.ViewModels
 
             proceso.OutputDataReceived += (_, e) =>
             {
-                if (e.Data != null)
-                    InvokeUI(() => AgregarSalida(e.Data));
+                if (e.Data != null && !_ignorarSalida)
+                    EncolarSalida(e.Data);
             };
             proceso.ErrorDataReceived += (_, e) =>
             {
                 if (e.Data != null)
-                    InvokeUI(() => AgregarSalida("ERR: " + e.Data));
+                    EncolarSalida("ERR: " + e.Data);
             };
 
             proceso.Start();
@@ -676,24 +932,92 @@ namespace VisualCommander.ViewModels
                 : $"El comando devolvió código {proceso.ExitCode}");
         }
 
-        /// <summary>Detiene el proceso en curso si lo hay.</summary>
-        public void DetenerEjecucion()
+        /// <summary>
+        /// Ejecuta una línea concreta. Devuelve:
+        /// - El código de salida (0 = éxito, otro = error).
+        /// - -1 si se ha cancelado por el usuario.
+        /// </summary>
+        private async Task<int> EjecutarLineaAsync(LineaComando linea)
         {
-            if (_procesoActual == null || _procesoActual.HasExited) return;
+            linea.Estado = EstadoEjecucion.Ejecutando;
+
+            var psi = new ProcessStartInfo
+            {
+                FileName = "cmd.exe",
+                Arguments = "/c chcp 65001 >nul & " + linea.Texto,
+                RedirectStandardOutput = true,
+                RedirectStandardError = true,
+                UseShellExecute = false,
+                CreateNoWindow = true,
+                StandardOutputEncoding = Encoding.UTF8,
+                StandardErrorEncoding = Encoding.UTF8,
+                WorkingDirectory = linea.DirectorioTrabajo,
+            };
+
+            using var proceso = new Process { StartInfo = psi };
+            _procesoActual = proceso;
+
+            proceso.OutputDataReceived += (_, e) =>
+            {
+                if (e.Data != null && !_ignorarSalida)
+                    EncolarSalida(e.Data);
+            };
+            proceso.ErrorDataReceived += (_, e) =>
+            {
+                if (e.Data != null)
+                    EncolarSalida("ERR: " + e.Data);
+            };
 
             try
             {
-                _procesoActual.Kill(entireProcessTree: true);
-                AgregarSalida("");
-                AgregarSalida("[Proceso cancelado por el usuario]");
-                MensajeCmd = "CANCELADO";
-                SetStatus("Ejecución detenida");
+                proceso.Start();
+                proceso.BeginOutputReadLine();
+                proceso.BeginErrorReadLine();
+
+                // Esperamos con cancelación.
+                while (!proceso.HasExited)
+                {
+                    if (_detenerSolicitado)
+                    {
+                        try { proceso.Kill(entireProcessTree: true); } catch { }
+                        return -1;
+                    }
+                    await Task.Delay(100);
+                }
+
+                return proceso.ExitCode;
             }
             catch (Exception ex)
             {
-                AgregarSalida($"ERROR al detener: {ex.Message}");
+                AgregarSalida($"ERROR al ejecutar: {ex.Message}");
+                return -2;
             }
         }
+
+        /// <summary>Detiene el proceso en curso si lo hay.</summary>
+        public void DetenerEjecucion()
+        {
+            _detenerSolicitado = true;
+            _ignorarSalida = true;   // ← ignoramos toda salida nueva
+
+            lock (_bufferLock)
+            {
+                _bufferSalida.Clear();
+            }
+
+            if (_procesoActual != null && !_procesoActual.HasExited)
+            {
+                try { _procesoActual.Kill(entireProcessTree: true); } catch { }
+            }
+
+            AgregarSalida("");
+            AgregarSalida("[Detención solicitada por el usuario]");
+            MensajeCmd = "CANCELANDO...";
+            SetStatus("Deteniendo ejecución...");
+        }
+
+        // Handler vacío para reemplazar los que había.
+        private void NullHandler(object sender, DataReceivedEventArgs e) { }
 
         // ==== Helpers ====
 
@@ -882,6 +1206,34 @@ namespace VisualCommander.ViewModels
             OnPropertyChanged(nameof(PuedeSubirActiva));
             OnPropertyChanged(nameof(PuedeBajarActiva));
         }
+       
+        /// <summary>
+        /// Exporta el plan actual como archivo .bat en la ruta indicada.
+        /// </summary>
+        public void ExportarABat(string ruta, OpcionesExportacionBat opciones)
+        {
+            try
+            {
+                var contenido = ExportadorBat.GenerarContenido(Lineas, opciones);
+                ExportadorBat.GuardarEnArchivo(ruta, contenido, opciones);
 
+                SetStatus($"Exportado a: {ruta}");
+            }
+            catch (Exception ex)
+            {
+                SetStatus($"Error al exportar: {ex.Message}");
+                System.Windows.MessageBox.Show(
+                    $"No se pudo exportar el archivo:\n{ex.Message}",
+                    "Error de exportación",
+                    System.Windows.MessageBoxButton.OK,
+                    System.Windows.MessageBoxImage.Error);
+            }
+        }
+
+        /// <summary>
+        /// Nombre sugerido para el archivo de exportación.
+        /// </summary>
+        public string NombreSugeridoBat =>
+            $"plan_{DateTime.Now:yyyyMMdd_HHmmss}.bat";
     }
 }

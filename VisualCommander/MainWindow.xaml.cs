@@ -1,6 +1,9 @@
-﻿using System.Windows;
+﻿using System.Collections.Specialized;
+using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Windows.Media;
+using System.Windows.Shapes;
 using VisualCommander.Models;
 using VisualCommander.ViewModels;
 
@@ -24,6 +27,8 @@ namespace VisualCommander
             ViewModel = new MainViewModel();
             DataContext = ViewModel;
 
+
+
             // Cada vez que cambia la línea activa, forzamos el foco al editor.
             ViewModel.PropertyChanged += (_, e) =>
             {
@@ -34,13 +39,26 @@ namespace VisualCommander
             // Auto-scroll del panel de salida cada vez que se añade una línea.
             ViewModel.Salida.CollectionChanged += (_, e) =>
             {
-                if (e.Action == System.Collections.Specialized.NotifyCollectionChangedAction.Add
-                    && e.NewItems is { Count: > 0 })
+                if (e.Action == NotifyCollectionChangedAction.Add
+                    || e.Action == NotifyCollectionChangedAction.Reset)
                 {
-                    ListaSalida.ScrollIntoView(e.NewItems[e.NewItems.Count - 1]);
+                    // Coalescer: si ya hay un scroll programado, no programamos otro.
+                    if (_scrollPendiente) return;
+                    _scrollPendiente = true;
+
+                    Dispatcher.BeginInvoke(new Action(() =>
+                    {
+                        _scrollPendiente = false;
+                        if (ListaSalida.Items.Count > 0)
+                            ListaSalida.ScrollIntoView(ListaSalida.Items[^1]);
+                    }), System.Windows.Threading.DispatcherPriority.Background);
                 }
             };
         }
+        private TextBox? _editorActivo;
+
+        private bool _scrollPendiente;
+        
         private Point _posInicialDrag;
 
         private void ListaComandos_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
@@ -101,45 +119,38 @@ namespace VisualCommander
         private void PanelBloques_DragOver(object sender, DragEventArgs e)
         {
             e.Effects = DeterminarEfecto(e);
+
+            // Feedback visual: marcamos el panel como "destino activo".
+            PanelBloques.Background = new SolidColorBrush(
+                Color.FromArgb(20, 74, 144, 217)); // azul muy transparente
+
             e.Handled = true;
         }
 
         private void PanelBloques_DragLeave(object sender, DragEventArgs e)
         {
-            // Reservado para feedback visual futuro.
+            PanelBloques.Background = Brushes.Transparent;
         }
 
         private void PanelBloques_Drop(object sender, DragEventArgs e)
         {
-            // ¿Es un comando?
+
+            PanelBloques.Background = Brushes.Transparent;
+            // Calculamos la posición del cursor y el índice donde va a insertarse.
+            var posicionCursor = e.GetPosition(PanelBloques);
+            int indice = CalcularIndiceInsercion(posicionCursor);
+                 
+            // ¿Qué tipo de dato trae?
+            // --- Comando ---
             if (e.Data.GetDataPresent(FormatoComando) &&
                 e.Data.GetData(FormatoComando) is Comando cmd)
             {
-                ViewModel.AgregarComando(cmd);
-                ViewModel.LineaActiva.ConfirmarEstado();
+                ViewModel.InsertarTextoEnPosicion(cmd.Nombre, indice);
                 e.Handled = true;
                 return;
             }
 
-            // ¿Es un parámetro?
-            if (e.Data.GetDataPresent(FormatoParametro) &&
-                e.Data.GetData(FormatoParametro) is ParametroVista pv)
-            {
-                // Regla: solo aceptamos parámetros si hay un comando activo.
-                if (ViewModel.LineaActiva.ComandoActivo is null)
-                {
-                    ViewModel.SetStatus("Primero añade un comando para poder añadirle modificadores");
-                    e.Handled = true;
-                    return;
-                }
-                
-
-                // Marcamos el checkbox; esto dispara automáticamente
-                // ParametroVista_PropertyChanged → AgregarTokenParametro.
-                pv.EstaSeleccionado = true;
-                e.Handled = true;
-            }
-            // ¿Es una ruta del árbol de archivos?
+            // --- Ruta ---
             if (e.Data.GetDataPresent(FormatoRuta) &&
                 e.Data.GetData(FormatoRuta) is string ruta)
             {
@@ -150,8 +161,29 @@ namespace VisualCommander
                     return;
                 }
 
-                ViewModel.AgregarRuta(ruta);
+                var textoRuta = ruta.Contains(' ') ? $"\"{ruta}\"" : ruta;
+                ViewModel.InsertarTextoEnPosicion(textoRuta, indice);
                 e.Handled = true;
+                return;
+            }
+
+            // --- Parámetro ---
+            if (e.Data.GetDataPresent(FormatoParametro) &&
+                e.Data.GetData(FormatoParametro) is ParametroVista pv)
+            {
+                if (ViewModel.LineaActiva.ComandoActivo is null)
+                {
+                    ViewModel.SetStatus("Primero añade un comando para poder añadirle modificadores");
+                    e.Handled = true;
+                    return;
+                }
+
+                // Los parámetros siguen su lógica específica (marcar checkbox
+                // y añadirse al texto). NO los insertamos en la posición del cursor,
+                // porque los parámetros no suelen ir entre dos rutas.
+                pv.EstaSeleccionado = true;
+                e.Handled = true;
+                return;
             }
         }
 
@@ -208,6 +240,7 @@ namespace VisualCommander
         }
         private void NuevaLinea_Click(object sender, RoutedEventArgs e)
         {
+            EmpujarEditorActivoAlModelo();   // ← empujar primero
             ViewModel.LineaActiva.ConfirmarEstado();
             ViewModel.CerrarYCrearSiguiente();
             EnfocarEditorActivo();
@@ -217,7 +250,7 @@ namespace VisualCommander
         {
             ViewModel.LineaActiva.ConfirmarEstado();
             ViewModel.CerrarLineaActiva();
-            EnfocarEditorActivo();
+          
         }
         private void EliminarLinea_Click(object sender, RoutedEventArgs e)
             => ViewModel.EliminarLineaActiva();
@@ -226,6 +259,8 @@ namespace VisualCommander
         {
             ViewModel.LineaActiva.ConfirmarEstado();
             await ViewModel.EjecutarAsync();
+            EnfocarEditorActivo();
+
         }
         private void Detener_Click(object sender, RoutedEventArgs e)
             => ViewModel.DetenerEjecucion();
@@ -437,27 +472,48 @@ namespace VisualCommander
             }
             return null;
         }
-        private void EditorComando_IsVisibleChanged(
-    object sender, DependencyPropertyChangedEventArgs e)
+        private void EditorComando_IsVisibleChanged(object sender, DependencyPropertyChangedEventArgs e)
         {
-            // Solo nos interesa cuando pasa a Visible.
-            if (e.NewValue is not true) return;
-
             if (sender is not TextBox tb) return;
-            if (tb.DataContext is not LineaComando linea || !linea.EsActiva) return;
+            if (tb.DataContext is not LineaComando linea) return;
 
-            // Damos el foco cuando el layout ya esté actualizado.
-            Dispatcher.BeginInvoke(new Action(() =>
+            if (e.NewValue is true)
             {
-                tb.Focus();
+                _editorActivo = tb;
+                tb.Text = linea.Texto;
                 tb.CaretIndex = tb.Text.Length;
-            }), System.Windows.Threading.DispatcherPriority.Background);
+
+                // Nos suscribimos al cambio de Texto de la línea (una sola vez).
+                if (tb.Tag as string != "suscrito")
+                {
+                    tb.Tag = "suscrito";
+                    linea.PropertyChanged += (_, args) =>
+                    {
+                        if (args.PropertyName != nameof(LineaComando.Texto)) return;
+
+                        // Solo sincronizamos si el TextBox NO tiene el foco
+                        // o si el cambio vino del modelo (por ejemplo Deshacer).
+                        if (!tb.IsFocused || linea.CambioDesdeModelo)
+                        {
+                            tb.Text = linea.Texto;
+                            tb.CaretIndex = tb.Text.Length;
+                            linea.CambioDesdeModelo = false;
+                        }
+                    };
+                }
+
+                Dispatcher.BeginInvoke(new Action(() =>
+                {
+                    Keyboard.Focus(tb);
+                    tb.CaretIndex = tb.Text.Length;
+                }), System.Windows.Threading.DispatcherPriority.ApplicationIdle);
+            }
         }
         private void EnfocarEditorActivo()
         {
             Dispatcher.BeginInvoke(new Action(() =>
             {
-                var itemsControl = FindVisualChild<ItemsControl>(this);
+                var itemsControl = PanelLineas;
                 if (itemsControl == null) return;
 
                 var generador = itemsControl.ItemContainerGenerator;
@@ -471,12 +527,12 @@ namespace VisualCommander
                     var tb = FindVisualChild<TextBox>(contenedor);
                     if (tb != null)
                     {
-                        tb.Focus();
+                        Keyboard.Focus(tb);
                         tb.CaretIndex = tb.Text.Length;
                     }
                     break;
                 }
-            }), System.Windows.Threading.DispatcherPriority.Background);
+            }), System.Windows.Threading.DispatcherPriority.ApplicationIdle);
         }
         private void CopiarLinea_Click(object sender, RoutedEventArgs e)
     => ViewModel.CopiarLineaActiva();
@@ -484,19 +540,19 @@ namespace VisualCommander
         private void CortarLinea_Click(object sender, RoutedEventArgs e)
         {
             ViewModel.CortarLineaActiva();
-            EnfocarEditorActivo();
+            
         }
 
         private void PegarLinea_Click(object sender, RoutedEventArgs e)
         {
             ViewModel.PegarLinea();
-            EnfocarEditorActivo();
+            
         }
 
         private void DuplicarLinea_Click(object sender, RoutedEventArgs e)
         {
             ViewModel.DuplicarLineaActiva();
-            EnfocarEditorActivo();
+            
         }
         private void MenuAcciones_Click(object sender, RoutedEventArgs e)
         {
@@ -508,6 +564,22 @@ namespace VisualCommander
         }
         private void Window_PreviewKeyDown(object sender, KeyEventArgs e)
         {
+            System.Diagnostics.Debug.WriteLine($"[KEY] Tecla={e.Key}, Mods={Keyboard.Modifiers}, _editorActivo, Foco={Keyboard.FocusedElement?.GetType().Name}");
+
+            // ===== PRIORIDAD 1: Esc durante ejecución → detener =====
+            if (e.Key == Key.Escape && ViewModel.EstaEjecutando)
+            {
+                ViewModel.DetenerEjecucion();
+                e.Handled = true;
+                Dispatcher.BeginInvoke(new Action(() =>
+                {
+                    EnfocarEditorActivo();
+                }), System.Windows.Threading.DispatcherPriority.Background);
+                return;
+            }
+
+
+
             // Si el foco está en un TextBox, primero gestionamos los atajos
             // que queremos interceptar aunque el foco esté dentro.
             var focoEnTextBox = Keyboard.FocusedElement is TextBox;
@@ -529,6 +601,7 @@ namespace VisualCommander
             {
                 if (ViewModel.LineaActiva.Rehacer())
                     ViewModel.SetStatus("Rehecho");
+
                 else
                     ViewModel.SetStatus("Nada que rehacer");
                 e.Handled = true;
@@ -563,7 +636,6 @@ namespace VisualCommander
             if (Keyboard.Modifiers == ModifierKeys.Control && e.Key == Key.Enter)
             {
                 ViewModel.CerrarYCrearSiguiente();
-                EnfocarEditorActivo();
                 e.Handled = true;
                 return;
             }
@@ -581,28 +653,51 @@ namespace VisualCommander
                     case Key.V: ViewModel.PegarLinea(); e.Handled = true; break;
                 }
             }
+            // F5 → ejecutar plan completo
+            if (e.Key == Key.F5 && Keyboard.Modifiers == ModifierKeys.None)
+            {
+                _ = ViewModel.EjecutarPlanAsync();
+                EnfocarEditorActivo();
+                e.Handled = true;
+                return;
+            }
         }
         private void MoverArriba_Click(object sender, RoutedEventArgs e)
         {
             ViewModel.MoverActivaArriba();
-            EnfocarEditorActivo();
+            
         }
 
         private void MoverAbajo_Click(object sender, RoutedEventArgs e)
         {
             ViewModel.MoverActivaAbajo();
-            EnfocarEditorActivo();
+           
         }
         private void EditorComando_PreviewKeyDown(object sender, KeyEventArgs e)
         {
             if (sender is not TextBox tb) return;
             if (tb.DataContext is not LineaComando linea) return;
 
+            if (e.Key == Key.F5 && Keyboard.Modifiers == ModifierKeys.None)
+            {
+                if (!ViewModel.EstaEjecutando)
+                    _ = ViewModel.EjecutarPlanAsync();
+                e.Handled = true;
+                return;
+            }
+            if (tb != null)
+            {
+                // Forzar el foco lógico de teclado.
+                Keyboard.Focus(tb);
+                tb.CaretIndex = tb.Text.Length;
+            }
+
             if (e.Key == Key.Space)
             {
                 // Empujamos el texto al modelo para que se re-proyecten los tokens.
                 // Escribimos el espacio primero, luego empujamos.
                 EmpujarTextoAlModelo(tb, linea);
+                linea.ConfirmarEstado();
                 return; // dejamos que el espacio se escriba normalmente
             }
 
@@ -613,32 +708,31 @@ namespace VisualCommander
                 e.Handled = true;
                 return;
             }
-            else if (e.Key == Key.Escape)
-{
-    // Descartamos los cambios no confirmados: volvemos al texto del modelo.
-    tb.Text = linea.Texto;
-    tb.CaretIndex = tb.Text.Length;
-    e.Handled = true;
-    return;
-}
-        }
 
-        private void EditorComando_GotFocus(object sender, RoutedEventArgs e)
-        {
-            if (sender is TextBox tb && tb.DataContext is LineaComando linea)
+            else if (e.Key == Key.Escape)
             {
-                // Guardamos el estado al empezar a editar.
-                linea.GuardarSnapshot();
+             // Descartamos los cambios no confirmados: volvemos al texto del modelo.
+                tb.Text = linea.Texto;
+                tb.CaretIndex = tb.Text.Length;
+                e.Handled = true;
+
+                return;
             }
         }
+
+      
 
         private void EditorComando_LostFocus(object sender, RoutedEventArgs e)
         {
             if (sender is not TextBox tb) return;
             if (tb.DataContext is not LineaComando linea) return;
 
-            EmpujarTextoAlModelo(tb, linea);
-            linea.ConfirmarEstado();
+            // Solo empujamos si el texto del TextBox difiere del modelo.
+            if (tb.Text != linea.Texto)
+            {
+                EmpujarTextoAlModelo(tb, linea);
+                linea.ConfirmarEstado();
+            }
         }
 
         /// <summary>
@@ -649,6 +743,96 @@ namespace VisualCommander
             if (tb.Text == linea.Texto) return;
             linea.ActualizarDesdeTexto(tb.Text);
             ViewModel.SetStatus($"Línea {linea.NumeroLinea} actualizada");
+        }
+        /// <summary>
+        /// Calcula el índice de inserción según la posición del cursor
+        /// sobre el panel de bloques.
+        /// Devuelve el índice del token ANTES del cual debe insertarse el nuevo.
+        /// </summary>
+        private int CalcularIndiceInsercion(Point posicionCursor)
+        {
+            var tokens = ViewModel.LineaActiva.Tokens;
+            if (tokens.Count == 0) return 0;
+
+            // Recorremos los contenedores visuales de cada token.
+            for (int i = 0; i < tokens.Count; i++)
+            {
+                var contenedor = PanelBloques.ItemContainerGenerator.ContainerFromIndex(i)
+                                 as FrameworkElement;
+                if (contenedor == null) continue;
+
+                // Coordenadas del contenedor en el espacio del PanelBloques.
+                Point origen;
+                try
+                {
+                    origen = contenedor.TransformToAncestor(PanelBloques)
+                                       .Transform(new Point(0, 0));
+                }
+                catch
+                {
+                    // Si el contenedor no es descendiente visual (no debería pasar),
+                    // saltamos este token.
+                    continue;
+                }
+
+                var centroX = origen.X + contenedor.ActualWidth / 2;
+
+                // Si el cursor está a la IZQUIERDA del centro del token actual,
+                // el nuevo se inserta ANTES de este token.
+                if (posicionCursor.X < centroX)
+                    return i;
+            }
+
+            // Si el cursor está a la derecha de todos los tokens, va al final.
+            return tokens.Count;
+        }
+        private async void EjecutarPlan_Click(object sender, RoutedEventArgs e)
+        {
+            await ViewModel.EjecutarPlanAsync();
+        }
+        private void Window_Loaded(object sender, RoutedEventArgs e)
+        {
+            // Al arrancar, damos el foco al editor de la línea activa.
+            Dispatcher.BeginInvoke(new Action(() =>
+            {
+                EnfocarEditorActivo();
+            }), System.Windows.Threading.DispatcherPriority.ApplicationIdle);
+        }
+        private void EmpujarEditorActivoAlModelo()
+        {
+            if (_editorActivo is null) return;
+            if (_editorActivo.DataContext is not LineaComando linea) return;
+
+            EmpujarTextoAlModelo(_editorActivo, linea);
+        }
+        private void GuardarBat_Click(object sender, RoutedEventArgs e)
+        {
+            // Verificamos que hay algo que exportar.
+            var lineasConTexto = ViewModel.Lineas
+                .Where(l => !string.IsNullOrWhiteSpace(l.Texto))
+                .ToList();
+
+            if (lineasConTexto.Count == 0)
+            {
+                ViewModel.SetStatus("No hay nada que exportar");
+                MessageBox.Show("El plan está vacío. Añade al menos una línea con comandos.",
+                    "Nada que exportar", MessageBoxButton.OK, MessageBoxImage.Information);
+                return;
+            }
+
+            // Ruta sugerida: carpeta del escritorio, o la última usada.
+            var escritorio = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
+            var rutaSugerida = System.IO.Path.Combine(escritorio, ViewModel.NombreSugeridoBat);
+
+            var dialogo = new DialogoExportarBat(ViewModel.Lineas, rutaSugerida)
+            {
+                Owner = this
+            };
+
+            if (dialogo.ShowDialog() == true)
+            {
+                ViewModel.ExportarABat(dialogo.RutaSeleccionada, dialogo.Opciones);
+            }
         }
     }
 }

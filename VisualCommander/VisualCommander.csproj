@@ -6,12 +6,9 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <UseWPF>true</UseWPF>
-	<AssemblyName>VisualCmdStudio</AssemblyName>
+    <AssemblyName>VisualCmdStudio</AssemblyName>
+    <StartupObject>VisualCommander.App</StartupObject>
   </PropertyGroup>
-
-  <ItemGroup>
-    <None Remove="Data\comandos.json" />
-  </ItemGroup>
 
   <ItemGroup>
     <Content Include="Data\comandos.json">

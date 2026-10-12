@@ -15,6 +15,7 @@
         WindowStartupLocation="CenterScreen"
         FontFamily="Segoe UI" FontSize="12"
         Background="#FFF5F5F5"
+        Loaded="Window_Loaded"
         PreviewKeyDown="Window_PreviewKeyDown">
         
 
@@ -233,15 +234,29 @@
         <!-- Barra de herramientas -->
         <ToolBarTray DockPanel.Dock="Top" IsLocked="True">
             <ToolBar>
-                <Button Content="▶ Ejecutar" Padding="8,2" ToolTip="Ejecutar la línea actual"
+                <Button Content="▶ Ejecutar linea" Padding="8,2" ToolTip="Ejecutar la línea actual"
         Click="Ejecutar_Click"
         IsEnabled="{Binding EstaEjecutando, Converter={StaticResource InverseBoolConverter}}"/>
+                <Button Content="▶ Ejecutar plan" Padding="8,2"
+FontWeight="SemiBold"
+ToolTip="Ejecutar todas las líneas del plan (F5)"
+Click="EjecutarPlan_Click"
+IsEnabled="{Binding EstaEjecutando, Converter={StaticResource InverseBoolConverter}}"/>
 
                 <Button Content="⏹ Detener" Padding="8,2" ToolTip="Detener el proceso en curso"
                         Click="Detener_Click"
         IsEnabled="{Binding EstaEjecutando}"/>
+                
+
+                <CheckBox Content="Detener en error"
+          VerticalAlignment="Center"
+          Margin="8,0,0,0"
+          IsChecked="{Binding DetenerEnError}"
+          ToolTip="Si una línea falla, detener la ejecución del plan"/>
                 <Separator/>
-                <Button Content="💾 Guardar .bat"    Padding="8,2" ToolTip="Exportar como archivo batch"/>
+                <Button Content="💾 Guardar .bat" Padding="8,2"
+        ToolTip="Exportar el plan como archivo batch"
+        Click="GuardarBat_Click"/>
                 <Button Content="📂 Abrir"           Padding="8,2" ToolTip="Abrir sesión guardada"/>
                 <Separator/>
                 <Button Content="🔍 Simular" Padding="8,2"
@@ -737,7 +752,7 @@
                                         <StackPanel Margin="0,8,0,8">
 
                                             <!-- Todas las líneas del plan, apiladas -->
-                                            <ItemsControl ItemsSource="{Binding Lineas}">
+                                            <ItemsControl x:Name="PanelLineas" ItemsSource="{Binding Lineas}">
                                                 <ItemsControl.ItemTemplate>
                                                     <DataTemplate>
                                                         <Grid>
@@ -764,60 +779,60 @@
                         Background="Transparent"
                         Cursor="Hand"
                         MouseLeftButtonDown="LineaClic_MouseLeftButtonDown">
-                                                                <DockPanel>
-                                                                    <!-- Círculo activo -->
-                                                                    <Ellipse x:Name="CirculoActivo"
-                                 DockPanel.Dock="Left"
-                                 Width="8" Height="8"
-                                 Fill="{StaticResource CmdPrompt}"
-                                 VerticalAlignment="Center"
-                                 Margin="0,0,8,0"
-                                 Visibility="Collapsed"/>
+                                                                <Grid>
+                                                                    <Grid.ColumnDefinitions>
+                                                                        <ColumnDefinition Width="Auto"/>
+                                                                        <ColumnDefinition Width="*"/>
+                                                                    </Grid.ColumnDefinitions>
 
-                                                                    <!-- Contador -->
-                                                                    <TextBlock x:Name="ContadorLinea"
-                                   DockPanel.Dock="Right"
-                                   FontFamily="Consolas"
-                                   FontSize="10"
-                                   Foreground="#FF5A5A5A"
-                                   VerticalAlignment="Center"
-                                   Margin="8,0,0,0"
-                                   Text="{Binding TextContador}"
-                                   Visibility="Collapsed"/>
+                                                                    <!-- Indicador de estado (si lo tienes) -->
+                                                                    <TextBlock Grid.Column="0"
+               Text="{Binding EstadoSimbolo}"
+               FontFamily="Consolas"
+               FontSize="14"
+               VerticalAlignment="Top"
+               Margin="0,2,8,0"
+               Foreground="{Binding EstadoColor, Converter={StaticResource HexToBrush}}"/>
 
-                                                                    <!-- Prompt -->
-                                                                    <TextBlock DockPanel.Dock="Left"
-                                   Text="{Binding PromptCmd}"
-                                   Style="{StaticResource CmdPromptTexto}"
-                                   Margin="0,0,8,0"/>
+                                                                    <!-- Prompt (columna 1 de 2 → en realidad lo movemos a la columna 1) -->
+                                                                    <TextBlock Grid.Column="0"
+               Text="{Binding PromptCmdCorto}"
+               ToolTip="{Binding DirectorioTrabajo}"
+               Style="{StaticResource CmdPromptTexto}"
+               VerticalAlignment="Top"
+               Margin="24,2,8,2"/>
 
-                                                                    <!-- Texto (modo lectura) -->
-                                                                    <TextBlock x:Name="TextoLectura"
-                                   FontFamily="Consolas"
-                                   FontSize="14"
-                                   Foreground="{StaticResource CmdTexto}"
-                                   VerticalAlignment="Center"
-                                   TextWrapping="Wrap"
-                                   Text="{Binding Texto}"/>
+                                                                    <!-- Comando: TextBox que envuelve -->
+                                                                    <TextBox Grid.Column="1"
+             x:Name="TextoEdicion"
+             FontFamily="Consolas"
+             FontSize="14"
+             Foreground="{StaticResource CmdTexto}"
+             Background="Transparent"
+             BorderThickness="0"
+             Padding="0"
+             Margin="0,2,0,2"
+             TextWrapping="Wrap"
+             AcceptsReturn="False"
+             VerticalScrollBarVisibility="Disabled"
+             CaretBrush="{StaticResource CmdTexto}"
+             Text="{Binding Texto, Mode=OneWay}"
+             IsUndoEnabled="False"                                                         
+             Visibility="Collapsed"
+             PreviewKeyDown="EditorComando_PreviewKeyDown"
+             LostFocus="EditorComando_LostFocus"
+             IsVisibleChanged="EditorComando_IsVisibleChanged"/>
 
-                                                                    <!-- Editor (modo edición) -->
-                                                                    <TextBox x:Name="TextoEdicion"
-         FontFamily="Consolas"
-         FontSize="14"
-         Foreground="{StaticResource CmdTexto}"
-         Background="Transparent"
-         BorderThickness="0"
-         Padding="0"
-         Margin="0"
-         VerticalContentAlignment="Center"
-         AcceptsReturn="False"
-         CaretBrush="{StaticResource CmdTexto}"
-         Text="{Binding Texto, Mode=OneWay}"
-         Visibility="Collapsed"
-         PreviewKeyDown="EditorComando_PreviewKeyDown"
-         LostFocus="EditorComando_LostFocus"
-         IsVisibleChanged="EditorComando_IsVisibleChanged"/>
-                                                                </DockPanel>
+                                                                    <!-- Texto de lectura (modo no activo) -->
+                                                                    <TextBlock Grid.Column="1"
+               x:Name="TextoLectura"
+               Text="{Binding Texto}"
+               FontFamily="Consolas"
+               FontSize="14"
+               Foreground="{StaticResource CmdTexto}"
+               TextWrapping="Wrap"
+               Margin="0,2,0,2"/>
+                                                                </Grid>
                                                             </Border>
 
                                                             <!-- Borde inferior animado -->
@@ -835,9 +850,7 @@
                                                                 <Setter TargetName="LineaContenedor" Property="Background" Value="#FF181818"/>
                                                                 <Setter TargetName="LineaContenedor" Property="BorderBrush" Value="{StaticResource CmdAcento}"/>
 
-                                                                <!-- Adornos -->
-                                                                <Setter TargetName="CirculoActivo" Property="Visibility" Value="Visible"/>
-                                                                <Setter TargetName="ContadorLinea" Property="Visibility" Value="Visible"/>
+                                                         
 
                                                                 <!-- Intercambio lectura/edición -->
                                                                 <Setter TargetName="TextoLectura" Property="Visibility" Value="Collapsed"/>

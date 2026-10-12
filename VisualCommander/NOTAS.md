@@ -196,19 +196,24 @@ Separación de responsabilidades:
 - Los atajos se interceptan incluso dentro del TextBox (no dejamos
   que el undo nativo del TextBox actúe).
 
+  ### Refactor R — Editor bidireccional
+- [x] R.1: Texto como fuente de verdad
+- [x] R.2.B: Edición del campo CMD con estado propio y push al modelo
+- [x] **R.3**: Drag & drop inserta texto en la posición del cursor
+- [ ] R.4: Edición in-place de un token (doble clic)
+- [ ] R.5: Insertar entre tokens con hueco visual (animado)
+
+### Detalles de R.3
+- Comandos y rutas se insertan según la posición del cursor.
+- Parámetros siguen marcando checkbox y se añaden al final.
+- Feedback visual: tinte azul del panel durante el drag.
+- Pendiente R.5: hueco animado tipo Notion en lugar del tinte.
+
 ### Pendiente
 - [ ] Undo/Redo global (operaciones sobre líneas: crear, mover, borrar)
 - [ ] Mostrar "N cambios disponibles" en la barra de estado
 - [ ] Botones de deshacer/rehacer en la toolbar
-## Pendiente inmediato (2026-10-09)
 
-- [ ] ConfirmarEstado en constructor de LineaComando (apilar "")
-- [ ] ConfirmarEstado en Clonar tras asignar Texto
-- [ ] Verificar ciclo undo/redo completo hasta estado 0
-
-## Después
-- [ ] Commit del estado actual
-- [ ] R.3: drag & drop inserta texto en posición del cursor
 
 ## Visión: port a Linux (futuro lejano)
 
@@ -249,3 +254,88 @@ Recopilación de comandos clásicos de Windows que conviene añadir:
 
 Todos se pueden declarar en `comandos.json` sin recompilar.
 Los peligrosos llevan `peligroso: true` y simulador si es posible.
+
+## Simulación con estado (idea futura)
+
+El simulador actual evalúa cada línea peligrosa contra el estado ACTUAL
+del sistema. Problema: si una línea crea algo y otra lo borra, la
+simulación de la segunda no ve lo que va a existir tras ejecutar la
+primera.
+
+**Visión**: análisis previo más inteligente que tenga en cuenta los
+cambios que la ejecución previa introduciría:
+- Creación de archivos/carpetas → la simulación posterior los ve.
+- Renombrado → los ve con el nuevo nombre.
+- Eliminación → los ve ausentes.
+- Cambios de directorio (cd) → ya lo hacemos por línea.
+
+**Implementación**:
+- Mantener un "sistema de archivos virtual" durante la simulación del plan.
+- Cada línea, al simularse, modifica ese estado virtual.
+- Las simulaciones consultan el virtual, no el real.
+- Requiere modelar: crear, borrar, renombrar, mover, copiar, cd.
+
+**Prioridad**: Tier 3. Antes hay otras cosas más urgentes.
+**Filosofía**: mejor avisar antes de empezar que interrumpir durante.
+
+## Decisión: NO avisar durante la ejecución
+
+Una vez iniciada la ejecución del plan, NO se avisa de peligros.
+Todos los avisos se hacen ANTES de empezar. Motivo: el usuario debe
+poder evaluar el plan completo y decidir. Interrumpir a mitad es
+molesto y rompe el flujo de "ejecutar un plan".
+
+## Señales visuales de la línea activa (2026-10-09)
+
+Finalmente:
+- Borde izquierdo azul (visible)
+- Fondo más claro (visible)
+- Símbolo de estado de ejecución (○ ▶ ✓ ✗ ⊘) — indica el estado, no la actividad
+- Círculo verde — descartado (redundante con el borde)
+- Contador N/M — descartado (la posición es evidente por el orden)
+
+## Estado del proyecto (2026-10-09)
+
+### Completado esta sesión
+- [x] Ejecución del plan completo (F5)
+- [x] Estado por línea + indicadores visuales
+- [x] Toggle "Detener en error"
+- [x] Diálogo único de peligros para el plan
+- [x] Buffer de salida con AddRange (RangeObservableCollection)
+- [x] Autoscroll coalescido
+- [x] Escape detiene la ejecución
+- [x] Fix sincronización TextBox↔modelo tras clic en campo CMD
+- [x] Prompt acortado con tooltip
+- [x] Grid de dos columnas + TextWrapping para comandos largos
+- [x] Renombrado a Visual CMD Studio
+- [x] Catálogo ampliado (format, diskpart, sfc, dism, reg, sc,
+      schtasks, shutdown, takeown, icacls, mklink, cipher, net...)
+- [x] Limpieza: CirculoActivo y ContadorLinea descartados
+
+### Pendiente próxima sesión
+- [ ] Reducir llamadas a EnfocarEditorActivo a las estrictamente necesarias
+- [ ] Menú contextual sobre las líneas (D.3.G)
+- [ ] Exportación a .bat con cabecera `cd /D`
+- [ ] Plantillas de comandos frecuentes
+- [ ] Ampliar catálogo si quedan comandos por añadir
+
+### Ideas anotadas para el futuro
+- Simulación con estado (predice efectos entre líneas)
+- Pestaña de Utilidades con ConPTY
+- Port a Linux (lejano)
+- Indicador visual de modo admin
+- Atajo Escape como detener universal
+
+### Señales visuales de la línea activa (decisión final)
+- Borde izquierdo azul + fondo claro → marca "activa"
+- Símbolo de estado (○ ▶ ✓ ✗ ⊘) → marca el estado de ejecución
+- Sin círculo verde ni contador N/M (redundantes)
+
+### ConfirmarEstado también en Space (2026-10-12)
+
+Motivo: si el usuario escribe `dir` + espacio, luego hace clic en otra
+línea sin pulsar Enter, el estado no se confirmaba. Ahora cada palabra
+es un punto de undo. Coherente con editores de código.
+
+La guarda interna de ConfirmarEstado evita duplicados cuando se pulsan
+varios espacios seguidos.

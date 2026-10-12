@@ -8,6 +8,15 @@ using System.Runtime.CompilerServices;
 
 namespace VisualCommander.Models
 {
+    public enum EstadoEjecucion
+    {
+        Pendiente,   // no se ha ejecutado todavía
+        Ejecutando,  // se está ejecutando ahora mismo
+        Exito,       // terminó con código 0
+        Error,       // terminó con código ≠ 0
+        Cancelada    // se detuvo por el usuario
+    }
+
     /// <summary>
     /// Una línea del plan. El TEXTO es la fuente de verdad. Los Tokens
     /// son una proyección calculada que se usa para pintar la vista visual.
@@ -21,6 +30,7 @@ namespace VisualCommander.Models
         /// Texto de la línea. Es la fuente de verdad. Cuando cambia,
         /// se re-proyectan los tokens automáticamente.
         /// </summary>
+        /// 
         public string Texto
         {
             get => _texto;
@@ -30,6 +40,11 @@ namespace VisualCommander.Models
                 _texto = value ?? "";
                 OnPropertyChanged();
                 OnPropertyChanged(nameof(DisplayText));
+
+                // Al cambiar el texto, el estado de ejecución deja de ser válido.
+                if (Estado != EstadoEjecucion.Pendiente)
+                    Estado = EstadoEjecucion.Pendiente;
+
                 ReprojectarTokens();
             }
         }
@@ -65,6 +80,50 @@ namespace VisualCommander.Models
         }
 
         public bool EsCerrada => !EsActiva;
+
+        private EstadoEjecucion _estado = EstadoEjecucion.Pendiente;
+        public EstadoEjecucion Estado
+        {
+            get => _estado;
+            set
+            {
+                if (_estado == value) return;
+                _estado = value;
+                OnPropertyChanged();
+                OnPropertyChanged(nameof(EstadoSimbolo));
+                OnPropertyChanged(nameof(EstadoColor));
+            }
+        }
+
+        /// <summary>Símbolo para mostrar en la UI según el estado.</summary>
+        public string EstadoSimbolo => Estado switch
+        {
+            EstadoEjecucion.Pendiente => "○",
+            EstadoEjecucion.Ejecutando => "▶",
+            EstadoEjecucion.Exito => "✓",
+            EstadoEjecucion.Error => "✗",
+            EstadoEjecucion.Cancelada => "⊘",
+            _ => "○"
+        };
+
+        /// <summary>Color hex para pintar el símbolo.</summary>
+        public string EstadoColor => Estado switch
+        {
+            EstadoEjecucion.Pendiente => "888888",
+            EstadoEjecucion.Ejecutando => "4A90D9",
+            EstadoEjecucion.Exito => "27AE60",
+            EstadoEjecucion.Error => "C0392B",
+            EstadoEjecucion.Cancelada => "E67E22",
+            _ => "888888"
+        };
+
+        /// <summary>¿Hay que resetear el estado al empezar una nueva ejecución?</summary>
+        public void ResetearEstado()
+        {
+            Estado = EstadoEjecucion.Pendiente;
+        }
+
+
 
         private int _numeroLinea;
         public int NumeroLinea
@@ -106,6 +165,7 @@ namespace VisualCommander.Models
                 _directorioTrabajo = value;
                 OnPropertyChanged();
                 OnPropertyChanged(nameof(PromptCmd));
+                OnPropertyChanged(nameof(PromptCmdCorto));   // ← nuevo
                 OnPropertyChanged(nameof(NivelPeligroDirectorio));
             }
         }
@@ -135,19 +195,7 @@ namespace VisualCommander.Models
             }
         }
 
-        /// <summary>
-        /// Texto guardado cuando la línea se activa. Se usa para revertir con Escape.
-        /// </summary>
-        private string? _textoAlActivar;
-
-        public void GuardarSnapshot()
-        {
-            _textoAlActivar = Texto;
-        }
-
-       
-
-        public bool TieneSnapshot => _textoAlActivar != null;
+     
 
         // ==== Comando activo ====
 
@@ -485,14 +533,7 @@ namespace VisualCommander.Models
 
         protected void OnPropertyChanged([CallerMemberName] string? nombre = null)
             => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nombre));
-        public void RestaurarSnapshot()
-        {
-            if (_textoAlActivar != null)
-            {
-                ActualizarDesdeTexto(_textoAlActivar);
-                _textoAlActivar = null;
-            }
-        }
+       
 
         /// <summary>
         /// Confirma el texto actual y lo apila en el historial.
@@ -547,30 +588,61 @@ namespace VisualCommander.Models
             OnPropertyChanged(nameof(PuedeRehacer));
         }
 
+        /// <summary>Flag para indicar que el cambio viene del modelo, no del TextBox.</summary>
+        private bool _cambioDesdeModelo;
+        public bool CambioDesdeModelo
+        {
+            get => _cambioDesdeModelo;
+            set => _cambioDesdeModelo = value;
+        }
+
         /// <summary>Deshace el último cambio confirmado.</summary>
         public bool Deshacer()
         {
             if (!PuedeDeshacer) return false;
 
             _indiceHistorial--;
+            CambioDesdeModelo = true;   // ← marcar
             ActualizarDesdeTexto(_historial[_indiceHistorial]);
-
-            OnPropertyChanged(nameof(PuedeDeshacer));
-            OnPropertyChanged(nameof(PuedeRehacer));
             return true;
         }
 
-        /// <summary>Rehace el último cambio deshecho.</summary>
         public bool Rehacer()
         {
             if (!PuedeRehacer) return false;
 
             _indiceHistorial++;
+            CambioDesdeModelo = true;   // ← marcar
             ActualizarDesdeTexto(_historial[_indiceHistorial]);
-
-            OnPropertyChanged(nameof(PuedeDeshacer));
-            OnPropertyChanged(nameof(PuedeRehacer));
             return true;
+        }
+        /// <summary>
+        /// Prompt acortado para mostrar en la UI cuando la ruta es muy larga.
+        /// Ejemplo: "C:\...\VisualCMD>".
+        /// </summary>
+        public string PromptCmdCorto
+        {
+            get
+            {
+                var p = DirectorioTrabajo;
+                if (string.IsNullOrEmpty(p)) return ">";
+
+                if (p.Length <= 40) return p + ">";
+
+                try
+                {
+                    var partes = p.Split('\\', System.StringSplitOptions.RemoveEmptyEntries);
+                    if (partes.Length <= 3) return p + ">";
+
+                    var inicio = partes[0];           // "C:"
+                    var ultima = partes[^1];          // última carpeta
+                    return $"{inicio}\\...\\{ultima}>";
+                }
+                catch
+                {
+                    return p + ">";
+                }
+            }
         }
     }
 }
