@@ -614,7 +614,34 @@ public void InsertarTextoEnPosicion(string texto, int indice)
             SetStatus($"Añadida ruta: {ruta}");
         }
 
-       
+        /// <summary>
+        /// Añade un token de texto vacío al final de la línea activa.
+        /// Se marcará automáticamente en modo edición in-place.
+        /// </summary>
+        public void AgregarTextoVacio()
+        {
+            var token = new Token
+            {
+                Tipo = TipoToken.Texto,
+                Texto = "Texto...",   // ← contenido placeholder
+                Descripcion = "Texto libre (doble clic para editar)",
+                Color = "EDEDED",
+                Icono = "📝"
+            };
+
+            LineaActiva.AgregarToken(token);
+
+            // Ahora buscamos el token recreado por el parser y lo marcamos.
+            var tokenReal = LineaActiva.Tokens.LastOrDefault(t => t.Tipo == TipoToken.Texto);
+            if (tokenReal != null)
+            {
+                tokenReal.TextoAntesDeEditar = "Texto...";
+                tokenReal.EstoyEditando = true;
+            }
+
+
+            SetStatus("Token de texto añadido. Escribe el contenido y pulsa Enter.");
+        }
 
 
 

@@ -157,9 +157,9 @@
 
         <Style x:Key="BlockBase" TargetType="Border">
             <Setter Property="BorderThickness" Value="1"/>
-            <Setter Property="CornerRadius" Value="3"/>
             <Setter Property="Padding" Value="8,4"/>
             <Setter Property="Margin" Value="3"/>
+            <Setter Property="CornerRadius" Value="3"/>
         </Style>
 
     </Window.Resources>
@@ -590,6 +590,12 @@ IsEnabled="{Binding EstaEjecutando, Converter={StaticResource InverseBoolConvert
                               DragOver="PanelBloques_DragOver"
                               DragLeave="PanelBloques_DragLeave"
                               Drop="PanelBloques_Drop">
+                                        <ItemsControl.ItemContainerStyle>
+                                            <Style TargetType="ContentPresenter">
+                                                <Setter Property="HorizontalAlignment" Value="Left"/>
+                                            </Style>
+                                        </ItemsControl.ItemContainerStyle>
+
                                         <ItemsControl.ItemsPanel>
                                             <ItemsPanelTemplate>
                                                 <WrapPanel/>
@@ -597,48 +603,111 @@ IsEnabled="{Binding EstaEjecutando, Converter={StaticResource InverseBoolConvert
                                         </ItemsControl.ItemsPanel>
                                         <ItemsControl.ItemTemplate>
                                             <DataTemplate>
-                                                <Border x:Name="BlockRoot"
-                                    Style="{StaticResource BlockBase}"
-                                    Background="{Binding Color, Converter={StaticResource HexToBrush}}"
-                                    BorderBrush="#FF666666"
-                                    ToolTip="{Binding Descripcion}"
-                                    Cursor="Hand">
-                                                    <StackPanel Orientation="Horizontal">
-                                                        <TextBlock Text="{Binding Icono}"
-                                               FontSize="13"
-                                               Margin="0,0,6,0"
-                                               VerticalAlignment="Center"/>
-                                                        <TextBlock Text="{Binding TextoMostrado}"
-                                               FontFamily="Consolas"
-                                               FontSize="13"
-                                               VerticalAlignment="Center"/>
-                                                        <Button x:Name="BtnEliminar"
-                                            Content="✕"
-                                            FontSize="10"
-                                            Width="16" Height="16"
-                                            Margin="8,0,0,0"
-                                            Padding="0"
-                                            VerticalAlignment="Center"
-                                            Visibility="Collapsed"
-                                            ToolTip="Eliminar este bloque"
-                                            Background="Transparent"
-                                            BorderThickness="0"
-                                            Foreground="#FF666666"
-                                            Cursor="Hand"
-                                            Click="EliminarToken_Click"/>
-                                                    </StackPanel>
-                                                </Border>
+                                                <Grid>
+                                                    
+                                                    <!-- ============ MODO DISPLAY ============ -->
+                                                    <Border x:Name="BlockRoot"
+                    Style="{StaticResource BlockBase}"
+                    Background="{Binding Color, Converter={StaticResource HexToBrush}}"
+                    CornerRadius="3"
+                    BorderBrush="#FF666666"
+                    ToolTip="{Binding Descripcion}"
+                    Cursor="Hand"
+                    MouseLeftButtonDown="Token_MouseLeftButtonDown">
+                                                        <StackPanel Orientation="Horizontal">
+                                                            
+                                                            <TextBlock Text="{Binding Icono}"
+                               FontSize="13"
+                               Margin="0,0,6,0"
+                               VerticalAlignment="Center"/>
+                                                            <TextBlock Text="{Binding TextoMostrado}"
+                               FontFamily="Consolas"
+                               FontSize="13"
+                               VerticalAlignment="Center"/>
+
+                                                            <!-- Icono del lápiz (solo visible si es editable) -->
+                                                            <TextBlock x:Name="IconoLapiz"
+                               Text="✎"
+                               FontSize="11"
+                               Foreground="#FF555555"
+                               VerticalAlignment="Center"
+                               Margin="6,0,0,0"
+                               Visibility="Collapsed"/>
+
+                                                            <!-- Botón ✕ (aparece al pasar el ratón) -->
+                                                            <Button x:Name="BtnEliminar"
+                            Content="✕"
+                            FontSize="10"
+                            Width="16" Height="16"
+                            Margin="8,0,0,0"
+                            Padding="0"
+                            VerticalAlignment="Center"
+                            Visibility="Collapsed"
+                            ToolTip="Eliminar este bloque"
+                            Background="Transparent"
+                            BorderThickness="0"
+                            Foreground="#FF666666"
+                            Cursor="Hand"
+                            Click="EliminarToken_Click"/>
+                                                        </StackPanel>
+                                                    </Border>
+
+                                                    <!-- ============ MODO EDICIÓN ============ -->
+                                                    <Border x:Name="BlockEdicion"
+                    Style="{StaticResource BlockBase}"
+                    Background="{Binding Color, Converter={StaticResource HexToBrush}}"
+                    BorderBrush="#FF4A90D9"
+                    BorderThickness="2"
+                    CornerRadius="0,0,6,6"
+                    Visibility="Collapsed">
+                                                        <TextBox x:Name="EditorInPlace"
+         Text="{Binding Texto, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+         Style="{x:Null}"                                                    
+         FontFamily="Consolas"
+         FontSize="13"
+         Foreground="#FF222222"
+         Background="Transparent"
+         BorderThickness="0"
+         Padding="0"
+         MinWidth="60"
+         VerticalContentAlignment="Center"
+         CaretBrush="#FF222222"
+         IsReadOnly="False"
+         IsEnabled="True"
+         Focusable="True"
+         PreviewKeyDown="EditorInPlace_PreviewKeyDown"
+         LostFocus="EditorInPlace_LostFocus"
+         IsVisibleChanged="EditorInPlace_IsVisibleChanged"/>
+                                                    </Border>
+                                                </Grid>
+
+                                                <!-- ============ TRIGGERS ============ -->
                                                 <DataTemplate.Triggers>
+                                                    <!-- Hover: mostrar botón eliminar -->
                                                     <Trigger SourceName="BlockRoot"
-                                         Property="IsMouseOver"
-                                         Value="True">
+                     Property="IsMouseOver"
+                     Value="True">
                                                         <Setter TargetName="BtnEliminar"
-                                            Property="Visibility"
-                                            Value="Visible"/>
+                        Property="Visibility"
+                        Value="Visible"/>
                                                     </Trigger>
+
+                                                    <!-- Token editable: esquina achaflanada + lápiz + tooltip extendido -->
+                                                    <DataTrigger Binding="{Binding EsEditable}" Value="True">
+                                                        <Setter TargetName="BlockRoot" Property="CornerRadius" Value="0,0,6,6"/>
+                                                        <Setter TargetName="IconoLapiz" Property="Visibility" Value="Visible"/>
+                                                        <Setter TargetName="BlockRoot" Property="ToolTip" Value = " {Binding Descripcion, StringFormat='{}{0}&#x0A;&#x0A;Doble clic para editar'}"/>
+                                                    </DataTrigger>
+
+                                                    <!-- Modo edición: mostrar BlockEdicion, ocultar BlockRoot -->
+                                                    <DataTrigger Binding="{Binding EstoyEditando}" Value="True">
+                                                        <Setter TargetName="BlockRoot" Property="Visibility" Value="Collapsed"/>
+                                                        <Setter TargetName="BlockEdicion" Property="Visibility" Value="Visible"/>
+                                                    </DataTrigger>
                                                 </DataTemplate.Triggers>
                                             </DataTemplate>
                                         </ItemsControl.ItemTemplate>
+                                            
                                     </ItemsControl>
                                 </ScrollViewer>
                             </DockPanel>
@@ -939,7 +1008,29 @@ IsEnabled="{Binding EstaEjecutando, Converter={StaticResource InverseBoolConvert
                                    Text="OPERADORES · VARIABLES · CONSTANTES"
                                    Style="{StaticResource SectionHeader}"/>
                     <TabControl Margin="4,2">
-                        <TabItem Header="Operadores">
+                                    <TabItem>
+                                        <TabItem.Header>
+                                            <StackPanel Orientation="Horizontal">
+                                                <TextBlock Text="📝" Margin="0,0,4,0"/>
+                                                <TextBlock Text="Texto"/>
+                                            </StackPanel>
+                                        </TabItem.Header>
+                                        <StackPanel Margin="8">
+                                            <TextBlock Text="Inserta un token de texto libre:"
+                   FontSize="11"
+                   Foreground="#FF666666"
+                   TextWrapping="Wrap"
+                   Margin="0,0,0,8"/>
+                                            <Button Content="📝 Insertar texto"
+                Padding="10,6"
+                FontSize="12"
+                FontWeight="SemiBold"
+                HorizontalAlignment="Left"
+                Click="AgregarTexto_Click"
+                ToolTip="Añade un token de texto editable (nombres de archivo, cadenas de búsqueda, mensajes...)"/>
+                                        </StackPanel>
+                                    </TabItem>
+                                    <TabItem Header="Operadores">
                             <WrapPanel Margin="6">
                                 <Button Content="&amp;"    Style="{StaticResource OpButton}"/>
                                 <Button Content="&amp;&amp;" Style="{StaticResource OpButton}"/>
@@ -962,6 +1053,7 @@ IsEnabled="{Binding EstaEjecutando, Converter={StaticResource InverseBoolConvert
         IsEnabled="{Binding EstaEjecutando}"/>
                             </WrapPanel>
                         </TabItem>
+                        
                         <TabItem Header="Variables">
                             <ListBox Margin="4">
                                 <ListBoxItem Content="%USERPROFILE%"/>

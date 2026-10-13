@@ -502,10 +502,12 @@ namespace VisualCommander
                     };
                 }
 
-                Dispatcher.BeginInvoke(new Action(() =>
+                Dispatcher.BeginInvoke(new Action(async () =>
                 {
+                    await System.Threading.Tasks.Task.Delay(10);
+                    tb.Focus();
                     Keyboard.Focus(tb);
-                    tb.CaretIndex = tb.Text.Length;
+                    tb.SelectAll();
                 }), System.Windows.Threading.DispatcherPriority.ApplicationIdle);
             }
         }
@@ -564,8 +566,7 @@ namespace VisualCommander
         }
         private void Window_PreviewKeyDown(object sender, KeyEventArgs e)
         {
-            System.Diagnostics.Debug.WriteLine($"[KEY] Tecla={e.Key}, Mods={Keyboard.Modifiers}, _editorActivo, Foco={Keyboard.FocusedElement?.GetType().Name}");
-
+            
             // ===== PRIORIDAD 1: Esc durante ejecución → detener =====
             if (e.Key == Key.Escape && ViewModel.EstaEjecutando)
             {
@@ -833,6 +834,151 @@ namespace VisualCommander
             {
                 ViewModel.ExportarABat(dialogo.RutaSeleccionada, dialogo.Opciones);
             }
+        }
+        // ==== Edición in-place de tokens ====
+
+        private void Token_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            // Solo doble clic.
+            if (e.ClickCount != 2) return;
+
+            if (sender is not FrameworkElement fe) return;
+            if (fe.DataContext is not Token token) return;
+
+            // Solo tokens editables.
+            if (!token.EsEditable) return;
+
+            // Guardamos el texto original para poder restaurar con Escape.
+            token.TextoAntesDeEditar = token.Texto;
+
+            // Activamos el modo edición.
+            token.EstoyEditando = true;
+
+            e.Handled = true;
+
+            EnfocarEditorActivo();
+        }
+
+        private void EditorInPlace_IsVisibleChanged(object sender, DependencyPropertyChangedEventArgs e)
+        {
+            if (sender is not TextBox tb) return;
+            if (e.NewValue is not true) return;
+
+            // Damos el foco en el siguiente ciclo del dispatcher, cuando
+            // el layout ya está asentado. ApplicationIdle es más seguro que
+            // Background porque se ejecuta cuando no hay nada más pendiente.
+            Dispatcher.BeginInvoke(new Action(() =>
+            {
+                tb.Focus();
+                Keyboard.Focus(tb);
+                tb.SelectAll();
+            }), System.Windows.Threading.DispatcherPriority.ApplicationIdle);
+        }
+
+        private void EditorInPlace_PreviewKeyDown(object sender, KeyEventArgs e)
+        {
+            if (sender is not TextBox tb) return;
+            if (tb.DataContext is not Token token) return;
+
+            if (e.Key == Key.Enter)
+            {
+                ConfirmarEdicionToken(token, tb.Text);
+                e.Handled = true;
+            }
+            else if (e.Key == Key.Escape)
+            {
+                CancelarEdicionToken(token);
+                e.Handled = true;
+            }
+        }
+
+        private void EditorInPlace_LostFocus(object sender, RoutedEventArgs e)
+        {
+            if (sender is not TextBox tb) return;
+            if (tb.DataContext is not Token token) return;
+
+            // Si todavía estamos en modo edición (no se ha confirmado/cancelado),
+            // confirmamos por defecto (como hace cualquier editor).
+            if (token.EstoyEditando)
+                ConfirmarEdicionToken(token, tb.Text);
+        }
+        /// <summary>
+        /// Da el foco al TextBox del token que esté en modo edición.
+        /// Útil cuando el token acaba de entrar en edición y el IsVisibleChanged
+        /// no se dispara porque ya nace visible.
+        /// </summary>
+        private void EnfocarEditorInPlace()
+        {
+            Dispatcher.BeginInvoke(new Action(() =>
+            {
+                var itemsControl = PanelBloques;
+                if (itemsControl == null) return;
+
+                var generador = itemsControl.ItemContainerGenerator;
+
+                foreach (var item in itemsControl.Items)
+                {
+                    if (item is not Token token || !token.EstoyEditando) continue;
+
+                    var contenedor = generador.ContainerFromItem(item) as DependencyObject;
+                    if (contenedor == null) continue;
+
+                    var tb = FindVisualChild<TextBox>(contenedor);
+                    if (tb != null)
+                    {
+                        tb.Focus();
+                        Keyboard.Focus(tb);
+                        tb.SelectAll();
+                    }
+                    break;
+                }
+            }), System.Windows.Threading.DispatcherPriority.ApplicationIdle);
+        }
+
+        private void ConfirmarEdicionToken(Token token, string nuevoTexto)
+        {
+            // Regla: un token de texto se elimina si queda VACÍO (0 caracteres).
+            // Pero `""` (dos comillas) es un texto válido.
+            if (token.Tipo == TipoToken.Texto && string.IsNullOrEmpty(nuevoTexto))
+            {
+                token.EstoyEditando = false;
+                ViewModel.EliminarToken(token);
+                return;
+            }
+
+            // Actualizamos el texto del token.
+            token.Texto = nuevoTexto;
+
+            // Salimos del modo edición.
+            token.EstoyEditando = false;
+            token.TextoAntesDeEditar = null;
+
+            // Reconstruimos la línea: es la fuente de verdad.
+            var linea = ViewModel.LineaActiva;
+            var textos = linea.Tokens.Select(t => t.Texto).ToList();
+            linea.ActualizarDesdeTexto(string.Join(" ", textos));
+            linea.ConfirmarEstado();
+
+            ViewModel.SetStatus($"Token editado: {nuevoTexto}");
+        }
+
+        private void CancelarEdicionToken(Token token)
+        {
+            // Restauramos el texto original.
+            if (token.TextoAntesDeEditar != null)
+                token.Texto = token.TextoAntesDeEditar;
+
+            token.EstoyEditando = false;
+            token.TextoAntesDeEditar = null;
+        }
+        private void AgregarTexto_Click(object sender, RoutedEventArgs e)
+        {
+            // Empujar primero el texto del campo CMD al modelo, para no perder
+            // lo que el usuario haya escrito y aún no se haya confirmado.
+            EmpujarEditorActivoAlModelo();
+
+            ViewModel.AgregarTextoVacio();
+            EnfocarEditorInPlace();
         }
     }
 }

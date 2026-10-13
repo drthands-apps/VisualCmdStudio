@@ -339,3 +339,239 @@ es un punto de undo. Coherente con editores de código.
 
 La guarda interna de ConfirmarEstado evita duplicados cuando se pulsan
 varios espacios seguidos.
+
+## Hito: ciclo completo (2026-10-12)
+
+Visual CMD Studio ya cierra el ciclo completo:
+
+1. **Componer**: editor visual con bloques, drag & drop, tokens.
+2. **Guardar**: exportación a .bat autocontenido con opciones.
+3. **Ejecutar**: dentro de la app o haciendo doble clic en el .bat.
+
+### Capacidades actuales
+- Editor visual con catálogo JSON extensible.
+- Multi-línea con contexto de directorio independiente.
+- Undo/Redo por línea, copiar/cortar/pegar/duplicar/mover.
+- Drag & drop de comandos, parámetros y rutas.
+- Apariencia CMD simulada con prompt dinámico coloreado.
+- Ejecución con captura de salida en vivo.
+- Ciclo de seguridad completo: detección + simulación + confirmación.
+- Ejecución del plan completo con estados por línea.
+- **Exportación a .bat**: cabecera, codificación configurable, pause.
+- Árbol de archivos con unidades reales.
+
+### Pendiente (Tier 1)
+- Menú contextual en las líneas.
+- Plantillas de comandos frecuentes.
+- Guardar/cargar sesión (.vcmd).
+- Exportar a .ps1 y .sh.
+
+### Pendiente (Tier 2)
+- Undo/Redo global (operaciones sobre líneas).
+- Simulación con estado (predice efectos entre líneas).
+- Modo aprendiz vs experto.
+- Historial con contexto.
+
+### Pendiente (Tier 3)
+- Pestaña de Utilidades con ConPTY.
+- Port a Linux.
+- Sistema de plugins.
+
+## Pendiente prioritario (2026-10-13)
+
+### 1. Token de texto editable in-situ
+
+**Problema**: al hacer un `rename` (o cualquier comando que necesite un texto libre
+como argumento), no hay forma de insertar un texto desde el editor visual. El usuario
+tiene que escribirlo por línea de comandos, lo cual rompe el flujo.
+
+**Solución**: un token de tipo **Texto Editable** que:
+- Se inserta como un bloque más (arrastrable o por botón).
+- Aparece con un placeholder tipo `<texto>` o `[escribe aquí]`.
+- Doble clic sobre el token → se convierte en editable in-place.
+- Al confirmar (Enter o blur), el texto se fija y pasa al modelo.
+- El token se pinta con un color distintivo (por ejemplo, `EDEDED` gris claro
+  para textos libres, o `FFF2CC` para el actual patrón).
+
+**Casos de uso**:
+- `ren archivo_viejo.txt archivo_nuevo.txt` → dos tokens de texto editable.
+- `find "cadena a buscar" archivo.txt` → un texto editable (la cadena).
+- `mkdir nombre_carpeta` → un texto editable (el nombre).
+- `echo Hola mundo` → texto editable.
+
+**Dónde insertarlo**:
+- Botón nuevo en el panel derecho: "📝 Texto" o similar.
+- Arrastrable desde el panel de operadores/variables a la línea.
+- También desde un menú contextual "Insertar → Texto".
+
+**Detalles de implementación**:
+- El token de texto puede empezar con placeholder y, al perder el foco sin
+  texto escrito, eliminarse automáticamente.
+- Comillas automáticas si el texto contiene espacios (`"Hola mundo"`).
+- Validación básica: no permitir caracteres que rompan la línea
+  (`"`, `|`, `&`, `<`, `>` sin escapar) o advertir al usuario.
+
+### 2. Tokens guía para requisitos del comando
+
+**Idea**: al insertar un comando, el editor debe:
+- Añadir automáticamente tokens **placeholder** para los argumentos obligatorios.
+- Estos tokens aparecen **parpadeando** o con un borde punteado.
+- El usuario los rellena con drag & drop (por ejemplo, arrastrando una ruta)
+  o con texto libre.
+- Cuando el requisito se satisface, el token deja de parpadear y se fija.
+
+**Casos**:
+- `dir` → no tiene argumentos obligatorios, pero podría sugerir un token de
+  ruta opcional.
+- `copy` → dos tokens obligatorios: origen y destino.
+- `move` → dos tokens obligatorios: origen y destino.
+- `ren` → dos tokens obligatorios: nombre actual y nombre nuevo.
+- `xcopy` → dos tokens: origen y destino.
+- `robocopy` → dos tokens: origen y destino.
+- `find` → un token obligatorio: la cadena a buscar.
+
+**Diseño visual del placeholder**:
+- Borde punteado en color de acento (`#4A90D9`).
+- Animación: parpadeo suave (opacidad 0.6 ↔ 1.0).
+- Texto tipo "[origen]", "[destino]", "[cadena]", "[texto]".
+- Al pasar el ratón, tooltip explicando qué espera.
+
+**Diseño del flujo**:
+1. Usuario arrastra `copy` al constructor.
+2. Aparecen automáticamente: `copy` + `[origen]` + `[destino]`.
+3. El usuario arrastra una carpeta del árbol a `[origen]` → se sustituye.
+4. Hace lo mismo con `[destino]` → se sustituye.
+5. La línea queda completa y ejecutable.
+
+**Dónde obtener los requisitos**:
+- Añadir al JSON de comandos un campo `"argumentosObligatorios"`:
+  ```json
+  {
+    "nombre": "copy",
+    "argumentosObligatorios": [
+      { "nombre": "origen", "tipo": "Ruta", "descripcion": "Archivo a copiar" },
+      { "nombre": "destino", "tipo": "Ruta", "descripcion": "Destino de la copia" }
+    ]
+  }
+  ## Sistema de Tipos de Argumentos (2026-10-13)
+
+### Objetivo
+Discriminar el significado de cada texto según el comando activo.
+Validar contra el estado real del sistema cuando sea posible.
+Marcar visualmente los argumentos inválidos.
+
+### Tipos de argumento
+
+Declarados en el JSON de cada comando (`campo "argumentos"`):
+
+| Tipo | Validación |
+|---|---|
+| `Ruta` | `Path.GetFullPath` no falla |
+| `ArchivoExistente` | `File.Exists` |
+| `DirectorioExistente` | `Directory.Exists` |
+| `NombreNuevo` | `!File.Exists && !Directory.Exists` (opcional) |
+| `CadenaLibre` | Sin restricción |
+| `Modificador` | Está en la lista de parámetros del comando |
+| `Variable` | Patrón `%...%` |
+
+### Validación contextual
+1. Mira qué tipo espera el comando en esa posición.
+2. Aplica la regla del tipo.
+3. Marca el token: verde / amarillo / rojo.
+
+### Texto sin contexto válido
+- Después de `REM` o `::` → comentario (gris).
+- Después de `ECHO` → mensaje (verde claro).
+- Comando no espera más argumentos → error rojo.
+- Otro caso → advertencia amarilla.
+
+### Comillas
+- El texto se guarda SIN comillas.
+- El generador de línea entrecomilla automáticamente si el texto contiene espacios.
+- Excepción: comandos como `echo` que muestran las comillas literalmente.
+
+### Fases de implementación
+1. Añadir `argumentos` al JSON de los 10 comandos más usados.
+2. Extender `ComandoParser` para consultar el tipo esperado.
+3. Extender `Token` con `EstadoValidacion` (Ok / Advertencia / Error).
+4. Aplicar estilos visuales según `EstadoValidacion`.
+5. Manejar casos especiales: REM, ECHO, texto tras comando completo.
+1. ## Sistema de Dummies Guía (2026-10-13)
+
+### Concepto
+Al insertar un comando, se añaden automáticamente **tokens dummy** que
+representan los argumentos esperados, en orden, según la sintaxis del comando.
+El usuario los "rellena" escribiendo en la línea CMD o arrastrando tokens.
+
+### Características
+- Los dummies son tokens REALES en el modelo, con estado `Dummy`.
+- Tienen un texto descriptivo ("origen", "destino", "nombre nuevo").
+- Se renderizan visualmente como placeholders: corchetes, borde punteado,
+  parpadeo suave, color apagado.
+- Al rellenarse, se transforman en tokens reales del tipo apropiado
+  (Ruta, ArchivoExistente, CadenaLibre...).
+
+### Relleno
+- **Escribiendo**: al procesar la línea, los tokens reales reemplazan a los
+  dummies EN ORDEN.
+- **Arrastrando**: al soltar un token sobre un dummy, se rellena específico.
+
+### Al cerrar la línea
+- Los dummies rellenados desaparecen (ya son tokens reales).
+- Los dummies vacíos **opcionales** se eliminan.
+- Los dummies vacíos **requeridos** se mantienen marcando el hueco.
+- Se avisa al usuario de los requeridos sin rellenar (excepto en modo silencioso).
+
+### Modos
+- **Normal**: avisa de errores y dummies pendientes.
+- **Silencioso**: no avisa, el usuario asume la responsabilidad.
+
+### Ampliación del catálogo
+Añadir comandos de presentación y control:
+- Presentación: `cls`, `color`, `title`, `pause`, `prompt`, `mode`.
+- Control: `rem`, `::`, `echo`, `if`, `for`, `goto`, `call`, `exit`, `set`.
+- Sistema: `cmd`, `start`.
+
+Algunos (if, for) son complejos y se posponen a una fase posterior.
+
+### Fases
+1. Extender Token con estado `Dummy` y texto descriptivo.
+2. Añadir campo `argumentos` al JSON de los comandos más usados.
+3. Generar dummies al insertar un comando (solo si no está ya presente).
+4. Algoritmo de relleno por orden (escribir) o por posición (arrastrar).
+5. Reglas al cerrar línea (opcionales vs requeridos).
+6. Modo silencioso global.
+7. Ampliar catálogo con comandos de presentación y control.
+
+## Validación permisiva (2026-10-13)
+
+### Regla
+CMD no tiene un parser único. Cada aplicación interpreta la línea a su manera.
+La documentación da el orden canónico, pero CMD acepta múltiples órdenes.
+
+### Consecuencia para el validador
+- NO validar el orden de los argumentos.
+- SOLO validar:
+  - Existencia del comando en el catálogo.
+  - Pertenencia de los modificadores a la lista del comando.
+  - Compatibilidad básica de tipos.
+- En caso de duda, ACEPTAR (mejor falso negativo que falso positivo).
+
+### Dummies guía
+- Son SUGERENCIAS, no imposiciones.
+- Se generan al insertar el comando, en orden documentado.
+- Si el usuario escribe en otro orden, no se corrige.
+- Solo bloquean si falta un argumento realmente obligatorio.
+- ### Comportamiento de edición in-place (decisión final)
+
+Al entrar en edición in-place de un token:
+- El texto actual se SELECCIONA (SelectAll).
+- El caret NO es visible mientras hay selección activa.
+- Es el comportamiento estándar de Windows (Notepad, Word, VSCode, etc.).
+
+Motivo: al editar un token de texto, el caso más común es REEMPLAZARLO
+completo. Con el texto seleccionado, escribir directamente lo reemplaza.
+Para editar una parte, el usuario hace clic en la posición deseada y el
+caret aparece.
+
+Referencias: Excel, VS Code (F2 para renombrar), Notepad.

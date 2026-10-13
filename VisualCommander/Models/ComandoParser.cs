@@ -210,12 +210,19 @@ namespace VisualCommander.Models
         // ==================== Tokenizador ====================
 
         /// <summary>
-        /// Divide por espacios respetando comillas dobles.
-        /// "copy \"archivo con espacios.txt\" destino" → ["copy", "\"archivo con espacios.txt\"", "destino"]
+        /// Divide una línea de comando en tokens, respetando comillas dobles.
+        /// Reglas:
+        ///   - Mientras haya una comilla abierta, los espacios NO dividen.
+        ///   - Una comilla sin cerrar implica que todo el resto es un único token.
+        ///   - Las comillas se conservan en el token de salida (CMD las necesita).
+        ///   - Se colapsan espacios múltiples consecutivos.
+        ///   - Se recortan espacios al principio y al final.
         /// </summary>
         private static List<string> DividirRespetandoComillas(string texto)
         {
             var partes = new List<string>();
+            if (string.IsNullOrEmpty(texto)) return partes;
+
             var sb = new StringBuilder();
             bool dentroComillas = false;
 
@@ -223,24 +230,33 @@ namespace VisualCommander.Models
             {
                 if (c == '"')
                 {
+                    // Alterna el estado de comillas.
                     dentroComillas = !dentroComillas;
                     sb.Append(c);
                 }
                 else if (char.IsWhiteSpace(c) && !dentroComillas)
                 {
+                    // Espacio fuera de comillas → cierra el token actual si hay algo.
                     if (sb.Length > 0)
                     {
                         partes.Add(sb.ToString());
                         sb.Clear();
                     }
+                    // Los espacios múltiples se colapsan: si sb está vacío, no hacemos nada.
                 }
                 else
                 {
+                    // Cualquier otro carácter, o un espacio dentro de comillas,
+                    // se acumula en el token actual.
                     sb.Append(c);
                 }
             }
 
-            if (sb.Length > 0) partes.Add(sb.ToString());
+            // Si quedó algo acumulado (por ejemplo, una comilla sin cerrar),
+            // lo añadimos como último token.
+            if (sb.Length > 0)
+                partes.Add(sb.ToString());
+
             return partes;
         }
     }
