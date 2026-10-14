@@ -1,0 +1,703 @@
+[
+  {
+    "id": "dir",
+    "nombre": "dir",
+    "familia": "Archivos",
+    "colorFamilia": "FFEB3B",
+    "icono": "📄",
+    "resumen": "Lista archivos y carpetas",
+    "descripcion": "Muestra una lista de los archivos y subdirectorios de un directorio. Sin parámetros, muestra el directorio actual.",
+    "sintaxis": "dir [unidad:][ruta][nombrearchivo] [/A[[:]atributos]] [/O[[:]criterio]] [/S] [/B] [/W] [/P]",
+    "peligroso": false,
+    "parametros": [
+      {
+        "nombre": "/S",
+        "descripcion": "Incluye subdirectorios",
+        "tipo": "Bandera"
+      },
+      {
+        "nombre": "/B",
+        "descripcion": "Formato simple (sin encabezados)",
+        "tipo": "Bandera",
+        "incompatibleCon": [ "/W" ]
+      },
+      {
+        "nombre": "/W",
+        "descripcion": "Formato ancho, varias columnas",
+        "tipo": "Bandera",
+        "incompatibleCon": [ "/B" ]
+      },
+      {
+        "nombre": "/P",
+        "descripcion": "Pausa tras cada pantalla",
+        "tipo": "Bandera"
+      },
+      {
+        "nombre": "/A",
+        "descripcion": "Filtra por atributos (D, R, H, S, A)",
+        "tipo": "Lista",
+        "valoresPosibles": [ "D", "R", "H", "S", "A" ]
+      },
+      {
+        "nombre": "/O",
+        "descripcion": "Ordena por criterio (N, S, E, D, A)",
+        "tipo": "Lista",
+        "valoresPosibles": [ "N", "S", "E", "D", "A" ]
+      }
+    ],
+    "ejemplos": [ "dir", "dir /S /B", "dir C:\\Users /O:N" ]
+  },
+  {
+    "id": "copy",
+    "nombre": "copy",
+    "familia": "Archivos",
+    "colorFamilia": "FFEB3B",
+    "icono": "📄",
+    "resumen": "Copia archivos",
+    "descripcion": "Copia uno o varios archivos a otra ubicación. Solo copia archivos, no directorios completos.",
+    "sintaxis": "copy [/Y] [/V] origen destino",
+    "peligroso": false,
+    "parametros": [
+      {
+        "nombre": "/Y",
+        "descripcion": "Sobrescribe sin preguntar",
+        "tipo": "Bandera"
+      },
+      {
+        "nombre": "/V",
+        "descripcion": "Verifica la copia",
+        "tipo": "Bandera"
+      }
+    ],
+    "ejemplos": [ "copy a.txt b.txt", "copy *.txt C:\\Backup\\" ]
+  },
+  {
+    "id": "move",
+    "nombre": "move",
+    "familia": "Archivos",
+    "colorFamilia": "FFEB3B",
+    "icono": "📄",
+    "resumen": "Mueve archivos",
+    "descripcion": "Mueve archivos o renombra directorios.",
+    "sintaxis": "move [/Y] origen destino",
+    "peligroso": false,
+    "parametros": [
+      {
+        "nombre": "/Y",
+        "descripcion": "Sobrescribe sin preguntar",
+        "tipo": "Bandera"
+      }
+    ],
+    "ejemplos": [ "move a.txt C:\\Destino\\" ]
+  },
+  {
+    "id": "ren",
+    "nombre": "ren",
+    "familia": "Archivos",
+    "colorFamilia": "FFEB3B",
+    "icono": "📄",
+    "resumen": "Renombra archivos",
+    "descripcion": "Renombra archivos o directorios.",
+    "sintaxis": "ren origen nuevoNombre",
+    "peligroso": false,
+    "parametros": [],
+    "ejemplos": [ "ren a.txt b.txt" ]
+  },
+  {
+    "id": "del",
+    "nombre": "del",
+    "familia": "Archivos",
+    "colorFamilia": "FFEB3B",
+    "icono": "⚠️",
+    "resumen": "Borra archivos",
+    "descripcion": "Elimina uno o varios archivos. NO envía a la papelera de reciclaje.",
+    "sintaxis": "del [/P] [/F] [/S] [/Q] [/A[[:]atributos]] nombres",
+    "peligroso": true,
+    "parametros": [
+      {
+        "nombre": "/P",
+        "descripcion": "Pide confirmación por archivo",
+        "tipo": "Bandera",
+        "incompatibleCon": [ "/Q" ]
+      },
+      {
+        "nombre": "/F",
+        "descripcion": "Fuerza el borrado de solo-lectura",
+        "tipo": "Bandera"
+      },
+      {
+        "nombre": "/S",
+        "descripcion": "Borra en todos los subdirectorios",
+        "tipo": "Bandera"
+      },
+      {
+        "nombre": "/Q",
+        "descripcion": "Silencioso, sin preguntar",
+        "tipo": "Bandera",
+        "incompatibleCon": [ "/P" ]
+      }
+    ],
+    "ejemplos": [ "del a.txt", "del /S /Q C:\\Temp\\*.tmp" ]
+  },
+  {
+    "id": "type",
+    "nombre": "type",
+    "familia": "Archivos",
+    "colorFamilia": "FFEB3B",
+    "icono": "📄",
+    "resumen": "Muestra contenido de archivo",
+    "descripcion": "Muestra el contenido de un archivo de texto.",
+    "sintaxis": "type archivo",
+    "peligroso": false,
+    "parametros": [],
+    "ejemplos": [ "type log.txt" ]
+  },
+  {
+    "id": "cd",
+    "nombre": "cd",
+    "familia": "Directorios",
+    "colorFamilia": "E67E22",
+    "icono": "📁",
+    "resumen": "Cambia de directorio",
+    "descripcion": "Cambia el directorio actual o muestra la ruta actual.",
+    "sintaxis": "cd [/D] [unidad:][ruta]",
+    "peligroso": false,
+    "parametros": [
+      {
+        "nombre": "/D",
+        "descripcion": "Cambia también de unidad",
+        "tipo": "Bandera"
+      }
+    ],
+    "ejemplos": [ "cd C:\\Windows", "cd /D D:\\Proyectos" ]
+  },
+  {
+    "id": "md",
+    "nombre": "md",
+    "familia": "Directorios",
+    "colorFamilia": "E67E22",
+    "icono": "📁",
+    "resumen": "Crea directorio",
+    "descripcion": "Crea un directorio o árbol de directorios.",
+    "sintaxis": "md ruta",
+    "peligroso": false,
+    "parametros": [],
+    "ejemplos": [ "md NuevaCarpeta", "md C:\\a\\b\\c" ]
+  },
+  {
+    "id": "rd",
+    "nombre": "rd",
+    "familia": "Directorios",
+    "colorFamilia": "E67E22",
+    "icono": "⚠️",
+    "resumen": "Borra directorio",
+    "descripcion": "Elimina un directorio. Con /S borra también su contenido.",
+    "sintaxis": "rd [/S] [/Q] ruta",
+    "peligroso": true,
+    "parametros": [
+      {
+        "nombre": "/S",
+        "descripcion": "Borra también subcarpetas y archivos",
+        "tipo": "Bandera"
+      },
+      {
+        "nombre": "/Q",
+        "descripcion": "Silencioso",
+        "tipo": "Bandera"
+      }
+    ],
+    "ejemplos": [ "rd CarpetaVacia", "rd /S /Q C:\\Temp\\basura" ]
+  },
+  {
+    "id": "tree",
+    "nombre": "tree",
+    "familia": "Directorios",
+    "colorFamilia": "E67E22",
+    "icono": "📁",
+    "resumen": "Muestra árbol de directorios",
+    "descripcion": "Muestra gráficamente la estructura de carpetas.",
+    "sintaxis": "tree [ruta] [/F] [/A]",
+    "peligroso": false,
+    "parametros": [
+      {
+        "nombre": "/F",
+        "descripcion": "Incluye archivos",
+        "tipo": "Bandera"
+      },
+      {
+        "nombre": "/A",
+        "descripcion": "Usa ASCII en lugar de caracteres extendidos",
+        "tipo": "Bandera"
+      }
+    ],
+    "ejemplos": [ "tree", "tree /F /A" ]
+  },
+  {
+    "id": "xcopy",
+    "nombre": "xcopy",
+    "familia": "Directorios",
+    "colorFamilia": "E67E22",
+    "icono": "📁",
+    "resumen": "Copia avanzada",
+    "descripcion": "Copia archivos y árboles de directorios con muchas opciones.",
+    "sintaxis": "xcopy origen [destino] [/S] [/E] [/I] [/Y] [/H]",
+    "peligroso": false,
+    "parametros": [
+      {
+        "nombre": "/S",
+        "descripcion": "Copia subdirectorios no vacíos",
+        "tipo": "Bandera"
+      },
+      {
+        "nombre": "/E",
+        "descripcion": "Copia también subdirectorios vacíos",
+        "tipo": "Bandera"
+      },
+      {
+        "nombre": "/I",
+        "descripcion": "Asume que destino es directorio",
+        "tipo": "Bandera"
+      },
+      {
+        "nombre": "/Y",
+        "descripcion": "Sobrescribe sin preguntar",
+        "tipo": "Bandera"
+      },
+      {
+        "nombre": "/H",
+        "descripcion": "Copia archivos ocultos y de sistema",
+        "tipo": "Bandera"
+      }
+    ],
+    "ejemplos": [ "xcopy C:\\Origen D:\\Destino /S /E /I /Y" ]
+  },
+  {
+    "id": "robocopy",
+    "nombre": "robocopy",
+    "familia": "Directorios",
+    "colorFamilia": "E67E22",
+    "icono": "📁",
+    "resumen": "Copia robusta",
+    "descripcion": "Herramienta robusta para replicar directorios completos, con reintentos y registro.",
+    "sintaxis": "robocopy origen destino [archivo] [opciones]",
+    "peligroso": false,
+    "parametros": [
+      {
+        "nombre": "/E",
+        "descripcion": "Copia subdirectorios, incluidos los vacíos",
+        "tipo": "Bandera"
+      },
+      {
+        "nombre": "/MIR",
+        "descripcion": "Modo espejo (borra extras en destino)",
+        "tipo": "Bandera",
+        "incompatibleCon": [ "/E" ]
+      },
+      {
+        "nombre": "/Z",
+        "descripcion": "Modo reiniciable",
+        "tipo": "Bandera"
+      },
+      {
+        "nombre": "/R:3",
+        "descripcion": "Reintentos en error",
+        "tipo": "Bandera"
+      },
+      {
+        "nombre": "/LOG:log.txt",
+        "descripcion": "Guarda registro en archivo",
+        "tipo": "Bandera"
+      }
+    ],
+    "ejemplos": [ "robocopy C:\\Origen D:\\Destino /E /Z", "robocopy C:\\A D:\\B /MIR" ]
+  },
+  {
+    "id": "tasklist",
+    "nombre": "tasklist",
+    "familia": "Sistema",
+    "colorFamilia": "8E44AD",
+    "icono": "⚙️",
+    "resumen": "Lista procesos activos",
+    "descripcion": "Muestra las aplicaciones y servicios en ejecución.",
+    "sintaxis": "tasklist [/V] [/FI filtro] [/FO formato]",
+    "peligroso": false,
+    "parametros": [
+      {
+        "nombre": "/V",
+        "descripcion": "Información detallada",
+        "tipo": "Bandera"
+      },
+      {
+        "nombre": "/FI",
+        "descripcion": "Aplica un filtro",
+        "tipo": "Texto"
+      },
+      {
+        "nombre": "/FO",
+        "descripcion": "Formato de salida (TABLE, LIST, CSV)",
+        "tipo": "Lista",
+        "valoresPosibles": [ "TABLE", "LIST", "CSV" ]
+      }
+    ],
+    "ejemplos": [ "tasklist", "tasklist /FI \"STATUS eq RUNNING\"" ]
+  },
+  {
+    "id": "taskkill",
+    "nombre": "taskkill",
+    "familia": "Sistema",
+    "colorFamilia": "8E44AD",
+    "icono": "⚠️",
+    "resumen": "Termina procesos",
+    "descripcion": "Finaliza procesos por nombre o PID.",
+    "sintaxis": "taskkill [/PID pid] [/IM nombre] [/F] [/T]",
+    "peligroso": true,
+    "parametros": [
+      {
+        "nombre": "/PID",
+        "descripcion": "ID del proceso",
+        "tipo": "Numero",
+        "incompatibleCon": [ "/IM" ]
+      },
+      {
+        "nombre": "/IM",
+        "descripcion": "Nombre de la imagen (ej. notepad.exe)",
+        "tipo": "Texto",
+        "incompatibleCon": [ "/PID" ]
+      },
+      {
+        "nombre": "/F",
+        "descripcion": "Forzar terminación",
+        "tipo": "Bandera"
+      },
+      {
+        "nombre": "/T",
+        "descripcion": "Termina también procesos hijos",
+        "tipo": "Bandera"
+      }
+    ],
+    "ejemplos": [ "taskkill /IM notepad.exe", "taskkill /PID 1234 /F /T" ]
+  },
+  {
+    "id": "systeminfo",
+    "nombre": "systeminfo",
+    "familia": "Sistema",
+    "colorFamilia": "8E44AD",
+    "icono": "⚙️",
+    "resumen": "Información del sistema",
+    "descripcion": "Muestra información detallada del sistema operativo y del hardware.",
+    "sintaxis": "systeminfo [/FO formato]",
+    "peligroso": false,
+    "parametros": [
+      {
+        "nombre": "/FO",
+        "descripcion": "Formato (TABLE, LIST, CSV)",
+        "tipo": "Lista",
+        "valoresPosibles": [ "TABLE", "LIST", "CSV" ]
+      }
+    ],
+    "ejemplos": [ "systeminfo", "systeminfo /FO CSV" ]
+  },
+  {
+    "id": "ver",
+    "nombre": "ver",
+    "familia": "Sistema",
+    "colorFamilia": "8E44AD",
+    "icono": "⚙️",
+    "resumen": "Versión de Windows",
+    "descripcion": "Muestra la versión del sistema operativo.",
+    "sintaxis": "ver",
+    "peligroso": false,
+    "parametros": [],
+    "ejemplos": [ "ver" ]
+  },
+  {
+    "id": "whoami",
+    "nombre": "whoami",
+    "familia": "Sistema",
+    "colorFamilia": "8E44AD",
+    "icono": "⚙️",
+    "resumen": "Usuario actual",
+    "descripcion": "Muestra el usuario y dominio actuales.",
+    "sintaxis": "whoami [/UPN] [/FQDN]",
+    "peligroso": false,
+    "parametros": [
+      {
+        "nombre": "/UPN",
+        "descripcion": "Formato UPN",
+        "tipo": "Bandera"
+      },
+      {
+        "nombre": "/FQDN",
+        "descripcion": "Nombre completo de dominio",
+        "tipo": "Bandera"
+      }
+    ],
+    "ejemplos": [ "whoami" ]
+  },
+  {
+    "id": "ipconfig",
+    "nombre": "ipconfig",
+    "familia": "Red",
+    "colorFamilia": "2980B9",
+    "icono": "🌐",
+    "resumen": "Configuración IP",
+    "descripcion": "Muestra la configuración de red del equipo.",
+    "sintaxis": "ipconfig [/all] [/release] [/renew] [/flushdns]",
+    "peligroso": false,
+    "parametros": [
+      {
+        "nombre": "/all",
+        "descripcion": "Muestra información completa",
+        "tipo": "Bandera"
+      },
+      {
+        "nombre": "/release",
+        "descripcion": "Libera la IP actual",
+        "tipo": "Bandera",
+        "incompatibleCon": [ "/renew" ]
+      },
+      {
+        "nombre": "/renew",
+        "descripcion": "Renueva la IP",
+        "tipo": "Bandera",
+        "incompatibleCon": [ "/release" ]
+      },
+      {
+        "nombre": "/flushdns",
+        "descripcion": "Vacía la caché DNS",
+        "tipo": "Bandera"
+      }
+    ],
+    "ejemplos": [ "ipconfig", "ipconfig /all", "ipconfig /flushdns" ]
+  },
+  {
+    "id": "ping",
+    "nombre": "ping",
+    "familia": "Red",
+    "colorFamilia": "2980B9",
+    "icono": "🌐",
+    "resumen": "Comprueba conectividad",
+    "descripcion": "Envía paquetes ICMP a un host para comprobar conectividad.",
+    "sintaxis": "ping [-t] [-n nº] [-l tamaño] destino",
+    "peligroso": false,
+    "parametros": [
+      {
+        "nombre": "-t",
+        "descripcion": "Ping continuo hasta Ctrl+C",
+        "tipo": "Bandera"
+      },
+      {
+        "nombre": "-n",
+        "descripcion": "Número de peticiones",
+        "tipo": "Numero"
+      },
+      {
+        "nombre": "-l",
+        "descripcion": "Tamaño del paquete",
+        "tipo": "Numero"
+      },
+      {
+        "nombre": "-4",
+        "descripcion": "Forzar IPv4",
+        "tipo": "Bandera",
+        "incompatibleCon": [ "-6" ]
+      },
+      {
+        "nombre": "-6",
+        "descripcion": "Forzar IPv6",
+        "tipo": "Bandera",
+        "incompatibleCon": [ "-4" ]
+      }
+    ],
+    "ejemplos": [ "ping google.com", "ping -n 5 8.8.8.8" ]
+  },
+  {
+    "id": "tracert",
+    "nombre": "tracert",
+    "familia": "Red",
+    "colorFamilia": "2980B9",
+    "icono": "🌐",
+    "resumen": "Traza la ruta a un host",
+    "descripcion": "Muestra la ruta que siguen los paquetes hasta un destino.",
+    "sintaxis": "tracert [-d] [-h saltos] destino",
+    "peligroso": false,
+    "parametros": [
+      {
+        "nombre": "-d",
+        "descripcion": "No resuelve nombres",
+        "tipo": "Bandera"
+      },
+      {
+        "nombre": "-h",
+        "descripcion": "Máximo de saltos",
+        "tipo": "Numero"
+      }
+    ],
+    "ejemplos": [ "tracert google.com", "tracert -d 8.8.8.8" ]
+  },
+  {
+    "id": "netstat",
+    "nombre": "netstat",
+    "familia": "Red",
+    "colorFamilia": "2980B9",
+    "icono": "🌐",
+    "resumen": "Estadísticas de red",
+    "descripcion": "Muestra conexiones, puertos en escucha y estadísticas de red.",
+    "sintaxis": "netstat [-a] [-n] [-o] [-b]",
+    "peligroso": false,
+    "parametros": [
+      {
+        "nombre": "-a",
+        "descripcion": "Muestra todas las conexiones y puertos",
+        "tipo": "Bandera"
+      },
+      {
+        "nombre": "-n",
+        "descripcion": "Direcciones y puertos en formato numérico",
+        "tipo": "Bandera"
+      },
+      {
+        "nombre": "-o",
+        "descripcion": "Muestra el PID propietario",
+        "tipo": "Bandera"
+      },
+      {
+        "nombre": "-b",
+        "descripcion": "Muestra el ejecutable (requiere admin)",
+        "tipo": "Bandera"
+      }
+    ],
+    "ejemplos": [ "netstat -an", "netstat -ano" ]
+  },
+  {
+    "id": "nslookup",
+    "nombre": "nslookup",
+    "familia": "Red",
+    "colorFamilia": "2980B9",
+    "icono": "🌐",
+    "resumen": "Consulta DNS",
+    "descripcion": "Consulta servidores DNS para resolver nombres.",
+    "sintaxis": "nslookup nombre [servidor]",
+    "peligroso": false,
+    "parametros": [],
+    "ejemplos": [ "nslookup google.com" ]
+  },
+  {
+    "id": "find",
+    "nombre": "find",
+    "familia": "Utilidades",
+    "colorFamilia": "27AE60",
+    "icono": "🔧",
+    "resumen": "Busca texto en archivos",
+    "descripcion": "Busca una cadena de texto en la salida o en archivos.",
+    "sintaxis": "find [/V] [/C] [/N] \"cadena\" [archivo]",
+    "peligroso": false,
+    "parametros": [
+      {
+        "nombre": "/V",
+        "descripcion": "Muestra líneas que NO contienen la cadena",
+        "tipo": "Bandera"
+      },
+      {
+        "nombre": "/C",
+        "descripcion": "Cuenta las líneas coincidentes",
+        "tipo": "Bandera"
+      },
+      {
+        "nombre": "/N",
+        "descripcion": "Muestra el número de línea",
+        "tipo": "Bandera"
+      },
+      {
+        "nombre": "/I",
+        "descripcion": "Ignora mayúsculas/minúsculas",
+        "tipo": "Bandera"
+      }
+    ],
+    "ejemplos": [ "find \"error\" log.txt", "dir | find /I \"txt\"" ]
+  },
+  {
+    "id": "findstr",
+    "nombre": "findstr",
+    "familia": "Utilidades",
+    "colorFamilia": "27AE60",
+    "icono": "🔧",
+    "resumen": "Búsqueda avanzada con regex",
+    "descripcion": "Busca patrones de texto usando expresiones regulares básicas.",
+    "sintaxis": "findstr [/I] [/S] [/R] patrones [archivos]",
+    "peligroso": false,
+    "parametros": [
+      {
+        "nombre": "/I",
+        "descripcion": "Ignora mayúsculas/minúsculas",
+        "tipo": "Bandera"
+      },
+      {
+        "nombre": "/S",
+        "descripcion": "Busca en subdirectorios",
+        "tipo": "Bandera"
+      },
+      {
+        "nombre": "/R",
+        "descripcion": "Usa expresiones regulares",
+        "tipo": "Bandera",
+        "requiere": [ "patron" ]
+      },
+      {
+        "nombre": "/N",
+        "descripcion": "Muestra números de línea",
+        "tipo": "Bandera"
+      },
+      {
+        "nombre": "patron",
+        "descripcion": "Patrón de búsqueda",
+        "tipo": "Texto",
+        "requerido": true
+      }
+    ],
+    "ejemplos": [ "findstr /S /I \"TODO\" *.cs" ]
+  },
+  {
+    "id": "more",
+    "nombre": "more",
+    "familia": "Utilidades",
+    "colorFamilia": "27AE60",
+    "icono": "🔧",
+    "resumen": "Pagina la salida",
+    "descripcion": "Muestra la salida paginada, pantalla a pantalla.",
+    "sintaxis": "more [/S] [archivo]",
+    "peligroso": false,
+    "parametros": [
+      {
+        "nombre": "/S",
+        "descripcion": "Comprime líneas en blanco",
+        "tipo": "Bandera"
+      }
+    ],
+    "ejemplos": [ "type largo.txt | more" ]
+  },
+  {
+    "id": "sort",
+    "nombre": "sort",
+    "familia": "Utilidades",
+    "colorFamilia": "27AE60",
+    "icono": "🔧",
+    "resumen": "Ordena líneas de texto",
+    "descripcion": "Ordena alfabéticamente las líneas de un archivo o de la entrada.",
+    "sintaxis": "sort [/R] [/+n] [archivo]",
+    "peligroso": false,
+    "parametros": [
+      {
+        "nombre": "/R",
+        "descripcion": "Invierte el orden",
+        "tipo": "Bandera"
+      },
+      {
+        "nombre": "/+n",
+        "descripcion": "Comienza en la columna n",
+        "tipo": "Numero"
+      }
+    ],
+    "ejemplos": [ "sort lista.txt", "dir | sort /R" ]
+  }
+]

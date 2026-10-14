@@ -153,6 +153,40 @@
     "ejemplos": [ "type log.txt" ]
   },
   {
+    "id": "compact",
+    "nombre": "compact",
+    "familia": "Archivos",
+    "colorFamilia": "FFEB3B",
+    "icono": "📄",
+    "resumen": "Comprime archivos en NTFS",
+    "descripcion": "Muestra o cambia la compresión de archivos y carpetas en volúmenes NTFS.",
+    "sintaxis": "compact [/c] [/u] [/s:carpeta] [archivo]",
+    "peligroso": false,
+    "parametros": [
+      {
+        "nombre": "/c",
+        "descripcion": "Comprimir",
+        "tipo": "Bandera"
+      },
+      {
+        "nombre": "/u",
+        "descripcion": "Descomprimir",
+        "tipo": "Bandera"
+      },
+      {
+        "nombre": "/s",
+        "descripcion": "Aplicar a subcarpetas",
+        "tipo": "Bandera"
+      },
+      {
+        "nombre": "/f",
+        "descripcion": "Forzar incluso con errores",
+        "tipo": "Bandera"
+      }
+    ],
+    "ejemplos": [ "compact /c /s:C:\\datos", "compact archivo.txt" ]
+  },
+  {
     "id": "cd",
     "nombre": "cd",
     "familia": "Directorios",
@@ -435,6 +469,319 @@
     "ejemplos": [ "whoami" ]
   },
   {
+    "id": "shutdown",
+    "nombre": "shutdown",
+    "familia": "Sistema",
+    "colorFamilia": "8E44AD",
+    "icono": "⚠️",
+    "resumen": "Apaga o reinicia el equipo",
+    "descripcion": "Apaga, reinicia, suspende o cierra sesión en el equipo. Puede programarse con temporizador o cancelarse.",
+    "sintaxis": "shutdown [/s] [/r] [/l] [/h] [/t segundos] [/a] [/f]",
+    "peligroso": true,
+    "parametros": [
+      {
+        "nombre": "/s",
+        "descripcion": "Apagar el equipo",
+        "tipo": "Bandera"
+      },
+      {
+        "nombre": "/r",
+        "descripcion": "Reiniciar el equipo",
+        "tipo": "Bandera"
+      },
+      {
+        "nombre": "/l",
+        "descripcion": "Cerrar sesión",
+        "tipo": "Bandera"
+      },
+      {
+        "nombre": "/h",
+        "descripcion": "Hibernar",
+        "tipo": "Bandera"
+      },
+      {
+        "nombre": "/t",
+        "descripcion": "Tiempo en segundos antes de apagar",
+        "tipo": "Numero"
+      },
+      {
+        "nombre": "/a",
+        "descripcion": "Cancelar el apagado programado",
+        "tipo": "Bandera"
+      },
+      {
+        "nombre": "/f",
+        "descripcion": "Forzar el cierre de aplicaciones",
+        "tipo": "Bandera"
+      }
+    ],
+    "ejemplos": [ "shutdown /s /t 60", "shutdown /r /t 0", "shutdown /a" ]
+  },
+  {
+    "id": "logoff",
+    "nombre": "logoff",
+    "familia": "Sistema",
+    "colorFamilia": "8E44AD",
+    "icono": "⚠️",
+    "resumen": "Cierra la sesión actual",
+    "descripcion": "Cierra la sesión del usuario actual. No apaga el equipo.",
+    "sintaxis": "logoff [id_sesion]",
+    "peligroso": true,
+    "parametros": [
+      {
+        "nombre": "id",
+        "descripcion": "ID de sesión (opcional)",
+        "tipo": "Numero"
+      }
+    ],
+    "ejemplos": [ "logoff" ]
+  },
+  {
+    "id": "sc",
+    "nombre": "sc",
+    "familia": "Sistema",
+    "colorFamilia": "8E44AD",
+    "icono": "⚙️",
+    "resumen": "Gestiona servicios de Windows",
+    "descripcion": "Consulta, inicia, detiene, configura y elimina servicios de Windows.",
+    "sintaxis": "sc [query|start|stop|config|delete|create] ...",
+    "peligroso": true,
+    "requiereAdmin": true,
+    "parametros": [
+      {
+        "nombre": "query",
+        "descripcion": "Consultar el estado de un servicio",
+        "tipo": "Texto"
+      },
+      {
+        "nombre": "start",
+        "descripcion": "Iniciar un servicio",
+        "tipo": "Texto"
+      },
+      {
+        "nombre": "stop",
+        "descripcion": "Detener un servicio",
+        "tipo": "Texto"
+      },
+      {
+        "nombre": "config",
+        "descripcion": "Configurar un servicio",
+        "tipo": "Texto"
+      },
+      {
+        "nombre": "delete",
+        "descripcion": "Eliminar un servicio",
+        "tipo": "Texto"
+      },
+      {
+        "nombre": "create",
+        "descripcion": "Crear un servicio",
+        "tipo": "Texto"
+      }
+    ],
+    "ejemplos": [ "sc query wuauserv", "sc stop spooler" ]
+  },
+  {
+    "id": "reg",
+    "nombre": "reg",
+    "familia": "Sistema",
+    "colorFamilia": "8E44AD",
+    "icono": "⚙️",
+    "resumen": "Manipula el registro de Windows",
+    "descripcion": "Consulta, añade, modifica, elimina y exporta claves y valores del registro.",
+    "sintaxis": "reg [query|add|delete|copy|save|restore|load|unload|compare|export|import] ...",
+    "peligroso": true,
+    "requiereAdmin": true,
+    "parametros": [
+      {
+        "nombre": "query",
+        "descripcion": "Consultar claves o valores",
+        "tipo": "Texto"
+      },
+      {
+        "nombre": "add",
+        "descripcion": "Añadir o modificar una clave/valor",
+        "tipo": "Texto"
+      },
+      {
+        "nombre": "delete",
+        "descripcion": "Eliminar una clave o valor",
+        "tipo": "Texto"
+      },
+      {
+        "nombre": "export",
+        "descripcion": "Exportar a un archivo .reg",
+        "tipo": "Texto"
+      },
+      {
+        "nombre": "import",
+        "descripcion": "Importar desde un archivo .reg",
+        "tipo": "Texto"
+      }
+    ],
+    "ejemplos": [ "reg query HKLM\\Software", "reg export HKLM\\Software backup.reg" ]
+  },
+  {
+    "id": "schtasks",
+    "nombre": "schtasks",
+    "familia": "Sistema",
+    "colorFamilia": "8E44AD",
+    "icono": "⚙️",
+    "resumen": "Gestiona tareas programadas",
+    "descripcion": "Crea, modifica, ejecuta y elimina tareas programadas.",
+    "sintaxis": "schtasks /[create|delete|query|run|end|change] ...",
+    "peligroso": false,
+    "parametros": [
+      {
+        "nombre": "/create",
+        "descripcion": "Crear una nueva tarea",
+        "tipo": "Bandera"
+      },
+      {
+        "nombre": "/delete",
+        "descripcion": "Eliminar una tarea",
+        "tipo": "Bandera"
+      },
+      {
+        "nombre": "/query",
+        "descripcion": "Consultar tareas",
+        "tipo": "Bandera"
+      },
+      {
+        "nombre": "/run",
+        "descripcion": "Ejecutar una tarea inmediatamente",
+        "tipo": "Bandera"
+      },
+      {
+        "nombre": "/tn",
+        "descripcion": "Nombre de la tarea",
+        "tipo": "Texto"
+      },
+      {
+        "nombre": "/tr",
+        "descripcion": "Programa o comando a ejecutar",
+        "tipo": "Texto"
+      }
+    ],
+    "ejemplos": [ "schtasks /query", "schtasks /run /tn MiTarea" ]
+  },
+  {
+    "id": "driverquery",
+    "nombre": "driverquery",
+    "familia": "Sistema",
+    "colorFamilia": "8E44AD",
+    "icono": "⚙️",
+    "resumen": "Lista controladores instalados",
+    "descripcion": "Muestra los controladores de dispositivo instalados y sus propiedades.",
+    "sintaxis": "driverquery [/v] [/si] [/fo formato]",
+    "peligroso": false,
+    "parametros": [
+      {
+        "nombre": "/v",
+        "descripcion": "Información detallada",
+        "tipo": "Bandera"
+      },
+      {
+        "nombre": "/si",
+        "descripcion": "Muestra información de firma",
+        "tipo": "Bandera"
+      },
+      {
+        "nombre": "/fo",
+        "descripcion": "Formato de salida (TABLE, LIST, CSV)",
+        "tipo": "Lista",
+        "valoresPosibles": [ "TABLE", "LIST", "CSV" ]
+      }
+    ],
+    "ejemplos": [ "driverquery", "driverquery /v /fo CSV" ]
+  },
+  {
+    "id": "wmic",
+    "nombre": "wmic",
+    "familia": "Sistema",
+    "colorFamilia": "8E44AD",
+    "icono": "⚙️",
+    "resumen": "Instrumentación de Windows",
+    "descripcion": "Interfaz de línea de comandos para WMI. Permite consultar información del sistema, hardware, procesos, servicios...",
+    "sintaxis": "wmic [alias] [where clausula] [get propiedades] [/format formato]",
+    "peligroso": false,
+    "parametros": [
+      {
+        "nombre": "get",
+        "descripcion": "Obtener una o varias propiedades",
+        "tipo": "Texto"
+      },
+      {
+        "nombre": "where",
+        "descripcion": "Filtrar resultados",
+        "tipo": "Texto"
+      },
+      {
+        "nombre": "/format",
+        "descripcion": "Formato de salida (list, table, csv)",
+        "tipo": "Lista",
+        "valoresPosibles": [ "list", "table", "csv" ]
+      }
+    ],
+    "ejemplos": [ "wmic os get caption,version", "wmic cpu get name" ]
+  },
+  {
+    "id": "assoc",
+    "nombre": "assoc",
+    "familia": "Sistema",
+    "colorFamilia": "8E44AD",
+    "icono": "⚙️",
+    "resumen": "Asociaciones de extensión",
+    "descripcion": "Consulta o modifica la asociación entre una extensión de archivo y su tipo.",
+    "sintaxis": "assoc [.ext[=tipoarchivo]]",
+    "peligroso": false,
+    "parametros": [],
+    "ejemplos": [ "assoc .txt", "assoc .txt=txtfile" ]
+  },
+  {
+    "id": "ftype",
+    "nombre": "ftype",
+    "familia": "Sistema",
+    "colorFamilia": "8E44AD",
+    "icono": "⚙️",
+    "resumen": "Tipos de archivo",
+    "descripcion": "Consulta o modifica el comando que se ejecuta para abrir un tipo de archivo.",
+    "sintaxis": "ftype [tipo[=comando]]",
+    "peligroso": false,
+    "parametros": [],
+    "ejemplos": [ "ftype txtfile", "ftype txtfile=notepad.exe %1" ]
+  },
+  {
+    "id": "mklink",
+    "nombre": "mklink",
+    "familia": "Sistema",
+    "colorFamilia": "8E44AD",
+    "icono": "🔗",
+    "resumen": "Crea enlaces simbólicos",
+    "descripcion": "Crea enlaces simbólicos o duros a archivos y carpetas. Requiere permisos elevados para enlaces simbólicos.",
+    "sintaxis": "mklink [/D] [/H] enlace destino",
+    "peligroso": false,
+    "requiereAdmin": true,
+    "parametros": [
+      {
+        "nombre": "/D",
+        "descripcion": "Enlace a directorio",
+        "tipo": "Bandera"
+      },
+      {
+        "nombre": "/H",
+        "descripcion": "Enlace duro",
+        "tipo": "Bandera"
+      },
+      {
+        "nombre": "/J",
+        "descripcion": "Punto de unión de directorio",
+        "tipo": "Bandera"
+      }
+    ],
+    "ejemplos": [ "mklink /D C:\\enlace C:\\real", "mklink enlace.txt real.txt" ]
+  },
+  {
     "id": "ipconfig",
     "nombre": "ipconfig",
     "familia": "Red",
@@ -583,6 +930,119 @@
     "ejemplos": [ "nslookup google.com" ]
   },
   {
+    "id": "net",
+    "nombre": "net",
+    "familia": "Red",
+    "colorFamilia": "2980B9",
+    "icono": "🌐",
+    "resumen": "Gestiona usuarios, grupos y recursos de red",
+    "descripcion": "Comando polivalente para gestionar usuarios, grupos, recursos compartidos, sesiones y más.",
+    "sintaxis": "net [user|group|share|use|session|start|stop|view] ...",
+    "peligroso": true,
+    "parametros": [
+      {
+        "nombre": "user",
+        "descripcion": "Gestionar cuentas de usuario",
+        "tipo": "Texto"
+      },
+      {
+        "nombre": "group",
+        "descripcion": "Gestionar grupos",
+        "tipo": "Texto"
+      },
+      {
+        "nombre": "share",
+        "descripcion": "Gestionar recursos compartidos",
+        "tipo": "Texto"
+      },
+      {
+        "nombre": "use",
+        "descripcion": "Conectar o desconectar unidades de red",
+        "tipo": "Texto"
+      },
+      {
+        "nombre": "start",
+        "descripcion": "Iniciar servicios",
+        "tipo": "Texto"
+      },
+      {
+        "nombre": "stop",
+        "descripcion": "Detener servicios",
+        "tipo": "Texto"
+      },
+      {
+        "nombre": "view",
+        "descripcion": "Ver recursos de red",
+        "tipo": "Texto"
+      }
+    ],
+    "ejemplos": [ "net user", "net share", "net use Z: \\\\servidor\\recurso" ]
+  },
+  {
+    "id": "route",
+    "nombre": "route",
+    "familia": "Red",
+    "colorFamilia": "2980B9",
+    "icono": "🌐",
+    "resumen": "Tabla de rutas IP",
+    "descripcion": "Consulta, añade o elimina entradas de la tabla de enrutamiento IP.",
+    "sintaxis": "route [print|add|delete|change] destino [mask máscara] [gateway]",
+    "peligroso": false,
+    "requiereAdmin": true,
+    "parametros": [
+      {
+        "nombre": "print",
+        "descripcion": "Mostrar la tabla de rutas",
+        "tipo": "Texto"
+      },
+      {
+        "nombre": "add",
+        "descripcion": "Añadir una ruta",
+        "tipo": "Texto"
+      },
+      {
+        "nombre": "delete",
+        "descripcion": "Eliminar una ruta",
+        "tipo": "Texto"
+      },
+      {
+        "nombre": "change",
+        "descripcion": "Modificar una ruta",
+        "tipo": "Texto"
+      }
+    ],
+    "ejemplos": [ "route print", "route add 10.0.0.0 mask 255.0.0.0 192.168.1.1" ]
+  },
+  {
+    "id": "arp",
+    "nombre": "arp",
+    "familia": "Red",
+    "colorFamilia": "2980B9",
+    "icono": "🌐",
+    "resumen": "Caché ARP",
+    "descripcion": "Consulta y modifica la tabla de resolución de direcciones IP a MAC.",
+    "sintaxis": "arp [-a] [-d] [-s ip mac]",
+    "peligroso": false,
+    "parametros": [
+      {
+        "nombre": "-a",
+        "descripcion": "Mostrar todas las entradas",
+        "tipo": "Bandera"
+      },
+      {
+        "nombre": "-d",
+        "descripcion": "Eliminar una entrada",
+        "tipo": "Texto"
+      },
+      {
+        "nombre": "-s",
+        "descripcion": "Añadir una entrada estática",
+        "tipo": "Texto"
+      }
+    ],
+    "ejemplos": [ "arp -a", "arp -d 192.168.1.1" ]
+  },
+  {
     "id": "find",
     "nombre": "find",
     "familia": "Utilidades",
@@ -699,5 +1159,845 @@
       }
     ],
     "ejemplos": [ "sort lista.txt", "dir | sort /R" ]
+  },
+  {
+    "id": "where",
+    "nombre": "where",
+    "familia": "Utilidades",
+    "colorFamilia": "27AE60",
+    "icono": "🔧",
+    "resumen": "Localiza archivos ejecutables",
+    "descripcion": "Encuentra la ubicación de un comando en el PATH o busca archivos por patrón.",
+    "sintaxis": "where [/R carpeta] [/Q] patrón",
+    "peligroso": false,
+    "parametros": [
+      {
+        "nombre": "/R",
+        "descripcion": "Buscar recursivamente desde la carpeta",
+        "tipo": "Ruta"
+      },
+      {
+        "nombre": "/Q",
+        "descripcion": "Solo código de salida, sin imprimir",
+        "tipo": "Bandera"
+      }
+    ],
+    "ejemplos": [ "where notepad", "where /R C:\\ *.exe" ]
+  },
+  {
+    "id": "fc",
+    "nombre": "fc",
+    "familia": "Utilidades",
+    "colorFamilia": "27AE60",
+    "icono": "🔧",
+    "resumen": "Compara dos archivos",
+    "descripcion": "Compara dos archivos o conjuntos de archivos y muestra las diferencias.",
+    "sintaxis": "fc [/A] [/C] [/N] archivo1 archivo2",
+    "peligroso": false,
+    "parametros": [
+      {
+        "nombre": "/A",
+        "descripcion": "Salida abreviada",
+        "tipo": "Bandera"
+      },
+      {
+        "nombre": "/C",
+        "descripcion": "Ignorar mayúsculas/minúsculas",
+        "tipo": "Bandera"
+      },
+      {
+        "nombre": "/N",
+        "descripcion": "Mostrar números de línea",
+        "tipo": "Bandera"
+      },
+      {
+        "nombre": "/B",
+        "descripcion": "Comparación binaria",
+        "tipo": "Bandera"
+      }
+    ],
+    "ejemplos": [ "fc a.txt b.txt", "fc /N original.txt modificado.txt" ]
+  },
+  {
+    "id": "start",
+    "nombre": "start",
+    "familia": "Utilidades",
+    "colorFamilia": "27AE60",
+    "icono": "🔧",
+    "resumen": "Inicia un programa o abre un archivo",
+    "descripcion": "Lanza una aplicación, abre un documento, o inicia una nueva ventana de consola.",
+    "sintaxis": "start [\"titulo\"] [/D ruta] [/MIN|/MAX] programa [argumentos]",
+    "peligroso": false,
+    "parametros": [
+      {
+        "nombre": "/D",
+        "descripcion": "Directorio de trabajo",
+        "tipo": "Ruta"
+      },
+      {
+        "nombre": "/MIN",
+        "descripcion": "Iniciar minimizado",
+        "tipo": "Bandera"
+      },
+      {
+        "nombre": "/MAX",
+        "descripcion": "Iniciar maximizado",
+        "tipo": "Bandera"
+      },
+      {
+        "nombre": "/WAIT",
+        "descripcion": "Esperar a que termine",
+        "tipo": "Bandera"
+      }
+    ],
+    "ejemplos": [ "start notepad", "start /D C:\\Proyectos cmd" ]
+  },
+  {
+    "id": "choice",
+    "nombre": "choice",
+    "familia": "Utilidades",
+    "colorFamilia": "27AE60",
+    "icono": "🔧",
+    "resumen": "Pide al usuario elegir entre opciones",
+    "descripcion": "Muestra un mensaje y espera a que el usuario elija entre varias opciones. Útil en scripts.",
+    "sintaxis": "choice [/C opciones] [/N] [/T timeout /D opcion] [/M mensaje]",
+    "peligroso": false,
+    "parametros": [
+      {
+        "nombre": "/C",
+        "descripcion": "Conjunto de opciones permitidas",
+        "tipo": "Texto"
+      },
+      {
+        "nombre": "/N",
+        "descripcion": "No mostrar las opciones",
+        "tipo": "Bandera"
+      },
+      {
+        "nombre": "/M",
+        "descripcion": "Mensaje a mostrar",
+        "tipo": "Texto"
+      },
+      {
+        "nombre": "/T",
+        "descripcion": "Tiempo de espera en segundos",
+        "tipo": "Numero"
+      },
+      {
+        "nombre": "/D",
+        "descripcion": "Opción por defecto tras timeout",
+        "tipo": "Texto"
+      }
+    ],
+    "ejemplos": [ "choice /C SN /M \"Continuar?\"", "choice /C ABC /T 10 /D A" ]
+  },
+  {
+    "id": "timeout",
+    "nombre": "timeout",
+    "familia": "Utilidades",
+    "colorFamilia": "27AE60",
+    "icono": "🔧",
+    "resumen": "Pausa la ejecución durante un tiempo",
+    "descripcion": "Espera un número de segundos o hasta que el usuario pulse una tecla.",
+    "sintaxis": "timeout [/T segundos] [/NOBREAK]",
+    "peligroso": false,
+    "parametros": [
+      {
+        "nombre": "/T",
+        "descripcion": "Tiempo de espera en segundos",
+        "tipo": "Numero"
+      },
+      {
+        "nombre": "/NOBREAK",
+        "descripcion": "Ignorar pulsaciones de tecla",
+        "tipo": "Bandera"
+      }
+    ],
+    "ejemplos": [ "timeout /T 5", "timeout /T 10 /NOBREAK" ]
+  },
+  {
+    "id": "sfc",
+    "nombre": "sfc",
+    "familia": "Integridad",
+    "colorFamilia": "16A085",
+    "icono": "🛡",
+    "resumen": "Verificador de archivos de sistema",
+    "descripcion": "Comprueba y repara archivos de sistema protegidos de Windows. Puede tardar bastante tiempo.",
+    "sintaxis": "sfc [/scannow] [/verifyonly] [/scanfile=archivo]",
+    "peligroso": false,
+    "requiereAdmin": true,
+    "parametros": [
+      {
+        "nombre": "/scannow",
+        "descripcion": "Analizar y reparar todos los archivos protegidos",
+        "tipo": "Bandera"
+      },
+      {
+        "nombre": "/verifyonly",
+        "descripcion": "Solo analizar, sin reparar",
+        "tipo": "Bandera"
+      },
+      {
+        "nombre": "/scanfile=",
+        "descripcion": "Analizar un archivo específico",
+        "tipo": "Ruta"
+      }
+    ],
+    "ejemplos": [ "sfc /scannow", "sfc /verifyonly" ]
+  },
+  {
+    "id": "dism",
+    "nombre": "dism",
+    "familia": "Integridad",
+    "colorFamilia": "16A085",
+    "icono": "🛡",
+    "resumen": "Servicio de imágenes y mantenimiento",
+    "descripcion": "Repara la imagen de Windows, gestiona características y paquetes del sistema.",
+    "sintaxis": "dism /online /cleanup-image /[restorehealth|checkhealth|scanhealth]",
+    "peligroso": false,
+    "requiereAdmin": true,
+    "parametros": [
+      {
+        "nombre": "/online",
+        "descripcion": "Trabajar sobre el sistema operativo actual",
+        "tipo": "Bandera"
+      },
+      {
+        "nombre": "/cleanup-image",
+        "descripcion": "Reparar la imagen del sistema",
+        "tipo": "Bandera"
+      },
+      {
+        "nombre": "/restorehealth",
+        "descripcion": "Reparar la imagen",
+        "tipo": "Bandera"
+      },
+      {
+        "nombre": "/checkhealth",
+        "descripcion": "Comprobación rápida",
+        "tipo": "Bandera"
+      },
+      {
+        "nombre": "/scanhealth",
+        "descripcion": "Análisis profundo",
+        "tipo": "Bandera"
+      }
+    ],
+    "ejemplos": [ "dism /online /cleanup-image /checkhealth", "dism /online /cleanup-image /restorehealth" ]
+  },
+  {
+    "id": "format",
+    "nombre": "format",
+    "familia": "Discos",
+    "colorFamilia": "C0392B",
+    "icono": "💽",
+    "resumen": "Formatea una unidad",
+    "descripcion": "⚠ PELIGROSO ⚠ Formatea una unidad de disco, borrando TODOS los datos.",
+    "sintaxis": "format unidad: [/FS:sistema] [/Q] [/V:etiqueta]",
+    "peligroso": true,
+    "requiereAdmin": true,
+    "parametros": [
+      {
+        "nombre": "/FS:",
+        "descripcion": "Sistema de archivos (FAT, FAT32, NTFS, exFAT)",
+        "tipo": "Lista",
+        "valoresPosibles": [ "FAT", "FAT32", "NTFS", "exFAT" ]
+      },
+      {
+        "nombre": "/Q",
+        "descripcion": "Formato rápido (no verifica sectores)",
+        "tipo": "Bandera"
+      },
+      {
+        "nombre": "/V:",
+        "descripcion": "Etiqueta de volumen",
+        "tipo": "Texto"
+      },
+      {
+        "nombre": "/P:",
+        "descripcion": "Número de pasadas de sobrescritura",
+        "tipo": "Numero"
+      }
+    ],
+    "ejemplos": [ "format D: /FS:NTFS /Q", "format E: /FS:FAT32" ]
+  },
+  {
+    "id": "chkdsk",
+    "nombre": "chkdsk",
+    "familia": "Discos",
+    "colorFamilia": "C0392B",
+    "icono": "💽",
+    "resumen": "Verifica y repara un disco",
+    "descripcion": "Comprueba la integridad del sistema de archivos y puede reparar errores lógicos.",
+    "sintaxis": "chkdsk [unidad:] [/F] [/R] [/X] [/V]",
+    "peligroso": false,
+    "requiereAdmin": true,
+    "parametros": [
+      {
+        "nombre": "/F",
+        "descripcion": "Corregir errores encontrados",
+        "tipo": "Bandera"
+      },
+      {
+        "nombre": "/R",
+        "descripcion": "Buscar sectores defectuosos y recuperar información",
+        "tipo": "Bandera"
+      },
+      {
+        "nombre": "/X",
+        "descripcion": "Forzar el desmontaje antes de comprobar",
+        "tipo": "Bandera"
+      },
+      {
+        "nombre": "/V",
+        "descripcion": "Mostrar cada archivo durante la comprobación",
+        "tipo": "Bandera"
+      }
+    ],
+    "ejemplos": [ "chkdsk C:", "chkdsk D: /F /R" ]
+  },
+  {
+    "id": "diskpart",
+    "nombre": "diskpart",
+    "familia": "Discos",
+    "colorFamilia": "C0392B",
+    "icono": "💽",
+    "resumen": "Particionado avanzado de discos",
+    "descripcion": "⚠ MUY PELIGROSO ⚠ Herramienta avanzada para gestionar particiones y volúmenes.",
+    "sintaxis": "diskpart [/s script.txt]",
+    "peligroso": true,
+    "requiereAdmin": true,
+    "parametros": [
+      {
+        "nombre": "/s",
+        "descripcion": "Ejecutar comandos desde un archivo script",
+        "tipo": "Ruta"
+      }
+    ],
+    "ejemplos": [ "diskpart", "diskpart /s limpiar.txt" ]
+  },
+  {
+    "id": "defrag",
+    "nombre": "defrag",
+    "familia": "Discos",
+    "colorFamilia": "C0392B",
+    "icono": "💽",
+    "resumen": "Desfragmenta un disco",
+    "descripcion": "Reorganiza los datos en el disco para mejorar el rendimiento. En SSD no se recomienda.",
+    "sintaxis": "defrag unidad: [/O] [/A] [/V]",
+    "peligroso": false,
+    "requiereAdmin": true,
+    "parametros": [
+      {
+        "nombre": "/O",
+        "descripcion": "Optimizar según el tipo de medio",
+        "tipo": "Bandera"
+      },
+      {
+        "nombre": "/A",
+        "descripcion": "Analizar sin desfragmentar",
+        "tipo": "Bandera"
+      },
+      {
+        "nombre": "/V",
+        "descripcion": "Salida detallada",
+        "tipo": "Bandera"
+      }
+    ],
+    "ejemplos": [ "defrag C: /O", "defrag D: /A" ]
+  },
+  {
+    "id": "vol",
+    "nombre": "vol",
+    "familia": "Discos",
+    "colorFamilia": "C0392B",
+    "icono": "💽",
+    "resumen": "Etiqueta y serie de una unidad",
+    "descripcion": "Muestra el nombre del volumen y el número de serie de la unidad especificada.",
+    "sintaxis": "vol [unidad:]",
+    "peligroso": false,
+    "parametros": [],
+    "ejemplos": [ "vol C:", "vol D:" ]
+  },
+  {
+    "id": "label",
+    "nombre": "label",
+    "familia": "Discos",
+    "colorFamilia": "C0392B",
+    "icono": "💽",
+    "resumen": "Cambia la etiqueta de una unidad",
+    "descripcion": "Asigna o cambia el nombre (etiqueta) de una unidad de disco.",
+    "sintaxis": "label [unidad:] [nueva etiqueta]",
+    "peligroso": false,
+    "parametros": [],
+    "ejemplos": [ "label D: DATOS" ]
+  },
+  {
+    "id": "chkntfs",
+    "nombre": "chkntfs",
+    "familia": "Discos",
+    "colorFamilia": "C0392B",
+    "icono": "💽",
+    "resumen": "Comprueba NTFS al arrancar",
+    "descripcion": "Muestra o modifica si chkdsk debe ejecutarse al arrancar. Solo para volúmenes NTFS.",
+    "sintaxis": "chkntfs [/d] [/t:tiempo] [/x] [unidad:]",
+    "peligroso": false,
+    "requiereAdmin": true,
+    "parametros": [
+      {
+        "nombre": "/d",
+        "descripcion": "Restaurar comportamiento por defecto",
+        "tipo": "Bandera"
+      },
+      {
+        "nombre": "/t:",
+        "descripcion": "Tiempo de cuenta atrás (segundos)",
+        "tipo": "Numero"
+      },
+      {
+        "nombre": "/x",
+        "descripcion": "Excluir la unidad del chequeo automático",
+        "tipo": "Bandera"
+      }
+    ],
+    "ejemplos": [ "chkntfs C:", "chkntfs /x D:" ]
+  },
+  {
+    "id": "takeown",
+    "nombre": "takeown",
+    "familia": "Permisos",
+    "colorFamilia": "7F8C8D",
+    "icono": "🔒",
+    "resumen": "Toma posesión de archivos o carpetas",
+    "descripcion": "Permite al administrador convertirse en propietario de archivos o carpetas.",
+    "sintaxis": "takeown [/S sistema] [/F archivo] [/R] [/D y|n]",
+    "peligroso": false,
+    "requiereAdmin": true,
+    "parametros": [
+      {
+        "nombre": "/F",
+        "descripcion": "Archivo o carpeta objetivo",
+        "tipo": "Ruta"
+      },
+      {
+        "nombre": "/R",
+        "descripcion": "Recursivo (incluye subcarpetas)",
+        "tipo": "Bandera"
+      },
+      {
+        "nombre": "/D",
+        "descripcion": "Respuesta por defecto a la confirmación (y/n)",
+        "tipo": "Lista",
+        "valoresPosibles": [ "y", "n" ]
+      }
+    ],
+    "ejemplos": [ "takeown /F C:\\carpeta /R", "takeown /F archivo.txt" ]
+  },
+  {
+    "id": "icacls",
+    "nombre": "icacls",
+    "familia": "Permisos",
+    "colorFamilia": "7F8C8D",
+    "icono": "🔒",
+    "resumen": "Gestiona permisos de archivos",
+    "descripcion": "Visualiza y modifica las listas de control de acceso (ACL) de archivos y carpetas.",
+    "sintaxis": "icacls archivo [/grant usuario:permisos] [/deny usuario:permisos] [/remove usuario] [/T]",
+    "peligroso": false,
+    "requiereAdmin": true,
+    "parametros": [
+      {
+        "nombre": "/grant",
+        "descripcion": "Conceder permisos",
+        "tipo": "Texto"
+      },
+      {
+        "nombre": "/deny",
+        "descripcion": "Denegar permisos",
+        "tipo": "Texto"
+      },
+      {
+        "nombre": "/remove",
+        "descripcion": "Quitar permisos de un usuario",
+        "tipo": "Texto"
+      },
+      {
+        "nombre": "/T",
+        "descripcion": "Aplicar recursivamente",
+        "tipo": "Bandera"
+      }
+    ],
+    "ejemplos": [ "icacls C:\\carpeta", "icacls C:\\carpeta /grant Usuario:F /T" ]
+  },
+  {
+    "id": "attrib",
+    "nombre": "attrib",
+    "familia": "Permisos",
+    "colorFamilia": "7F8C8D",
+    "icono": "🔒",
+    "resumen": "Cambia atributos de archivo",
+    "descripcion": "Modifica atributos como solo lectura, oculto, sistema y archivo.",
+    "sintaxis": "attrib [+R|-R] [+H|-H] [+S|-S] [+A|-A] [archivo] [/S] [/D]",
+    "peligroso": false,
+    "parametros": [
+      {
+        "nombre": "+R",
+        "descripcion": "Marcar como solo lectura",
+        "tipo": "Bandera"
+      },
+      {
+        "nombre": "-R",
+        "descripcion": "Quitar solo lectura",
+        "tipo": "Bandera"
+      },
+      {
+        "nombre": "+H",
+        "descripcion": "Marcar como oculto",
+        "tipo": "Bandera"
+      },
+      {
+        "nombre": "-H",
+        "descripcion": "Quitar oculto",
+        "tipo": "Bandera"
+      },
+      {
+        "nombre": "/S",
+        "descripcion": "Aplicar a subcarpetas",
+        "tipo": "Bandera"
+      }
+    ],
+    "ejemplos": [ "attrib +H archivo.txt", "attrib -R -H -S carpeta\\*.txt /S" ]
+  },
+  {
+    "id": "cipher",
+    "nombre": "cipher",
+    "familia": "Permisos",
+    "colorFamilia": "7F8C8D",
+    "icono": "🔒",
+    "resumen": "Cifra o descifra archivos (EFS)",
+    "descripcion": "Gestiona el cifrado de archivos mediante el Sistema de Archivos Cifrados (EFS) de Windows.",
+    "sintaxis": "cipher [/E|/D|/C] [archivo] [/S:carpeta]",
+    "peligroso": false,
+    "parametros": [
+      {
+        "nombre": "/E",
+        "descripcion": "Cifrar",
+        "tipo": "Bandera"
+      },
+      {
+        "nombre": "/D",
+        "descripcion": "Descifrar",
+        "tipo": "Bandera"
+      },
+      {
+        "nombre": "/C",
+        "descripcion": "Mostrar el estado de cifrado",
+        "tipo": "Bandera"
+      },
+      {
+        "nombre": "/S",
+        "descripcion": "Aplicar a subcarpetas",
+        "tipo": "Bandera"
+      }
+    ],
+    "ejemplos": [ "cipher /E archivo.txt", "cipher /C carpeta" ]
+  },
+  {
+    "id": "bcdboot",
+    "nombre": "bcdboot",
+    "familia": "Arranque",
+    "colorFamilia": "7A4F9E",
+    "icono": "🔧",
+    "resumen": "Repara el sector de arranque",
+    "descripcion": "Copia archivos de arranque de Windows al disco especificado y crea el BCD.",
+    "sintaxis": "bcdboot origen [/s destino] [/l idioma] [/f firmware]",
+    "peligroso": true,
+    "requiereAdmin": true,
+    "parametros": [
+      {
+        "nombre": "/s",
+        "descripcion": "Partición de sistema destino",
+        "tipo": "Ruta"
+      },
+      {
+        "nombre": "/l",
+        "descripcion": "Código de idioma (es-es, en-us...)",
+        "tipo": "Texto"
+      },
+      {
+        "nombre": "/f",
+        "descripcion": "Tipo de firmware (BIOS, UEFI, ALL)",
+        "tipo": "Lista",
+        "valoresPosibles": [ "BIOS", "UEFI", "ALL" ]
+      },
+      {
+        "nombre": "/d",
+        "descripcion": "Conservar archivos del BCD existente",
+        "tipo": "Bandera"
+      }
+    ],
+    "ejemplos": [ "bcdboot C:\\Windows", "bcdboot C:\\Windows /s S: /f UEFI" ]
+  },
+  {
+    "id": "bcdedit",
+    "nombre": "bcdedit",
+    "familia": "Arranque",
+    "colorFamilia": "7A4F9E",
+    "icono": "🔧",
+    "resumen": "Edita el almacén de datos de arranque",
+    "descripcion": "Consulta y modifica la configuración de arranque de Windows (BCD).",
+    "sintaxis": "bcdedit [/enum] [/set identificador valor] [/delete identificador] ...",
+    "peligroso": true,
+    "requiereAdmin": true,
+    "parametros": [
+      {
+        "nombre": "/enum",
+        "descripcion": "Listar entradas de arranque",
+        "tipo": "Bandera"
+      },
+      {
+        "nombre": "/set",
+        "descripcion": "Establecer un valor",
+        "tipo": "Texto"
+      },
+      {
+        "nombre": "/delete",
+        "descripcion": "Eliminar un valor o entrada",
+        "tipo": "Texto"
+      },
+      {
+        "nombre": "/create",
+        "descripcion": "Crear una nueva entrada",
+        "tipo": "Texto"
+      },
+      {
+        "nombre": "/export",
+        "descripcion": "Exportar el BCD a un archivo",
+        "tipo": "Ruta"
+      },
+      {
+        "nombre": "/import",
+        "descripcion": "Importar el BCD desde un archivo",
+        "tipo": "Ruta"
+      }
+    ],
+    "ejemplos": [ "bcdedit /enum", "bcdedit /export C:\\backup-bcd" ]
+  },
+  {
+    "id": "cls",
+    "nombre": "cls",
+    "familia": "Presentación",
+    "colorFamilia": "16A085",
+    "icono": "🎨",
+    "resumen": "Limpia la pantalla",
+    "descripcion": "Borra el contenido visible de la ventana de comandos.",
+    "sintaxis": "cls",
+    "peligroso": false,
+    "parametros": [],
+    "ejemplos": [ "cls" ]
+  },
+  {
+    "id": "color",
+    "nombre": "color",
+    "familia": "Presentación",
+    "colorFamilia": "16A085",
+    "icono": "🎨",
+    "resumen": "Cambia colores de la consola",
+    "descripcion": "Establece los colores de fondo y texto de la consola.",
+    "sintaxis": "color [fondo][texto]",
+    "peligroso": false,
+    "parametros": [
+      {
+        "nombre": "código",
+        "descripcion": "Dos dígitos hexadecimales (0-F)",
+        "tipo": "Texto"
+      }
+    ],
+    "ejemplos": [ "color 0A", "color 1F" ]
+  },
+  {
+    "id": "title",
+    "nombre": "title",
+    "familia": "Presentación",
+    "colorFamilia": "16A085",
+    "icono": "🎨",
+    "resumen": "Cambia el título de la ventana",
+    "descripcion": "Establece el título de la ventana de la consola actual.",
+    "sintaxis": "title [texto]",
+    "peligroso": false,
+    "parametros": [],
+    "ejemplos": [ "title Mi Script de Backup" ]
+  },
+  {
+    "id": "pause",
+    "nombre": "pause",
+    "familia": "Presentación",
+    "colorFamilia": "16A085",
+    "icono": "🎨",
+    "resumen": "Pausa y espera una tecla",
+    "descripcion": "Detiene la ejecución hasta que el usuario pulse una tecla.",
+    "sintaxis": "pause",
+    "peligroso": false,
+    "parametros": [],
+    "ejemplos": [ "pause" ]
+  },
+  {
+    "id": "prompt",
+    "nombre": "prompt",
+    "familia": "Presentación",
+    "colorFamilia": "16A085",
+    "icono": "🎨",
+    "resumen": "Cambia el prompt de la consola",
+    "descripcion": "Modifica el prompt que se muestra en la línea de comandos.",
+    "sintaxis": "prompt [texto]",
+    "peligroso": false,
+    "parametros": [],
+    "ejemplos": [ "prompt $P$G", "prompt Listo$G" ]
+  },
+  {
+    "id": "mode",
+    "nombre": "mode",
+    "familia": "Presentación",
+    "colorFamilia": "16A085",
+    "icono": "🎨",
+    "resumen": "Configura el dispositivo de consola",
+    "descripcion": "Configura el tamaño y otras propiedades de la consola.",
+    "sintaxis": "mode con[:] [cols=N] [lines=N]",
+    "peligroso": false,
+    "parametros": [
+      {
+        "nombre": "cols",
+        "descripcion": "Número de columnas",
+        "tipo": "Numero"
+      },
+      {
+        "nombre": "lines",
+        "descripcion": "Número de líneas",
+        "tipo": "Numero"
+      }
+    ],
+    "ejemplos": [ "mode con: cols=120 lines=40" ]
+  },
+  {
+    "id": "rem",
+    "nombre": "rem",
+    "familia": "Control",
+    "colorFamilia": "7F8C8D",
+    "icono": "💬",
+    "resumen": "Comentario",
+    "descripcion": "Marca el resto de la línea como comentario. No se ejecuta.",
+    "sintaxis": "rem [texto]",
+    "peligroso": false,
+    "parametros": [],
+    "ejemplos": [ "rem Esto es un comentario" ]
+  },
+  {
+    "id": "echo",
+    "nombre": "echo",
+    "familia": "Control",
+    "colorFamilia": "7F8C8D",
+    "icono": "💬",
+    "resumen": "Muestra mensajes o cambia el eco",
+    "descripcion": "Muestra un mensaje en pantalla, o activa/desactiva la visualización de comandos.",
+    "sintaxis": "echo [on|off|mensaje]",
+    "peligroso": false,
+    "parametros": [
+      {
+        "nombre": "on",
+        "descripcion": "Activar eco",
+        "tipo": "Bandera"
+      },
+      {
+        "nombre": "off",
+        "descripcion": "Desactivar eco",
+        "tipo": "Bandera"
+      }
+    ],
+    "ejemplos": [ "echo Hola mundo", "echo.", "echo off" ]
+  },
+  {
+    "id": "set",
+    "nombre": "set",
+    "familia": "Control",
+    "colorFamilia": "7F8C8D",
+    "icono": "💬",
+    "resumen": "Muestra o define variables de entorno",
+    "descripcion": "Consulta o modifica variables de entorno. Sin argumentos, muestra todas.",
+    "sintaxis": "set [variable[=valor]]",
+    "peligroso": false,
+    "parametros": [
+      {
+        "nombre": "/a",
+        "descripcion": "Evaluar expresión aritmética",
+        "tipo": "Bandera"
+      },
+      {
+        "nombre": "/p",
+        "descripcion": "Pedir valor al usuario",
+        "tipo": "Bandera"
+      }
+    ],
+    "ejemplos": [ "set", "set NOMBRE=Juan", "set /p RUTA=Introduce ruta: " ]
+  },
+  {
+    "id": "call",
+    "nombre": "call",
+    "familia": "Control",
+    "colorFamilia": "7F8C8D",
+    "icono": "💬",
+    "resumen": "Invoca otro script",
+    "descripcion": "Ejecuta otro script .bat o .cmd desde el actual y vuelve al terminar.",
+    "sintaxis": "call [unidad:][ruta]script [argumentos]",
+    "peligroso": false,
+    "parametros": [
+      {
+        "nombre": ":label",
+        "descripcion": "Llamar a una etiqueta del mismo script",
+        "tipo": "Texto"
+      }
+    ],
+    "ejemplos": [ "call backup.bat", "call :subrutina" ]
+  },
+  {
+    "id": "exit",
+    "nombre": "exit",
+    "familia": "Control",
+    "colorFamilia": "7F8C8D",
+    "icono": "💬",
+    "resumen": "Sale del script o consola",
+    "descripcion": "Termina el intérprete de comandos o el script actual con el código de salida indicado.",
+    "sintaxis": "exit [/b] [código]",
+    "peligroso": false,
+    "parametros": [
+      {
+        "nombre": "/b",
+        "descripcion": "Salir del script actual, no del CMD",
+        "tipo": "Bandera"
+      },
+      {
+        "nombre": "código",
+        "descripcion": "Código de salida numérico",
+        "tipo": "Numero"
+      }
+    ],
+    "ejemplos": [ "exit", "exit /b 0", "exit 1" ]
+  },
+  {
+    "id": "goto",
+    "nombre": "goto",
+    "familia": "Control",
+    "colorFamilia": "7F8C8D",
+    "icono": "💬",
+    "resumen": "Salta a una etiqueta del script",
+    "descripcion": "Transfiere el control a una etiqueta dentro del mismo script .bat.",
+    "sintaxis": "goto [:]etiqueta",
+    "peligroso": false,
+    "parametros": [
+      {
+        "nombre": "etiqueta",
+        "descripcion": "Nombre de la etiqueta destino",
+        "tipo": "Texto"
+      }
+    ],
+    "ejemplos": [ "goto fin", "goto :inicio" ]
   }
 ]
