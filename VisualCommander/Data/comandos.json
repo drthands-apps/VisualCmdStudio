@@ -69,6 +69,24 @@
         "tipo": "Bandera"
       }
     ],
+    "argumentos": [
+      {
+        "posicion": 1,
+        "nombre": "origen",
+        "dummy": "origen",
+        "tipo": "Ruta",
+        "requerido": true,
+        "descripcion": "Archivo o archivos a copiar"
+      },
+      {
+        "posicion": 2,
+        "nombre": "destino",
+        "dummy": "destino",
+        "tipo": "Ruta",
+        "requerido": true,
+        "descripcion": "Ubicación de destino"
+      }
+    ],
     "ejemplos": [ "copy a.txt b.txt", "copy *.txt C:\\Backup\\" ]
   },
   {
@@ -88,6 +106,24 @@
         "tipo": "Bandera"
       }
     ],
+    "argumentos": [
+      {
+        "posicion": 1,
+        "nombre": "origen",
+        "dummy": "origen",
+        "tipo": "Ruta",
+        "requerido": true,
+        "descripcion": "Origen del movimiento"
+      },
+      {
+        "posicion": 2,
+        "nombre": "destino",
+        "dummy": "destino",
+        "tipo": "Ruta",
+        "requerido": true,
+        "descripcion": "Destino del movimiento"
+      }
+    ],
     "ejemplos": [ "move a.txt C:\\Destino\\" ]
   },
   {
@@ -101,6 +137,24 @@
     "sintaxis": "ren origen nuevoNombre",
     "peligroso": false,
     "parametros": [],
+    "argumentos": [
+      {
+        "posicion": 1,
+        "nombre": "actual",
+        "dummy": "nombre actual",
+        "tipo": "ArchivoExistente",
+        "requerido": true,
+        "descripcion": "Nombre actual del archivo o carpeta"
+      },
+      {
+        "posicion": 2,
+        "nombre": "nuevo",
+        "dummy": "nombre nuevo",
+        "tipo": "NombreNuevo",
+        "requerido": true,
+        "descripcion": "Nombre nuevo"
+      }
+    ],
     "ejemplos": [ "ren a.txt b.txt" ]
   },
   {
@@ -137,6 +191,16 @@
         "incompatibleCon": [ "/P" ]
       }
     ],
+    "argumentos": [
+      {
+        "posicion": 1,
+        "nombre": "archivos",
+        "dummy": "archivos a borrar",
+        "tipo": "Ruta",
+        "requerido": true,
+        "descripcion": "Archivo(s) o patrón a eliminar"
+      }
+    ],
     "ejemplos": [ "del a.txt", "del /S /Q C:\\Temp\\*.tmp" ]
   },
   {
@@ -150,6 +214,16 @@
     "sintaxis": "type archivo",
     "peligroso": false,
     "parametros": [],
+    "argumentos": [
+      {
+        "posicion": 1,
+        "nombre": "archivo",
+        "dummy": "archivo",
+        "tipo": "ArchivoExistente",
+        "requerido": true,
+        "descripcion": "Archivo de texto a mostrar"
+      }
+    ],
     "ejemplos": [ "type log.txt" ]
   },
   {
@@ -216,6 +290,16 @@
     "sintaxis": "md ruta",
     "peligroso": false,
     "parametros": [],
+    "argumentos": [
+      {
+        "posicion": 1,
+        "nombre": "ruta",
+        "dummy": "nombre carpeta",
+        "tipo": "NombreNuevo",
+        "requerido": true,
+        "descripcion": "Nombre o ruta de la carpeta a crear"
+      }
+    ],
     "ejemplos": [ "md NuevaCarpeta", "md C:\\a\\b\\c" ]
   },
   {
@@ -1074,6 +1158,24 @@
         "tipo": "Bandera"
       }
     ],
+    "argumentos": [
+      {
+        "posicion": 1,
+        "nombre": "cadena",
+        "dummy": "cadena a buscar",
+        "tipo": "CadenaLibre",
+        "requerido": true,
+        "descripcion": "Texto a buscar (entre comillas si tiene espacios)"
+      },
+      {
+        "posicion": 2,
+        "nombre": "archivo",
+        "dummy": "archivo",
+        "tipo": "Ruta",
+        "requerido": false,
+        "descripcion": "Archivo donde buscar (opcional)"
+      }
+    ],
     "ejemplos": [ "find \"error\" log.txt", "dir | find /I \"txt\"" ]
   },
   {
@@ -1910,6 +2012,16 @@
         "nombre": "off",
         "descripcion": "Desactivar eco",
         "tipo": "Bandera"
+      }
+    ],
+    "argumentos": [
+      {
+        "posicion": 1,
+        "nombre": "mensaje",
+        "dummy": "mensaje",
+        "tipo": "CadenaLibre",
+        "requerido": false,
+        "descripcion": "Mensaje a mostrar. Usa 'echo.' para una línea vacía."
       }
     ],
     "ejemplos": [ "echo Hola mundo", "echo.", "echo off" ]

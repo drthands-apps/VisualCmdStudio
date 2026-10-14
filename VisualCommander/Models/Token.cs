@@ -15,6 +15,12 @@ namespace VisualCommander.Models
         Texto,
         Separador
     }
+    public enum EstadoToken
+{
+    Normal,     // Token real con contenido
+    Dummy,      // Placeholder esperando ser rellenado
+    Invalido    // Token con contenido que no encaja en su contexto
+}
 
     /// <summary>
     /// Una pieza atómica del comando que el usuario va componiendo.
@@ -24,6 +30,22 @@ namespace VisualCommander.Models
         /// <summary>Tipo del token.</summary>
         public TipoToken Tipo { get; set; }
 
+        private EstadoToken _estado = EstadoToken.Normal;
+        public EstadoToken Estado
+        {
+            get => _estado;
+            set
+            {
+                if (_estado == value) return;
+                _estado = value;
+                OnPropertyChanged();
+                OnPropertyChanged(nameof(EsDummy));
+                OnPropertyChanged(nameof(EsEditable));
+            }
+        }
+
+        /// <summary>¿Es este token un dummy (placeholder vacío)?</summary>
+        public bool EsDummy => Estado == EstadoToken.Dummy;
         private string _texto = "";
         /// <summary>Texto literal del token.</summary>
         public string Texto
@@ -35,6 +57,21 @@ namespace VisualCommander.Models
                 _texto = value;
                 OnPropertyChanged();
                 OnPropertyChanged(nameof(TextoMostrado));
+            }
+        }
+        /// <summary>
+        /// Texto que se muestra en el dummie (por ejemplo, "origen", "destino").
+        /// Solo aplica cuando Estado == EstadoToken.Dummy.
+        /// </summary>
+        private string _textoDummy = "";
+        public string TextoDummy
+        {
+            get => _textoDummy;
+            set
+            {
+                if (_textoDummy == value) return;
+                _textoDummy = value;
+                OnPropertyChanged();
             }
         }
 
@@ -61,8 +98,9 @@ namespace VisualCommander.Models
         /// ¿Es este token editable in-place (doble clic)?
         /// Los tokens de tipo Texto y Ruta son editables.
         /// </summary>
-        public bool EsEditable => Tipo == TipoToken.Texto || Tipo == TipoToken.Ruta;
-
+        public bool EsEditable =>
+            Estado == EstadoToken.Normal &&
+            (Tipo == TipoToken.Texto || Tipo == TipoToken.Ruta);
         /// <summary>
         /// ¿Está este token en modo edición in-place?
         /// Propiedad de UI, no de negocio. Se usa para el DataTrigger.

@@ -2,6 +2,32 @@
 
 namespace VisualCommander.Models
 {
+   
+    /// 
+    /// <summary>
+    /// Definición de un argumento esperado por un comando.
+    /// Se declara en el JSON y determina cómo se generan los dummies guía.
+    /// </summary>
+    public class ArgumentoComando
+    {
+        /// <summary>Posición ordinal dentro de la línea (1 = primero).</summary>
+        public int Posicion { get; set; }
+
+        /// <summary>Nombre interno del argumento (ej. "origen", "destino").</summary>
+        public string Nombre { get; set; } = "";
+
+        /// <summary>Texto descriptivo que se muestra en el dummie.</summary>
+        public string Dummy { get; set; } = "";
+
+        /// <summary>Tipo de argumento esperado (para validación futura).</summary>
+        public string Tipo { get; set; } = "Texto";
+
+        /// <summary>¿Es obligatorio para que el comando sea válido?</summary>
+        public bool Requerido { get; set; } = true;
+
+        /// <summary>Descripción para el tooltip del dummie.</summary>
+        public string Descripcion { get; set; } = "";
+    }
     /// <summary>
     /// Representa un comando de Windows con su metadata completa.
     /// </summary>
@@ -24,6 +50,12 @@ namespace VisualCommander.Models
 
         /// <summary>Sintaxis general.</summary>
         public string Sintaxis { get; set; } = "";
+
+        /// <summary>
+        /// Argumentos que este comando espera, en orden.
+        /// Se usan para generar dummies guía al insertar el comando.
+        /// </summary>
+        public List<ArgumentoComando> Argumentos { get; set; } = new();
 
         /// <summary>Indica si el comando puede ser destructivo (borra, formatea...).</summary>
         public bool Peligroso { get; set; }
