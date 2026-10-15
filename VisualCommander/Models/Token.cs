@@ -46,6 +46,24 @@ namespace VisualCommander.Models
 
         /// <summary>¿Es este token un dummy (placeholder vacío)?</summary>
         public bool EsDummy => Estado == EstadoToken.Dummy;
+        /// <summary>
+        /// Para dummies: ¿es este argumento requerido?
+        /// Los requeridos bloquean el cierre (con confirmación).
+        /// Los opcionales se descartan silenciosamente.
+        /// Para tokens reales: no se usa.
+        /// </summary>
+        private bool _esRequerido;
+        public bool EsRequerido
+        {
+            get => _esRequerido;
+            set
+            {
+                if (_esRequerido == value) return;
+                _esRequerido = value;
+                OnPropertyChanged();
+            }
+        }
+
         private string _texto = "";
         /// <summary>Texto literal del token.</summary>
         public string Texto

@@ -1,0 +1,81 @@
+﻿<Window x:Class="VisualCommander.ConfirmarCierreDialog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Línea incompleta"
+        Width="480" Height="320"
+        WindowStartupLocation="CenterOwner"
+        ResizeMode="NoResize"
+        Background="#FFF5F5F5"
+        FontFamily="Segoe UI" FontSize="12"
+        ShowInTaskbar="False">
+
+    <DockPanel>
+
+        <!-- Cabecera -->
+        <Border DockPanel.Dock="Top"
+                Background="#FFE67E22"
+                Padding="16,12">
+            <StackPanel Orientation="Horizontal">
+                <TextBlock Text="⚠" FontSize="24" Foreground="White"
+                           VerticalAlignment="Center" Margin="0,0,12,0"/>
+                <StackPanel VerticalAlignment="Center">
+                    <TextBlock Text="LÍNEA INCOMPLETA"
+                               FontSize="14" FontWeight="Bold" Foreground="White"/>
+                    <TextBlock Text="Hay argumentos obligatorios sin rellenar."
+                               FontSize="11" Foreground="#FFFFF0E0"/>
+                </StackPanel>
+            </StackPanel>
+        </Border>
+
+        <!-- Botonera -->
+        <Border DockPanel.Dock="Bottom"
+                Background="#FFEDEDED"
+                BorderBrush="#FFD0D0D0"
+                BorderThickness="0,1,0,0"
+                Padding="16,10">
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                <Button Content="❌ Seguir editando"
+                        Padding="16,6" Margin="0,0,8,0"
+                        IsCancel="True"
+                        Click="SeguirEditando_Click"/>
+                <Button Content="✅ Cerrar igualmente"
+                        Padding="16,6"
+                        Background="#FFE67E22" Foreground="White"
+                        FontWeight="SemiBold" BorderThickness="0"
+                        Click="CerrarIgualmente_Click"/>
+            </StackPanel>
+        </Border>
+
+        <!-- Contenido -->
+        <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="16">
+            <StackPanel>
+                <TextBlock Text="Esta línea tiene los siguientes argumentos obligatorios sin rellenar:"
+                           TextWrapping="Wrap"
+                           Margin="0,0,0,12"/>
+
+                <Border Background="White"
+                        BorderBrush="#FFD0D0D0"
+                        BorderThickness="1"
+                        CornerRadius="3"
+                        Padding="10,8">
+                    <ItemsControl x:Name="ListaDummiesRequeridos">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding}"
+                                           FontFamily="Consolas"
+                                           FontSize="13"
+                                           Margin="0,2"
+                                           Foreground="#FF444444"/>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </Border>
+
+                <TextBlock Text="Si cierras la línea ahora, se guardará incompleta y podría no ejecutarse correctamente."
+                           TextWrapping="Wrap"
+                           Foreground="#FF666666"
+                           Margin="0,16,0,0"/>
+            </StackPanel>
+        </ScrollViewer>
+    </DockPanel>
+</Window>

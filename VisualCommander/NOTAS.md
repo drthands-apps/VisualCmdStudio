@@ -259,3 +259,22 @@ de `Tokens` + `Dummies`) y tiene varios `return` tempranos:
 
 Error cometido: los `return` de las validaciones estaban fuera del `try`,
 así que el `finally` no se ejecutaba cuando había un `return` temprano.
+### Pieza 8-bis — Aviso pre-ejecución de líneas incompletas (2026-10-15)
+
+**Concepto**: antes de ejecutar (plan o línea), comprobar si hay líneas
+con dummies requeridos sin rellenar. Si las hay, mostrar aviso combinado
+con los comandos peligrosos.
+
+**Un solo diálogo**: ConfirmarPlanDialog incluye dos secciones:
+- LÍNEAS PELIGROSAS (comandos destructivos).
+- LÍNEAS INCOMPLETAS (dummies requeridos sin rellenar).
+
+**El aviso NUNCA se silencia**, ni en modo silencioso. Es información
+crítica antes de ejecutar.
+
+**Las líneas incompletas NO se añaden a "no preguntar"** porque pueden
+completarse en el futuro; se vuelven a comprobar cada vez.
+
+**Aplica a**:
+- Ejecutar plan completo (F5).
+- Ejecutar línea individual.

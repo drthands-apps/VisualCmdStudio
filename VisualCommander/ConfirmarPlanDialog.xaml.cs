@@ -13,32 +13,74 @@ namespace VisualCommander
         public string Comando { get; set; } = "";
         public string Efectos { get; set; } = "";
     }
+    public class LineaIncompletaVista
+    {
+        public string Encabezado { get; set; } = "";
+        public string Comando { get; set; } = "";
+        public string DummiesFaltantes { get; set; } = "";
+    }
 
     public partial class ConfirmarPlanDialog : Window
     {
         public bool NoPreguntarMas => ChkNoPreguntar.IsChecked == true;
 
-        public ConfirmarPlanDialog(List<(LineaComando Linea, ResultadoSimulacion Sim)> lineas)
+        public ConfirmarPlanDialog(
+            List<(LineaComando Linea, ResultadoSimulacion Sim)> lineasPeligrosas,
+            List<LineaComando> lineasIncompletas)
         {
             InitializeComponent();
 
-            TxtSubtitulo.Text =
-                $"{lineas.Count} línea(s) contienen comandos peligrosos.";
+            int total = lineasPeligrosas.Count + lineasIncompletas.Count;
 
-            var items = new List<LineaPeligrosaVista>();
-            foreach (var (linea, sim) in lineas)
+            TxtSubtitulo.Text = $"{total} situación(es) requieren tu atención.";
+
+            // Sección 1: peligrosas
+            if (lineasPeligrosas.Count > 0)
             {
-                items.Add(new LineaPeligrosaVista
+                var items = new List<LineaPeligrosaVista>();
+                foreach (var (linea, sim) in lineasPeligrosas)
                 {
-                    Encabezado = $"Línea {linea.NumeroLinea} — {sim.Comando}",
-                    Directorio = $"Se ejecutará en: {linea.DirectorioTrabajo}",
-                    Comando = linea.Texto,
-                    Efectos = sim.Resumen
-                });
+                    items.Add(new LineaPeligrosaVista
+                    {
+                        Encabezado = $"Línea {linea.NumeroLinea} — {sim.Comando}",
+                        Directorio = $"Se ejecutará en: {linea.DirectorioTrabajo}",
+                        Comando = linea.Texto,
+                        Efectos = sim.Resumen
+                    });
+                }
+                ListaLineasPeligrosas.ItemsSource = items;
             }
+            else
+            {
+                TituloPeligrosas.Visibility = Visibility.Collapsed;
+                ListaLineasPeligrosas.Visibility = Visibility.Collapsed;
+            }
+            // Sección 2: incompletas
+            if (lineasIncompletas.Count > 0)
+            {
+                var items = new List<LineaIncompletaVista>();
+                foreach (var linea in lineasIncompletas)
+                {
+                    var faltantes = linea.DummiesRequeridos
+                        .Select(d => $"[{d.TextoDummy}]")
+                        .ToList();
 
-            ListaLineasPeligrosas.ItemsSource = items;
+                    items.Add(new LineaIncompletaVista
+                    {
+                        Encabezado = $"Línea {linea.NumeroLinea}",
+                        Comando = linea.Texto,
+                        DummiesFaltantes = "Faltan: " + string.Join(", ", faltantes)
+                    });
+                }
+                ListaLineasIncompletas.ItemsSource = items;
+            }
+            else
+            {
+                TituloIncompletas.Visibility = Visibility.Collapsed;
+                ListaLineasIncompletas.Visibility = Visibility.Collapsed;
+            }
         }
+
 
         private void Cancelar_Click(object sender, RoutedEventArgs e)
         {

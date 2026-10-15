@@ -26,7 +26,9 @@ namespace VisualCommander.ViewModels
 
     {
 
+        // ==== Configuración persistente ====
 
+        private readonly Models.Configuracion _configuracion;
         private bool _ignorarSalida;
 
         // ==== Catálogo ====
@@ -142,11 +144,11 @@ namespace VisualCommander.ViewModels
         // ==== Estado de ejecución ====
 
         /// <summary>Líneas de salida del último comando ejecutado.</summary>
-        
+
 
         public RangeObservableCollection<string> Salida { get; } = new();
 
-    private bool _estaEjecutando;
+        private bool _estaEjecutando;
         public bool EstaEjecutando
         {
             get => _estaEjecutando;
@@ -297,6 +299,11 @@ namespace VisualCommander.ViewModels
 
         public MainViewModel()
         {
+
+            // Cargar configuración PRIMERO, antes que cualquier otra cosa.
+            _configuracion = Services.ConfiguracionService.Cargar();
+
+
             CargarComandos();
 
             // Conectamos el proyector de tokens al parser.
@@ -318,7 +325,7 @@ namespace VisualCommander.ViewModels
             _lineaActiva.EsActiva = true;
             Lineas.Add(_lineaActiva);
             RenumerarLineas();
-           
+
         }
 
         private void RenumerarLineas()
@@ -348,8 +355,13 @@ namespace VisualCommander.ViewModels
                 SetStatus("La línea actual ya está vacía. Escribe algo o usa ✓ Cerrar para saltar a la siguiente.");
                 return;
             }
-            
 
+            // ¿Tiene dummies requeridos?
+            if (!ConfirmarCierreSiEsNecesario())
+            {
+                SetStatus("Cierre cancelado por el usuario");
+                return;
+            }
 
 
             // ¿Cambio de directorio declarado? (cd / pushd)
@@ -392,6 +404,13 @@ namespace VisualCommander.ViewModels
                     return;
                 }
                 EliminarLineaYLimpiarHuerfanas(actual);
+                return;
+            }
+
+            // ¿Tiene dummies requeridos?
+            if (!ConfirmarCierreSiEsNecesario())
+            {
+                SetStatus("Cierre cancelado por el usuario");
                 return;
             }
 
@@ -493,7 +512,7 @@ namespace VisualCommander.ViewModels
             }
         }
 
-       
+
 
         // ==== API pública para la línea activa ====
 
@@ -511,25 +530,25 @@ namespace VisualCommander.ViewModels
             SetStatus($"Añadido: {cmd.Nombre}");
         }
         /// <summary>
-/// Inserta un texto (palabra, ruta, comando) en la posición indicada
-/// dentro de los tokens de la línea activa.
-/// </summary>
-public void InsertarTextoEnPosicion(string texto, int indice)
-{
-    var tokens = LineaActiva.Tokens.ToList();
+        /// Inserta un texto (palabra, ruta, comando) en la posición indicada
+        /// dentro de los tokens de la línea activa.
+        /// </summary>
+        public void InsertarTextoEnPosicion(string texto, int indice)
+        {
+            var tokens = LineaActiva.Tokens.ToList();
 
-    if (indice < 0) indice = 0;
-    if (indice > tokens.Count) indice = tokens.Count;
+            if (indice < 0) indice = 0;
+            if (indice > tokens.Count) indice = tokens.Count;
 
-    // Recolectamos los textos de los tokens actuales.
-    var textos = tokens.Select(t => t.Texto).ToList();
-    textos.Insert(indice, texto);
+            // Recolectamos los textos de los tokens actuales.
+            var textos = tokens.Select(t => t.Texto).ToList();
+            textos.Insert(indice, texto);
 
-    LineaActiva.ActualizarDesdeTexto(string.Join(" ", textos));
-    LineaActiva.ConfirmarEstado();
+            LineaActiva.ActualizarDesdeTexto(string.Join(" ", textos));
+            LineaActiva.ConfirmarEstado();
 
-    SetStatus($"Insertado en posición {indice}: {texto}");
-}
+            SetStatus($"Insertado en posición {indice}: {texto}");
+        }
 
         public void AgregarComandoSeleccionado()
         {
@@ -700,8 +719,6 @@ public void InsertarTextoEnPosicion(string texto, int indice)
         /// </summary>
         public async Task EjecutarAsync()
         {
-            _ignorarSalida = false;
-
             if (EstaEjecutando) return;
 
             var comando = LineaActiva.Texto;
@@ -711,33 +728,41 @@ public void InsertarTextoEnPosicion(string texto, int indice)
                 return;
             }
 
-            // ¿Hay que confirmar?
-            if (!_lineasNoPreguntar.Contains(LineaActiva))
+            // Recoger peligros de la línea activa.
+            var simulacion = SimuladorComando.Simular(LineaActiva);
+            var esPeligrosa = simulacion.Aplica && !_lineasNoPreguntar.Contains(LineaActiva);
+
+            // Recoger incompletas de la línea activa.
+            var esIncompleta = LineaActiva.TieneDummiesRequeridos;
+
+            // Si hay algo que avisar, mostrar diálogo.
+            if (esPeligrosa || esIncompleta)
             {
-                var simulacion = SimuladorComando.Simular(LineaActiva);
-                if (simulacion.Aplica)
+                var peligrosas = esPeligrosa
+                    ? new List<(LineaComando, ResultadoSimulacion)> { (LineaActiva, simulacion) }
+                    : new List<(LineaComando, ResultadoSimulacion)>();
+
+                var incompletas = esIncompleta
+                    ? new List<LineaComando> { LineaActiva }
+                    : new List<LineaComando>();
+
+                var dialogo = new ConfirmarPlanDialog(peligrosas, incompletas)
                 {
-                    var dialogo = new ConfirmarEjecucionDialog(
-                        comando,
-                        LineaActiva.DirectorioTrabajo,
-                        simulacion)
-                    {
-                        Owner = System.Windows.Application.Current?.MainWindow
-                    };
+                    Owner = System.Windows.Application.Current?.MainWindow
+                };
 
-                    var resultado = dialogo.ShowDialog();
+                if (dialogo.ShowDialog() != true)
+                {
+                    SetStatus("Ejecución cancelada por el usuario");
+                    return;
+                }
 
-                    if (resultado != true)
-                    {
-                        SetStatus("Ejecución cancelada por el usuario");
-                        return;
-                    }
-
-                    if (dialogo.NoPreguntarMas)
-                    {
-                        _lineasNoPreguntar.Add(LineaActiva);
-                        SetStatus("No se volverá a preguntar para esta línea");
-                    }
+                if (dialogo.NoPreguntarMas && esPeligrosa)
+                {
+                    _lineasNoPreguntar.Add(LineaActiva);
+     
+                    SetStatus("No se volverá a preguntar para esta línea");
+                    
                 }
             }
 
@@ -789,18 +814,28 @@ public void InsertarTextoEnPosicion(string texto, int indice)
             foreach (var l in Lineas)
                 l.ResetearEstado();
 
-            // ¿Hay líneas peligrosas sin "no preguntar"?
+            
+            
+
+            // Recoger líneas incompletas (con dummies requeridos)
+            // Recoger líneas peligrosas
             var lineasPeligrosas = Lineas
                 .Where(l => !_lineasNoPreguntar.Contains(l))
                 .Select(l => new { Linea = l, Simulacion = SimuladorComando.Simular(l) })
                 .Where(x => x.Simulacion.Aplica)
                 .ToList();
 
-            if (lineasPeligrosas.Count > 0)
+            // Recoger líneas incompletas (con dummies requeridos)
+            var lineasIncompletas = Lineas
+                .Where(l => l.TieneDummiesRequeridos)
+                .ToList();
+
+            // Si hay algo que avisar, mostrar el diálogo combinado.
+            if (lineasPeligrosas.Count > 0 || lineasIncompletas.Count > 0)
             {
-                var dialogo = new ConfirmarPlanDialog(lineasPeligrosas
-                    .Select(x => (x.Linea, x.Simulacion))
-                    .ToList())
+                var dialogo = new ConfirmarPlanDialog(
+                    lineasPeligrosas.Select(x => (x.Linea, x.Simulacion)).ToList(),
+                    lineasIncompletas)
                 {
                     Owner = System.Windows.Application.Current?.MainWindow
                 };
@@ -815,6 +850,8 @@ public void InsertarTextoEnPosicion(string texto, int indice)
                 {
                     foreach (var x in lineasPeligrosas)
                         _lineasNoPreguntar.Add(x.Linea);
+                    // Las incompletas no se añaden a "no preguntar" porque pueden
+                    // completarse en el futuro; se vuelven a comprobar cada vez.
                 }
             }
 
@@ -1233,7 +1270,7 @@ public void InsertarTextoEnPosicion(string texto, int indice)
             OnPropertyChanged(nameof(PuedeSubirActiva));
             OnPropertyChanged(nameof(PuedeBajarActiva));
         }
-       
+
         /// <summary>
         /// Exporta el plan actual como archivo .bat en la ruta indicada.
         /// </summary>
@@ -1262,5 +1299,53 @@ public void InsertarTextoEnPosicion(string texto, int indice)
         /// </summary>
         public string NombreSugeridoBat =>
             $"plan_{DateTime.Now:yyyyMMdd_HHmmss}.bat";
+
+        /// <summary>
+        /// Comprueba si la línea activa puede cerrarse.
+        /// Si tiene dummies requeridos, muestra un diálogo de confirmación.
+        /// Devuelve true si el usuario decide continuar con el cierre.
+        /// </summary>
+        private bool ConfirmarCierreSiEsNecesario()
+        {
+            var linea = LineaActiva;
+
+            if (!linea.TieneDummiesRequeridos)
+                return true;
+
+            // Modo silencioso: no preguntamos, cerramos directamente.
+            if (ModoSilencioso)
+                return true;
+
+            // Modo normal: diálogo de confirmación.
+            var dialogo = new ConfirmarCierreDialog(linea.DummiesRequeridos)
+            {
+                Owner = System.Windows.Application.Current?.MainWindow
+            };
+
+            var resultado = dialogo.ShowDialog();
+            return resultado == true && dialogo.CerrarIgualmente;
+        }
+        /// <summary>
+        /// Modo silencioso: silencia avisos durante la construcción/edición.
+        /// No afecta a los avisos antes de ejecutar.
+        /// </summary>
+        public bool ModoSilencioso
+        {
+            get => _configuracion.ModoSilencioso;
+            set
+            {
+                if (_configuracion.ModoSilencioso == value) return;
+                _configuracion.ModoSilencioso = value;
+                OnPropertyChanged();
+
+                // Guardar en disco inmediatamente.
+                Services.ConfiguracionService.Guardar(_configuracion);
+
+                SetStatus(value
+                    ? "Modo silencioso activado"
+                    : "Modo silencioso desactivado");
+            }
+
+        }
     }
 }

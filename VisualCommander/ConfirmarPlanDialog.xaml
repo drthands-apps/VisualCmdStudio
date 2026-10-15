@@ -48,38 +48,75 @@
 
         <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="16">
             <StackPanel>
-                <TextBlock Text="LÍNEAS PELIGROSAS DEL PLAN:"
-                           FontWeight="SemiBold" FontSize="11"
-                           Foreground="#FF666666" Margin="0,0,0,8"/>
-
+                <!-- Sección 1: Líneas peligrosas -->
+                <TextBlock x:Name="TituloPeligrosas"
+                   Text="LÍNEAS PELIGROSAS DEL PLAN:"
+                   FontWeight="SemiBold" FontSize="11"
+                   Foreground="#FFC0392B"
+                   Margin="0,0,0,8"/>
                 <ItemsControl x:Name="ListaLineasPeligrosas">
                     <ItemsControl.ItemTemplate>
                         <DataTemplate>
                             <Border Background="#FFFFF4F4"
-                                    BorderBrush="#FFE8A5A5"
-                                    BorderThickness="1"
-                                    CornerRadius="3"
-                                    Padding="10"
-                                    Margin="0,0,0,8">
+                            BorderBrush="#FFE8A5A5"
+                            BorderThickness="1"
+                            CornerRadius="3"
+                            Padding="10"
+                            Margin="0,0,0,8">
                                 <StackPanel>
                                     <TextBlock Text="{Binding Encabezado}"
-                                               FontWeight="SemiBold"
-                                               Foreground="#FF8B2015"
-                                               Margin="0,0,0,4"/>
+                                       FontWeight="SemiBold"
+                                       Foreground="#FF8B2015"
+                                       Margin="0,0,0,4"/>
                                     <TextBlock Text="{Binding Directorio}"
-                                               FontFamily="Consolas"
-                                               FontSize="11"
-                                               Foreground="#FF8B4513"
-                                               Margin="0,0,0,6"/>
+                                       FontFamily="Consolas"
+                                       FontSize="11"
+                                       Foreground="#FF8B4513"
+                                       Margin="0,0,0,6"/>
                                     <TextBlock Text="{Binding Comando}"
-                                               FontFamily="Consolas"
-                                               FontSize="12"
-                                               TextWrapping="Wrap"
-                                               Margin="0,0,0,6"/>
+                                       FontFamily="Consolas"
+                                       FontSize="12"
+                                       TextWrapping="Wrap"
+                                       Margin="0,0,0,6"/>
                                     <TextBlock Text="{Binding Efectos}"
-                                               FontSize="11"
-                                               Foreground="#FF444444"
-                                               TextWrapping="Wrap"/>
+                                       FontSize="11"
+                                       Foreground="#FF444444"
+                                       TextWrapping="Wrap"/>
+                                </StackPanel>
+                            </Border>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+
+                <!-- Sección 2: Líneas incompletas -->
+                <TextBlock x:Name="TituloIncompletas"
+                   Text="LÍNEAS INCOMPLETAS (faltan argumentos obligatorios):"
+                   FontWeight="SemiBold" FontSize="11"
+                   Foreground="#FFE67E22"
+                   Margin="0,16,0,8"/>
+                <ItemsControl x:Name="ListaLineasIncompletas">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Border Background="#FFFFF8E1"
+                            BorderBrush="#FFE8C48A"
+                            BorderThickness="1"
+                            CornerRadius="3"
+                            Padding="10"
+                            Margin="0,0,0,8">
+                                <StackPanel>
+                                    <TextBlock Text="{Binding Encabezado}"
+                                       FontWeight="SemiBold"
+                                       Foreground="#FF8B4513"
+                                       Margin="0,0,0,4"/>
+                                    <TextBlock Text="{Binding Comando}"
+                                       FontFamily="Consolas"
+                                       FontSize="12"
+                                       TextWrapping="Wrap"
+                                       Margin="0,0,0,6"/>
+                                    <TextBlock Text="{Binding DummiesFaltantes}"
+                                       FontSize="11"
+                                       Foreground="#FF666666"
+                                       TextWrapping="Wrap"/>
                                 </StackPanel>
                             </Border>
                         </DataTemplate>

@@ -217,6 +217,11 @@
                 <MenuItem Header="Editor de catálogo de comandos..."/>
                 <MenuItem Header="Recargar catálogo"/>
                 <Separator/>
+                <MenuItem Header="Modo silencioso"
+              IsCheckable="True"
+              IsChecked="{Binding ModoSilencioso, Mode=TwoWay}"
+              ToolTip="Silencia los avisos durante la construcción y edición. No afecta a los avisos antes de ejecutar."/>
+                <Separator/>
                 <MenuItem Header="Validar línea actual"  InputGestureText="F6"/>
                 <MenuItem Header="Ejecutar"              InputGestureText="F5"/>
                 <Separator/>
@@ -628,7 +633,7 @@ IsEnabled="{Binding EstaEjecutando, Converter={StaticResource InverseBoolConvert
            VerticalAlignment="Center"/>
 
                                                             <TextBlock x:Name="TextoDummie"
-           Text="{Binding TextoDummy, StringFormat='[{0}]'}"
+           Text="{Binding TextoDummy}"
            FontFamily="Consolas"
            FontSize="13"
            FontStyle="Italic"
@@ -718,20 +723,39 @@ IsEnabled="{Binding EstaEjecutando, Converter={StaticResource InverseBoolConvert
                                                     </DataTrigger>
                                                     <!-- Dummies: borde punteado, texto apagado, cursiva, sin botón eliminar -->
                                                     <DataTrigger Binding="{Binding Estado}" Value="Dummy">
-                                                       <!--  -->
+                                                        <Setter TargetName="TextoNormal" Property="Visibility" Value="Collapsed"/>
                                                         <Setter TargetName="TextoDummie" Property="Visibility" Value="Visible"/>
                                                         <Setter TargetName="BlockRoot" Property="Background" Value="#FFF0F0F0"/>
                                                         <Setter TargetName="BlockRoot" Property="BorderBrush" Value="#FFAAAAAA"/>
                                                         <Setter TargetName="BlockRoot" Property="BorderThickness" Value="1"/>
-                                                        <Setter TargetName="BlockRoot" Property="Opacity" Value="0.7"/>
                                                         <Setter TargetName="BlockRoot" Property="Cursor" Value="Arrow"/>
-                                                        <Setter TargetName="BlockRoot" Property="ToolTip"
-            Value="{Binding Descripcion, StringFormat='Falta: {0}'}"/>
-                                                        <!-- No mostrar el botón ✕ -->
                                                         <Setter TargetName="BtnEliminar" Property="Visibility" Value="Collapsed"/>
-                                                        <!-- No mostrar el icono de lápiz -->
                                                         <Setter TargetName="IconoLapiz" Property="Visibility" Value="Collapsed"/>
                                                     </DataTrigger>
+                                                    <MultiDataTrigger>
+                                                        <MultiDataTrigger.Conditions>
+                                                            <Condition Binding="{Binding Estado}" Value="Dummy"/>
+                                                            <Condition Binding="{Binding EsRequerido}" Value="True"/>
+                                                        </MultiDataTrigger.Conditions>
+                                                        <Setter TargetName="BlockRoot" Property="Opacity" Value="0.75"/>
+                                                        <Setter TargetName="BlockRoot" Property="ToolTip"
+            Value="{Binding Descripcion, StringFormat='Obligatorio: {0}'}"/>
+                                                        <Setter TargetName="TextoDummie" Property="Text"
+            Value="{Binding TextoDummy, StringFormat='[{0}]'}"/>
+                                                        <Setter TargetName="TextoDummie" Property="Foreground" Value="#FF444444"/>
+                                                    </MultiDataTrigger>
+                                                    <MultiDataTrigger>
+                                                        <MultiDataTrigger.Conditions>
+                                                            <Condition Binding="{Binding Estado}" Value="Dummy"/>
+                                                            <Condition Binding="{Binding EsRequerido}" Value="False"/>
+                                                        </MultiDataTrigger.Conditions>
+                                                        <Setter TargetName="BlockRoot" Property="Opacity" Value="0.5"/>
+                                                        <Setter TargetName="BlockRoot" Property="ToolTip"
+            Value="{Binding Descripcion, StringFormat='Opcional: {0}'}"/>
+                                                        <Setter TargetName="TextoDummie" Property="Text"
+            Value="{Binding TextoDummy, StringFormat='({0})'}"/>
+                                                        <Setter TargetName="TextoDummie" Property="Foreground" Value="#FF888888"/>
+                                                    </MultiDataTrigger>
                                                 </DataTemplate.Triggers>
                                             </DataTemplate>
                                         </ItemsControl.ItemTemplate>

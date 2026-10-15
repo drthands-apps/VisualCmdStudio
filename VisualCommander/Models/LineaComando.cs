@@ -78,6 +78,20 @@ namespace VisualCommander.Models
         /// <summary>Modificadores del comando activo, para el panel derecho.</summary>
         public ObservableCollection<ParametroVista> Modificadores { get; } = new();
 
+        /// <summary>
+        /// ¿Hay algún dummie requerido sin rellenar?
+        /// Se usa para bloquear el cierre (con confirmación).
+        /// </summary>
+        public bool TieneDummiesRequeridos =>
+            Dummies.Any(d => d.EsRequerido);
+
+        /// <summary>
+        /// Lista de dummies requeridos sin rellenar.
+        /// Se usa para mostrar el detalle en el diálogo de confirmación.
+        /// </summary>
+        public IEnumerable<Token> DummiesRequeridos =>
+            Dummies.Where(d => d.EsRequerido);
+
         // ==== Estado de la línea ====
 
         private bool _esActiva;
@@ -669,6 +683,9 @@ namespace VisualCommander.Models
         {
             Dummies.Clear();
 
+           
+
+
             try
             {
                 // Solo si hay un comando activo con argumentos declarados.
@@ -703,7 +720,8 @@ namespace VisualCommander.Models
                         TextoDummy = arg.Dummy,
                         Descripcion = arg.Descripcion,
                         Color = "E8E8E8",
-                        Icono = "◇"
+                        Icono = "◇",
+                        EsRequerido = arg.Requerido   // ← NUEVO
                     };
 
                     Dummies.Add(dummy);
