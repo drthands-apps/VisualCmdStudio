@@ -582,7 +582,7 @@ IsEnabled="{Binding EstaEjecutando, Converter={StaticResource InverseBoolConvert
                                 <ScrollViewer HorizontalScrollBarVisibility="Auto"
                           VerticalScrollBarVisibility="Auto">
                                     <ItemsControl x:Name="PanelBloques"
-                              ItemsSource="{Binding LineaActiva.Tokens}"
+                              ItemsSource="{Binding LineaActiva.BloquesVisibles}"
                               Margin="8"
                               AllowDrop="True"
                               Background="Transparent"
@@ -620,10 +620,21 @@ IsEnabled="{Binding EstaEjecutando, Converter={StaticResource InverseBoolConvert
                                FontSize="13"
                                Margin="0,0,6,0"
                                VerticalAlignment="Center"/>
-                                                            <TextBlock Text="{Binding TextoMostrado}"
-                               FontFamily="Consolas"
-                               FontSize="13"
-                               VerticalAlignment="Center"/>
+                                                            
+                                                            <TextBlock x:Name="TextoNormal"
+           Text="{Binding TextoMostrado}"
+           FontFamily="Consolas"
+           FontSize="13"
+           VerticalAlignment="Center"/>
+
+                                                            <TextBlock x:Name="TextoDummie"
+           Text="{Binding TextoDummy, StringFormat='[{0}]'}"
+           FontFamily="Consolas"
+           FontSize="13"
+           FontStyle="Italic"
+           Foreground="#FF666666"
+           VerticalAlignment="Center"
+           Visibility="Collapsed"/>
 
                                                             <!-- Icono del lápiz (solo visible si es editable) -->
                                                             <TextBlock x:Name="IconoLapiz"
@@ -685,6 +696,7 @@ IsEnabled="{Binding EstaEjecutando, Converter={StaticResource InverseBoolConvert
                                                 <DataTemplate.Triggers>
                                                     <!-- Hover: mostrar botón eliminar -->
                                                     <Trigger SourceName="BlockRoot"
+                                                             
                      Property="IsMouseOver"
                      Value="True">
                                                         <Setter TargetName="BtnEliminar"
@@ -703,6 +715,22 @@ IsEnabled="{Binding EstaEjecutando, Converter={StaticResource InverseBoolConvert
                                                     <DataTrigger Binding="{Binding EstoyEditando}" Value="True">
                                                         <Setter TargetName="BlockRoot" Property="Visibility" Value="Collapsed"/>
                                                         <Setter TargetName="BlockEdicion" Property="Visibility" Value="Visible"/>
+                                                    </DataTrigger>
+                                                    <!-- Dummies: borde punteado, texto apagado, cursiva, sin botón eliminar -->
+                                                    <DataTrigger Binding="{Binding Estado}" Value="Dummy">
+                                                       <!--  -->
+                                                        <Setter TargetName="TextoDummie" Property="Visibility" Value="Visible"/>
+                                                        <Setter TargetName="BlockRoot" Property="Background" Value="#FFF0F0F0"/>
+                                                        <Setter TargetName="BlockRoot" Property="BorderBrush" Value="#FFAAAAAA"/>
+                                                        <Setter TargetName="BlockRoot" Property="BorderThickness" Value="1"/>
+                                                        <Setter TargetName="BlockRoot" Property="Opacity" Value="0.7"/>
+                                                        <Setter TargetName="BlockRoot" Property="Cursor" Value="Arrow"/>
+                                                        <Setter TargetName="BlockRoot" Property="ToolTip"
+            Value="{Binding Descripcion, StringFormat='Falta: {0}'}"/>
+                                                        <!-- No mostrar el botón ✕ -->
+                                                        <Setter TargetName="BtnEliminar" Property="Visibility" Value="Collapsed"/>
+                                                        <!-- No mostrar el icono de lápiz -->
+                                                        <Setter TargetName="IconoLapiz" Property="Visibility" Value="Collapsed"/>
                                                     </DataTrigger>
                                                 </DataTemplate.Triggers>
                                             </DataTemplate>

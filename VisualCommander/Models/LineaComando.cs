@@ -61,6 +61,20 @@ namespace VisualCommander.Models
         /// </summary>
         public ObservableCollection<Token> Tokens { get; } = new();
 
+        /// <summary>
+        /// Dummies (placeholders visuales) que se muestran en el constructor.
+        /// NO forman parte del texto ni del modelo persistente.
+        /// Son solo una ayuda visual para que el usuario sepa qué argumentos faltan.
+        /// </summary>
+        public ObservableCollection<Token> Dummies { get; } = new();
+
+        /// <summary>
+        /// Colección combinada de tokens reales + dummies, en el orden
+        /// que se muestra en el constructor visual.
+        /// Los dummies van DESPUÉS de todos los tokens reales.
+        /// Solo UI: no afecta al texto ni al modelo persistente.
+        /// </summary>
+        public ObservableCollection<Token> BloquesVisibles { get; } = new();
         /// <summary>Modificadores del comando activo, para el panel derecho.</summary>
         public ObservableCollection<ParametroVista> Modificadores { get; } = new();
 
@@ -411,6 +425,8 @@ namespace VisualCommander.Models
 
             // Recalcular comando activo.
             RecalcularComandoActivo();
+            // Después de recalcular Tokens y ComandoActivo:
+            RecalcularDummies();
         }
 
         private void RecalcularComandoActivo()
@@ -644,5 +660,81 @@ namespace VisualCommander.Models
                 }
             }
         }
+        /// <summary>
+        /// Recalcula los dummies visuales en función del comando activo,
+        /// los argumentos declarados en el catálogo, y los tokens reales
+        /// que ya están presentes en la línea.
+        /// </summary>
+        private void RecalcularDummies()
+        {
+            Dummies.Clear();
+
+            try
+            {
+                // Solo si hay un comando activo con argumentos declarados.
+                if (ComandoActivo?.Origen is not Comando cmd) return;
+                if (cmd.Argumentos == null || cmd.Argumentos.Count == 0) return;
+
+                // Contamos los tokens reales que cuentan como argumentos
+                // (tipo Texto o Ruta), EXCLUYENDO los que están antes del comando activo.
+                var indiceComando = Tokens.IndexOf(ComandoActivo);
+                if (indiceComando < 0) return;
+
+                int argumentosCubiertos = 0;
+                for (int i = indiceComando + 1; i < Tokens.Count; i++)
+                {
+                    var t = Tokens[i];
+                    if (t.Tipo == TipoToken.Texto || t.Tipo == TipoToken.Ruta)
+                        argumentosCubiertos++;
+                }
+
+                // Generamos dummies para los argumentos que faltan.
+                var argumentosOrdenados = cmd.Argumentos.OrderBy(a => a.Posicion).ToList();
+
+                for (int i = argumentosCubiertos; i < argumentosOrdenados.Count; i++)
+                {
+                    var arg = argumentosOrdenados[i];
+
+                    var dummy = new Token
+                    {
+                        Tipo = TipoToken.Texto,
+                        Estado = EstadoToken.Dummy,
+                        Texto = "",
+                        TextoDummy = arg.Dummy,
+                        Descripcion = arg.Descripcion,
+                        Color = "E8E8E8",
+                        Icono = "◇"
+                    };
+
+                    Dummies.Add(dummy);
+                }
+            }
+            finally
+            {
+                // SIEMPRE reconstruir BloquesVisibles, pase lo que pase.
+                ReconstruirBloquesVisibles();
+            }
+
+            // Notificar a la UI.
+            OnPropertyChanged(nameof(HayDummies));
+        }
+
+        /// <summary>¿Hay dummies visibles ahora mismo?</summary>
+        public bool HayDummies => Dummies.Count > 0;
+
+        /// <summary>
+        /// Reconstruye BloquesVisibles = Tokens + Dummies (al final).
+        /// Se llama cada vez que cambian los tokens o los dummies.
+        /// </summary>
+        private void ReconstruirBloquesVisibles()
+        {
+
+            BloquesVisibles.Clear();
+            foreach (var t in Tokens) BloquesVisibles.Add(t);
+            foreach (var d in Dummies) BloquesVisibles.Add(d);
+
+            OnPropertyChanged(nameof(HayDummies));
+        }
+       
     }
 }

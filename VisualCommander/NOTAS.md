@@ -235,3 +235,27 @@ port a Linux es un reto interesante. Consideraciones:
 - Muchas features (simulación, undo/redo, multi-línea) son reutilizables.
 - Cambios necesarios: ejecución de procesos, rutas (/, ~), variables ($VAR).
 - No urgente. Requiere que Windows esté consolidado primero.
+
+### Pieza 4 completada (2026-10-15)
+
+- `LineaComando.Dummies` como ObservableCollection paralela a Tokens.
+- `RecalcularDummies()` se ejecuta tras cada `ReprojectarTokens`.
+- Regla: se cuentan los tokens reales (Texto o Ruta) DESPUÉS del
+  comando activo. Los que cubren argumentos no generan dummy.
+- Los dummies NO están en `Tokens`, son solo UI.
+- Solo se generan si el comando activo tiene `argumentos` declarados.
+
+### Detalle observado
+`echo` con argumento `mensaje` marcado como NO requerido aún genera
+dummie. Se distinguirá en la Pieza 7.
+### Patrón: try/finally para garantizar limpieza
+
+Cuando un método modifica colecciones derivadas (`BloquesVisibles` a partir
+de `Tokens` + `Dummies`) y tiene varios `return` tempranos:
+
+- Poner TODO el cuerpo dentro del `try`.
+- Poner la limpieza/reconstrucción en el `finally`.
+- NO dejar validaciones con `return` fuera del `try`.
+
+Error cometido: los `return` de las validaciones estaban fuera del `try`,
+así que el `finally` no se ejecutaba cuando había un `return` temprano.
