@@ -73,7 +73,8 @@ namespace VisualCommander.Models
                     Descripcion = $"{cmd.Resumen}\n{cmd.Descripcion}",
                     Color = cmd.ColorFamilia,
                     Icono = cmd.Icono,
-                    Origen = cmd
+                    Origen = cmd,
+                    RequiereAdmin = cmd.RequiereAdmin
                 };
             }
 

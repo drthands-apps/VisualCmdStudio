@@ -28,12 +28,14 @@ namespace VisualCommander
             DataContext = ViewModel;
 
 
-
-            // Cada vez que cambia la línea activa, forzamos el foco al editor.
-            ViewModel.PropertyChanged += (_, e) =>
+        // Cada vez que cambia la línea activa, forzamos el foco al editor.
+        ViewModel.PropertyChanged += (_, e) =>
             {
                 if (e.PropertyName == nameof(MainViewModel.LineaActiva))
+                {
+                    ActualizarAvisoAdmin();
                     EnfocarEditorActivo();
+                }
             };
 
             // Auto-scroll del panel de salida cada vez que se añade una línea.
@@ -1131,6 +1133,11 @@ namespace VisualCommander
         {
             // TODO futuro: preguntar si guardar cambios pendientes.
             Close();
+        }
+        private void ActualizarAvisoAdmin()
+        {
+            // Aquí podrías mostrar un indicador visual en la barra de estado.
+            // Por simplicidad, lo mostramos como parte del texto del prompt.
         }
     }
 }

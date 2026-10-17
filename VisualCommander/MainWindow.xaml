@@ -276,6 +276,27 @@ IsEnabled="{Binding EstaEjecutando, Converter={StaticResource InverseBoolConvert
 
         <!-- Barra de estado -->
         <StatusBar DockPanel.Dock="Bottom">
+           
+            
+           
+            <StatusBarItem>
+                <TextBlock x:Name="AvisoAdmin"
+               Text="🛡 La línea activa requiere administrador"
+               Foreground="#FFC0392B"
+               FontWeight="Bold">
+                    <TextBlock.Style>
+                        <Style TargetType="TextBlock">
+                            <Setter Property="Visibility" Value="Collapsed"/>
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding LineaActiva.RequiereAdmin}" Value="True">
+                                    <Setter Property="Visibility" Value="Visible"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </TextBlock.Style>
+                </TextBlock>
+            </StatusBarItem>
+            <Separator/>
             <StatusBarItem>
                 <TextBlock Text="{Binding Status}"/>
             </StatusBarItem>
@@ -631,6 +652,13 @@ IsEnabled="{Binding EstaEjecutando, Converter={StaticResource InverseBoolConvert
            FontFamily="Consolas"
            FontSize="13"
            VerticalAlignment="Center"/>
+                                                            <TextBlock x:Name="IconoAdmin"
+           Text="🛡"
+           FontSize="11"
+           Margin="4,0,0,0"
+           VerticalAlignment="Center"
+           Visibility="Collapsed"
+           ToolTip="Requiere permisos de administrador"/>
 
                                                             <TextBlock x:Name="TextoDummie"
            Text="{Binding TextoDummy}"
@@ -716,7 +744,10 @@ IsEnabled="{Binding EstaEjecutando, Converter={StaticResource InverseBoolConvert
                                                         <Setter TargetName="IconoLapiz" Property="Visibility" Value="Visible"/>
                                                         <Setter TargetName="BlockRoot" Property="ToolTip" Value = " {Binding Descripcion, StringFormat='{}{0}&#x0A;&#x0A;Doble clic para editar'}"/>
                                                     </DataTrigger>
-
+                                                    <!-- Icono de administrador -->
+                                                    <DataTrigger Binding="{Binding RequiereAdmin}" Value="True">
+                                                        <Setter TargetName="IconoAdmin" Property="Visibility" Value="Visible"/>
+                                                    </DataTrigger>
                                                     <!-- Modo edición: mostrar BlockEdicion, ocultar BlockRoot -->
                                                     <DataTrigger Binding="{Binding EstoyEditando}" Value="True">
                                                         <Setter TargetName="BlockRoot" Property="Visibility" Value="Collapsed"/>

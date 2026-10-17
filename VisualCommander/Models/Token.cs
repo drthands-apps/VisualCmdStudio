@@ -108,6 +108,12 @@ namespace VisualCommander.Models
         /// </summary>
         public object? Origen { get; set; }
 
+        /// <summary>
+        /// ¿Requiere este token permisos de administrador para ejecutarse?
+        /// Solo aplica a tokens de tipo Comando.
+        /// </summary>
+        public bool RequiereAdmin { get; set; }
+
         /// <summary>Texto que se muestra dentro del bloque en la UI.</summary>
         public string TextoMostrado =>
             Tipo == TipoToken.Separador ? "␣" : Texto;

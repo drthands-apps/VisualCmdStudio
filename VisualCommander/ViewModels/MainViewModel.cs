@@ -17,6 +17,7 @@ using VisualCommander.Services;
 System.Text.Encoding.RegisterProvider(
     System.Text.CodePagesEncodingProvider.Instance);
 
+
 namespace VisualCommander.ViewModels
 {
     /// <summary>
@@ -31,6 +32,7 @@ namespace VisualCommander.ViewModels
 
         private readonly Models.Configuracion _configuracion;
         private bool _ignorarSalida;
+
 
         // ==== Catálogo ====
 
@@ -526,7 +528,8 @@ namespace VisualCommander.ViewModels
                 Descripcion = $"{cmd.Resumen}\n{cmd.Descripcion}",
                 Color = cmd.ColorFamilia,
                 Icono = cmd.Icono,
-                Origen = cmd
+                Origen = cmd,
+                RequiereAdmin = cmd.RequiereAdmin
             });
             SetStatus($"Añadido: {cmd.Nombre}");
         }
@@ -802,9 +805,11 @@ namespace VisualCommander.ViewModels
         /// </summary>
         public async Task EjecutarPlanAsync()
         {
-            _ignorarSalida = false;
+            
             if (EstaEjecutando) return;
 
+            _detenerSolicitado = false;
+            _ignorarSalida = false;
             if (Lineas.Count == 0)
             {
                 SetStatus("No hay líneas que ejecutar");
@@ -950,11 +955,12 @@ namespace VisualCommander.ViewModels
 
         private async Task EjecutarInternoAsync(string comando)
         {
+            var linea = LineaActiva;
+            var requiereAdmin = linea.RequiereAdmin;
+
             var psi = new ProcessStartInfo
             {
                 FileName = "cmd.exe",
-                // chcp 65001 cambia la codificación a UTF-8 para que los
-                // acentos se lean correctamente desde nuestra lectura UTF-8.
                 Arguments = "/c chcp 65001 >nul & " + comando,
                 RedirectStandardOutput = true,
                 RedirectStandardError = true,
@@ -965,6 +971,25 @@ namespace VisualCommander.ViewModels
                 WorkingDirectory = DirectorioTrabajo,
             };
 
+            // Si requiere admin, elevar con UAC.
+            if (requiereAdmin)
+            {
+                // UseShellExecute debe ser false para redirigir salida.
+                // Pero para elevar, necesitamos UseShellExecute = true.
+                // No podemos tener ambos.
+
+                // Solución: usar un proceso wrapper que eleve el comando
+                // y capture su salida a un archivo temporal.
+
+                AgregarSalida("⚠ Este comando requiere permisos de administrador.");
+                AgregarSalida("Se solicitará elevación UAC al ejecutar.");
+                AgregarSalida("");
+
+                await EjecutarElevadoAsync(comando);
+                return;
+            }
+
+            // Ejecución normal (sin admin).
             using var proceso = new Process { StartInfo = psi };
             _procesoActual = proceso;
 
@@ -975,7 +1000,7 @@ namespace VisualCommander.ViewModels
             };
             proceso.ErrorDataReceived += (_, e) =>
             {
-                if (e.Data != null)
+                if (e.Data != null && !_ignorarSalida)
                     EncolarSalida("ERR: " + e.Data);
             };
 
@@ -998,12 +1023,202 @@ namespace VisualCommander.ViewModels
         }
 
         /// <summary>
+        /// Ejecuta un comando con elevación UAC.
+        /// Como no podemos redirigir stdout con UAC directamente,
+        /// usamos un archivo temporal para capturar la salida.
+        /// </summary>
+        private async Task EjecutarElevadoAsync(string comando)
+        {
+            _detenerSolicitado = false;
+            
+            // Usar carpeta propia para temporales (más limpio que %TEMP%).
+            var carpetaTemp = System.IO.Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+                "VisualCmdStudio", "temp");
+
+            if (!System.IO.Directory.Exists(carpetaTemp))
+                System.IO.Directory.CreateDirectory(carpetaTemp);
+
+            // Nombre único por ejecución: evita colisiones incluso si algo falla.
+            var idUnico = Guid.NewGuid().ToString("N");
+            var tempOut = System.IO.Path.Combine(carpetaTemp, $"salida_{idUnico}.tmp");
+            var tempErr = System.IO.Path.Combine(carpetaTemp, $"error_{idUnico}.tmp");
+
+            try
+            {
+                var comandoConRedireccion =
+                    $"/c chcp 65001 >nul & ({comando}) > \"{tempOut}\" 2> \"{tempErr}\"";
+
+                var psi = new ProcessStartInfo
+                {
+                    FileName = "cmd.exe",
+                    Arguments = comandoConRedireccion,
+                    UseShellExecute = true,
+                    Verb = "runas",
+                    WorkingDirectory = DirectorioTrabajo,
+                    WindowStyle = ProcessWindowStyle.Hidden
+                };
+
+                using var proceso = new Process { StartInfo = psi };
+                _procesoActual = proceso;
+
+                try
+                {
+                    proceso.Start();
+                }
+                catch (System.ComponentModel.Win32Exception ex) when (ex.NativeErrorCode == 1223)
+                {
+                    AgregarSalida("⚠ Elevación cancelada por el usuario.");
+                    MensajeCmd = "CANCELADO";
+                    SetStatus("Elevación cancelada");
+                    return;
+                }
+                catch (System.ComponentModel.Win32Exception ex)
+                {
+                    AgregarSalida($"⚠ Error al elevar: código={ex.NativeErrorCode}, {ex.Message}");
+                    MensajeCmd = "ERROR";
+                    SetStatus("Error al elevar");
+                    return;
+                }
+
+                // Esperar a que termine (con posibilidad de detener).
+                while (!proceso.HasExited)
+                {
+                    if (_detenerSolicitado)
+                    {
+                        try { proceso.Kill(entireProcessTree: true); } catch { }
+
+                        // Esperar a que el proceso termine DE VERDAD antes de leer/borrar.
+                        try
+                        {
+                            using var cts = new System.Threading.CancellationTokenSource(3000);
+                            await proceso.WaitForExitAsync(cts.Token);
+                        }
+                        catch { }
+
+                        break;
+                    }
+                    await Task.Delay(100);
+                }
+
+                // Leer los archivos de salida (con reintentos por si Windows aún no
+                // ha liberado los handles).
+                await LeerSalidaConReintentos(tempOut, tempErr);
+
+                AgregarSalida("");
+                AgregarSalida($"[Proceso elevado terminado con código {proceso.ExitCode}]");
+
+                MensajeCmd = proceso.ExitCode == 0
+                    ? "EJECUTADO CON ADMIN (código 0)"
+                    : $"EJECUTADO CON ADMIN (código {proceso.ExitCode})";
+
+                SetStatus(proceso.ExitCode == 0
+                    ? "Comando ejecutado con admin correctamente"
+                    : $"El comando elevado devolvió código {proceso.ExitCode}");
+            }
+            finally
+            {
+                // Borrar con reintentos (el proceso puede tardar en liberar los handles).
+                await BorrarConReintentos(tempOut);
+                await BorrarConReintentos(tempErr);
+            }
+        }
+
+        /// <summary>
+        /// Lee los archivos de salida con reintentos. Si un archivo está bloqueado,
+        /// espera un poco y reintenta.
+        /// </summary>
+        private async Task LeerSalidaConReintentos(string tempOut, string tempErr)
+        {
+            // Leer stdout
+            for (int i = 0; i < 5; i++)
+            {
+                try
+                {
+                    if (System.IO.File.Exists(tempOut))
+                    {
+                        var lineas = System.IO.File.ReadAllLines(tempOut);
+                        foreach (var linea in lineas)
+                            AgregarSalida(linea);
+                    }
+                    break;
+                }
+                catch (System.IO.IOException)
+                {
+                    if (i == 4)
+                    {
+                        AgregarSalida($"[No se pudo leer el archivo de salida tras varios intentos]");
+                    }
+                    else
+                    {
+                        await Task.Delay(200);
+                    }
+                }
+            }
+
+            // Leer stderr
+            for (int i = 0; i < 5; i++)
+            {
+                try
+                {
+                    if (System.IO.File.Exists(tempErr))
+                    {
+                        var lineas = System.IO.File.ReadAllLines(tempErr);
+                        foreach (var linea in lineas)
+                            AgregarSalida("ERR: " + linea);
+                    }
+                    break;
+                }
+                catch (System.IO.IOException)
+                {
+                    if (i == 4)
+                    {
+                        AgregarSalida($"[No se pudo leer el archivo de error tras varios intentos]");
+                    }
+                    else
+                    {
+                        await Task.Delay(200);
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Borra un archivo con reintentos. Si está bloqueado, espera y reintenta.
+        /// </summary>
+        private async Task BorrarConReintentos(string ruta)
+        {
+            for (int i = 0; i < 5; i++)
+            {
+                try
+                {
+                    if (System.IO.File.Exists(ruta))
+                        System.IO.File.Delete(ruta);
+                    return;   // Éxito
+                }
+                catch
+                {
+                    if (i < 4)
+                        await Task.Delay(300);
+                }
+            }
+            // Si tras 5 intentos no se ha podido borrar, lo dejamos. Se limpiará en
+            // el próximo arranque.
+        }
+
+        /// <summary>
         /// Ejecuta una línea concreta. Devuelve:
         /// - El código de salida (0 = éxito, otro = error).
         /// - -1 si se ha cancelado por el usuario.
         /// </summary>
         private async Task<int> EjecutarLineaAsync(LineaComando linea)
         {
+            linea.Estado = EstadoEjecucion.Ejecutando;
+
+            if (linea.RequiereAdmin)
+            {
+                return await EjecutarLineaElevadaAsync(linea);
+            }
             linea.Estado = EstadoEjecucion.Ejecutando;
 
             var psi = new ProcessStartInfo
@@ -1056,6 +1271,71 @@ namespace VisualCommander.ViewModels
             {
                 AgregarSalida($"ERROR al ejecutar: {ex.Message}");
                 return -2;
+            }
+        }
+        
+
+        private async Task<int> EjecutarLineaElevadaAsync(LineaComando linea)
+        {
+            var tempOut = System.IO.Path.GetTempFileName();
+            var tempErr = System.IO.Path.GetTempFileName();
+
+            try
+            {
+                AgregarSalida("⚠ Comando con elevación UAC...");
+
+                var comandoConRedireccion =
+                    $"/c chcp 65001 >nul & ({linea.Texto}) > \"{tempOut}\" 2> \"{tempErr}\"";
+
+                var psi = new ProcessStartInfo
+                {
+                    FileName = "cmd.exe",
+                    Arguments = comandoConRedireccion,
+                    UseShellExecute = true,
+                    Verb = "runas",
+                    WorkingDirectory = linea.DirectorioTrabajo,
+                    WindowStyle = ProcessWindowStyle.Hidden
+                };
+
+                using var proceso = new Process { StartInfo = psi };
+                _procesoActual = proceso;
+
+                try
+                {
+                    proceso.Start();
+                }
+                catch (System.ComponentModel.Win32Exception ex)
+                    when (ex.NativeErrorCode == 1223)
+                {
+                    AgregarSalida("⚠ Elevación cancelada por el usuario.");
+                    return -1;
+                }
+
+                while (!proceso.HasExited)
+                {
+                    if (_detenerSolicitado)
+                    {
+                        try { proceso.Kill(entireProcessTree: true); } catch { }
+                        return -1;
+                    }
+                    await Task.Delay(100);
+                }
+
+                try
+                {
+                    if (System.IO.File.Exists(tempOut))
+                        foreach (var l in System.IO.File.ReadAllLines(tempOut)) AgregarSalida(l);
+                    if (System.IO.File.Exists(tempErr))
+                        foreach (var l in System.IO.File.ReadAllLines(tempErr)) AgregarSalida("ERR: " + l);
+                }
+                catch { }
+
+                return proceso.ExitCode;
+            }
+            finally
+            {
+                try { if (System.IO.File.Exists(tempOut)) System.IO.File.Delete(tempOut); } catch { }
+                try { if (System.IO.File.Exists(tempErr)) System.IO.File.Delete(tempErr); } catch { }
             }
         }
 

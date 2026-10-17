@@ -286,6 +286,12 @@ namespace VisualCommander.Models
         }
 
         // ==== API pública (compatible con lo que ya existe) ====
+        /// <summary>
+        /// ¿Requiere esta línea permisos de administrador?
+        /// Es true si algún token de tipo Comando lo requiere.
+        /// </summary>
+        public bool RequiereAdmin =>
+            Tokens.Any(t => t.Tipo == TipoToken.Comando && t.RequiereAdmin);
 
         /// <summary>
         /// Reemplaza el texto por otro y re-proyecta. Es la operación
@@ -441,6 +447,7 @@ namespace VisualCommander.Models
             RecalcularComandoActivo();
             // Después de recalcular Tokens y ComandoActivo:
             RecalcularDummies();
+            OnPropertyChanged(nameof(RequiereAdmin));
         }
 
         private void RecalcularComandoActivo()
