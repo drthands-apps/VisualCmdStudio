@@ -278,3 +278,92 @@ completarse en el futuro; se vuelven a comprobar cada vez.
 **Aplica a**:
 - Ejecutar plan completo (F5).
 - Ejecutar línea individual.
+
+## Fase 3 — Completada (2026-10-15)
+
+### Sistema de dummies guía
+
+**Funcionamiento**:
+- Al insertar un comando con `argumentos` declarados, se generan
+  dummies visuales en el constructor.
+- Los dummies NO están en el texto: son solo visuales.
+- Se recalculan automáticamente tras cada cambio del texto.
+- El usuario los rellena escribiendo o arrastrando.
+- Al rellenarse, el dummie desaparece (el token real lo cubre).
+
+**Visual**:
+- Requeridos: `[origen]` (corchetes), opacidad 0.75, tooltip "Obligatorio".
+- Opcionales: `(mensaje)` (paréntesis), opacidad 0.5, tooltip "Opcional".
+- Borde punteado gris, cursiva, icono rombo hueco.
+
+**Reglas al cerrar**:
+- Requeridos sin rellenar → diálogo `ConfirmarCierreDialog`.
+- Opcionales sin rellenar → se descartan silenciosamente.
+- Modo silencioso → no se pregunta, cierra directamente.
+
+**Aviso pre-ejecución**:
+- Antes de ejecutar (plan o línea), si hay dummies requeridos
+  pendientes o comandos peligrosos, se muestra un diálogo único
+  con ambas secciones.
+- NO se silencia nunca, ni en modo silencioso.
+
+**Modo silencioso**:
+- Menú Herramientas → Modo silencioso.
+- Persiste entre sesiones (`%APPDATA%\VisualCmdStudio\config.json`).
+- Silencia avisos de construcción/edición.
+- NO silencia avisos antes de ejecutar.
+
+### Pendiente (Tier 2)
+- [ ] Indicador visual permanente del modo silencioso.
+- [ ] Relleno inteligente: al arrastrar un token de tipo concreto,
+      colocarlo en el dummie correcto por tipo (no solo en orden).
+- [ ] Marcado de tokens huérfanos al cambiar de comando.
+- [ ] Análisis contextual (REM, ECHO, comillas sin cerrar).
+- [ ] Modificadores siempre detrás del comando al insertarlos.
+- [ ] Encadenar comandos al arrastrar un segundo: auto-insertar `&&`.
+
+
+ ## Principio de diseño: pensar en la maldad ajena (2026-10-17)
+
+Los archivos pueden ser modificados después de crearse. Las firmas
+deben ser verificables criptográficamente.
+
+- Un campo `verificado: true` en texto plano NO aporta seguridad real.
+- Cada programa tiene su propia firma.
+- "Verificado para otro" no significa "verificado para nosotros".
+- La confianza debe ganarse, no declararse.
+
+### Sistema de firma previsto para .vcmd
+
+- Firma RSA-SHA256 del contenido completo.
+- Bloque `firma` opcional con: algoritmo, verificadorId, clavePublica, valor.
+- Al cargar: verificar firma + comprobar si el verificador está en la
+  lista de confianza local (`%APPDATA%\VisualCmdStudio\verificadores.json`).
+- Estados posibles: "Sin verificar", "Verificado por X", "Firmado por
+  verificador desconocido", "Firma inválida (archivo modificado)".
+
+### Prioridad
+Tier 3. La infraestructura queda preparada en el modelo `.vcmd`
+desde hoy (campo `firma` nullable), pero la lógica criptográfica
+se implementa más adelante.
+
+### Compromiso mutuo
+Como asistentes, no ayudamos a usuarios a realizar actividades
+maliciosas. Del mismo modo, diseñamos herramientas que empoderan
+al usuario sin exponerlo a riesgos innecesarios.
+### Fix: EmpujarEditorActivoAlModelo con _editorActivo null (2026-10-17)
+
+**Problema**: al guardar sin haber hecho clic en el campo CMD, `_editorActivo`
+era null y no se empujaba el texto pendiente al modelo.
+
+**Causa**: `_editorActivo` se asigna en `IsVisibleChanged`, que no se dispara
+si el TextBox ya nace visible (al arrancar la app o al cargar una sesión).
+
+**Fix**: buscar el TextBox activo en el árbol visual como fallback.
+Método `EncontrarEditorActivo()` que:
+1. Intenta `_editorActivo` si existe y es visible.
+2. Si no, busca en `PanelLineas` el contenedor de la línea activa
+   y encuentra su TextBox.
+
+**Mejora adicional**: asignar `_editorActivo` también en `GotFocus` del
+TextBox del editor de línea.

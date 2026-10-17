@@ -640,6 +640,29 @@ namespace VisualCommander
                 e.Handled = true;
                 return;
             }
+            // Ctrl+N → nueva sesión
+            if (Keyboard.Modifiers == ModifierKeys.Control && e.Key == Key.N)
+            {
+                NuevaSesion_Click(sender, e);
+                e.Handled = true;
+                return;
+            }
+
+            // Ctrl+O → abrir sesión
+            if (Keyboard.Modifiers == ModifierKeys.Control && e.Key == Key.O)
+            {
+                AbrirSesion_Click(sender, e);
+                e.Handled = true;
+                return;
+            }
+
+            // Ctrl+S → guardar sesión
+            if (Keyboard.Modifiers == ModifierKeys.Control && e.Key == Key.S)
+            {
+                GuardarSesion_Click(sender, e);
+                e.Handled = true;
+                return;
+            }
 
             // ===== Atajos solo cuando el foco NO está en un TextBox =====
 
@@ -801,10 +824,44 @@ namespace VisualCommander
         }
         private void EmpujarEditorActivoAlModelo()
         {
-            if (_editorActivo is null) return;
-            if (_editorActivo.DataContext is not LineaComando linea) return;
+            var tb = EncontrarEditorActivo();
+            if (tb == null)
+            {
+                
+                return;
+            }
+            if (tb.DataContext is not LineaComando linea)
+            {
+                
+                return;
+            }
 
-            EmpujarTextoAlModelo(_editorActivo, linea);
+            
+
+            EmpujarTextoAlModelo(tb, linea);
+        }
+
+        private TextBox? EncontrarEditorActivo()
+        {
+            // Primero intentamos con el campo guardado.
+            if (_editorActivo != null && _editorActivo.IsVisible)
+                return _editorActivo;
+
+            // Fallback: buscar en el árbol visual.
+            var itemsControl = PanelLineas;
+            if (itemsControl == null) return null;
+
+            var generador = itemsControl.ItemContainerGenerator;
+            foreach (var item in itemsControl.Items)
+            {
+                if (item is not LineaComando linea || !linea.EsActiva) continue;
+
+                var contenedor = generador.ContainerFromItem(item) as DependencyObject;
+                if (contenedor == null) continue;
+
+                return FindVisualChild<TextBox>(contenedor);
+            }
+            return null;
         }
         private void GuardarBat_Click(object sender, RoutedEventArgs e)
         {
@@ -874,7 +931,11 @@ namespace VisualCommander
                 tb.SelectAll();
             }), System.Windows.Threading.DispatcherPriority.ApplicationIdle);
         }
-
+        private void EditorInPlace_GotFocus(object sender, RoutedEventArgs e)
+        {
+            if (sender is TextBox tb)
+                _editorActivo = tb;
+        }
         private void EditorInPlace_PreviewKeyDown(object sender, KeyEventArgs e)
         {
             if (sender is not TextBox tb) return;
@@ -979,6 +1040,97 @@ namespace VisualCommander
 
             ViewModel.AgregarTextoVacio();
             EnfocarEditorInPlace();
+        }
+        // ==== Sesiones .vcmd ====
+
+        private string? _rutaSesionActual;
+
+        private void NuevaSesion_Click(object sender, RoutedEventArgs e)
+        {
+            // TODO futuro: preguntar si guardar cambios pendientes.
+
+            ViewModel.NuevaSesionVacia();
+            _rutaSesionActual = null;
+            ActualizarTituloVentana();
+        }
+
+        private void AbrirSesion_Click(object sender, RoutedEventArgs e)
+        {
+            var dlg = new Microsoft.Win32.OpenFileDialog
+            {
+                Title = "Abrir sesión",
+                Filter = Services.SesionService.Filtro,
+                DefaultExt = Services.SesionService.Extension
+            };
+
+            if (dlg.ShowDialog() == true)
+            {
+                if (ViewModel.CargarSesion(dlg.FileName))
+                {
+                    _rutaSesionActual = dlg.FileName;
+                    ActualizarTituloVentana();
+                }
+            }
+        }
+
+        private void GuardarSesion_Click(object sender, RoutedEventArgs e)
+        {
+            // Empujar el texto del TextBox activo al modelo antes de guardar.
+            EmpujarEditorActivoAlModelo();
+
+            if (!string.IsNullOrEmpty(_rutaSesionActual))
+            {
+                ViewModel.GuardarSesion(_rutaSesionActual);
+                return;
+            }
+
+            GuardarSesionComo_Click(sender, e);
+        }
+
+        private void GuardarSesionComo_Click(object sender, RoutedEventArgs e)
+        {
+            // Empujar el texto del TextBox activo al modelo antes de guardar.
+            EmpujarEditorActivoAlModelo();
+
+            var dlg = new Microsoft.Win32.SaveFileDialog
+            {
+                Title = "Guardar sesión como",
+                Filter = Services.SesionService.Filtro,
+                DefaultExt = Services.SesionService.Extension,
+                FileName = string.IsNullOrEmpty(_rutaSesionActual)
+                    ? "sesion" + Services.SesionService.Extension
+                    : System.IO.Path.GetFileName(_rutaSesionActual)
+            };
+
+            if (dlg.ShowDialog() == true)
+            {
+                if (ViewModel.GuardarSesion(dlg.FileName))
+                {
+                    _rutaSesionActual = dlg.FileName;
+                    ActualizarTituloVentana();
+                }
+            }
+        }
+
+                   
+               private void ActualizarTituloVentana()
+        {
+            var nombreBase = "Visual CMD Studio — Constructor visual de línea de comandos";
+
+            if (!string.IsNullOrEmpty(_rutaSesionActual))
+            {
+                var nombreArchivo = System.IO.Path.GetFileName(_rutaSesionActual);
+                Title = $"{nombreArchivo} — {nombreBase}";
+            }
+            else
+            {
+                Title = nombreBase;
+            }
+        }
+        private void Salir_Click(object sender, RoutedEventArgs e)
+        {
+            // TODO futuro: preguntar si guardar cambios pendientes.
+            Close();
         }
     }
 }

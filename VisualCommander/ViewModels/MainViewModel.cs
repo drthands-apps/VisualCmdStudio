@@ -11,6 +11,7 @@ using System.Windows;
 using System.Windows.Data;
 using VisualCommander.Collections;
 using VisualCommander.Models;
+using VisualCommander.Services;
 
 // Registrar el provider de codificaciones antiguas (ANSI 1252, etc.)
 System.Text.Encoding.RegisterProvider(
@@ -1346,6 +1347,137 @@ namespace VisualCommander.ViewModels
                     : "Modo silencioso desactivado");
             }
 
+        }
+        /// <summary>
+        /// Guarda la sesión actual en el archivo indicado.
+        /// Devuelve true si se guardó correctamente.
+        /// </summary>
+        public bool GuardarSesion(string ruta, string? creador = null)
+        {
+            try
+            {
+                var sesion = new SesionVcmd
+                {
+                    Creador = creador ?? Environment.UserName,
+                    ModoSilencioso = ModoSilencioso,
+                    LineaActivaIndice = Math.Max(0, Lineas.IndexOf(LineaActiva)),
+                    Lineas = new List<LineaSesion>()
+                };
+
+                // Solo guardar líneas con contenido.
+                foreach (var linea in Lineas)
+                {
+                    if (string.IsNullOrWhiteSpace(linea.Texto))
+                        continue;
+
+                    sesion.Lineas.Add(new LineaSesion
+                    {
+                        DirectorioTrabajo = linea.DirectorioTrabajo,
+                        Comando = linea.Texto
+                    });
+                }
+
+                // Ajustar el índice de la línea activa si algunas líneas se omitieron.
+                if (sesion.Lineas.Count == 0)
+                {
+                    // Si todas estaban vacías, guardamos una sesión vacía válida.
+                    sesion.LineaActivaIndice = 0;
+                }
+                else if (sesion.LineaActivaIndice >= sesion.Lineas.Count)
+                {
+                    // Si la activa estaba más allá de las líneas guardadas, ajustar.
+                    sesion.LineaActivaIndice = sesion.Lineas.Count - 1;
+                }
+
+                SesionService.Guardar(ruta, sesion);
+
+                SetStatus($"Sesión guardada: {ruta}");
+                return true;
+            }
+            catch (Exception ex)
+            {
+                SetStatus($"Error al guardar la sesión: {ex.Message}");
+                return false;
+            }
+        }
+        /// <summary>
+        /// Carga una sesión desde el archivo indicado.
+        /// Reemplaza el contenido actual del editor.
+        /// Devuelve true si se cargó correctamente.
+        /// </summary>
+        public bool CargarSesion(string ruta)
+        {
+            try
+            {
+                var sesion = SesionService.Cargar(ruta);
+                if (sesion == null)
+                {
+                    SetStatus($"No se pudo leer el archivo: {ruta}");
+                    return false;
+                }
+
+                // Limpiar el estado actual.
+                Lineas.Clear();
+
+                // Reconstruir las líneas (si hay).
+                if (sesion.Lineas != null)
+                {
+                    foreach (var lineaSesion in sesion.Lineas)
+                    {
+                        var linea = new LineaComando
+                        {
+                            DirectorioTrabajo = string.IsNullOrWhiteSpace(lineaSesion.DirectorioTrabajo)
+                                ? Environment.CurrentDirectory
+                                : lineaSesion.DirectorioTrabajo
+                        };
+
+                        linea.ActualizarDesdeTexto(lineaSesion.Comando ?? "");
+                        linea.ConfirmarEstado();
+
+                        Lineas.Add(linea);
+                    }
+                }
+
+                // Si no se cargó ninguna línea, crear una vacía.
+                if (Lineas.Count == 0)
+                {
+                    var vacia = new LineaComando();
+                    vacia.ConfirmarEstado();
+                    Lineas.Add(vacia);
+                }
+
+                // Activar la línea que estaba activa al guardar.
+                int indiceActiva = Math.Clamp(sesion.LineaActivaIndice, 0, Lineas.Count - 1);
+                LineaActiva = Lineas[indiceActiva];
+                LineaActiva.EsActiva = true;
+
+                // Restaurar el modo silencioso.
+                ModoSilencioso = sesion.ModoSilencioso;
+
+                SetStatus($"Sesión cargada: {ruta}");
+                return true;
+            }
+            catch (Exception ex)
+            {
+                SetStatus($"Error al cargar la sesión: {ex.Message}");
+                return false;
+            }
+        }
+        /// <summary>
+        /// Crea una nueva sesión vacía con una sola línea en blanco.
+        /// </summary>
+        public void NuevaSesionVacia()
+        {
+            Lineas.Clear();
+
+            var primera = new LineaComando();
+            primera.EsActiva = true;
+            primera.ConfirmarEstado();
+
+            Lineas.Add(primera);
+            LineaActiva = primera;
+
+            SetStatus("Nueva sesión");
         }
     }
 }

@@ -176,17 +176,17 @@
         <!-- Menú superior -->
         <Menu DockPanel.Dock="Top">
             <MenuItem Header="_Archivo">
-                <MenuItem Header="Nueva sesión"          InputGestureText="Ctrl+N"/>
-                <MenuItem Header="Abrir sesión..."       InputGestureText="Ctrl+O"/>
+                <MenuItem Header="Nueva sesión" InputGestureText="Ctrl+N" Click="NuevaSesion_Click"/>
+                <MenuItem Header="Abrir sesión..." InputGestureText="Ctrl+O" Click="AbrirSesion_Click"/>
                 <Separator/>
-                <MenuItem Header="Guardar sesión"        InputGestureText="Ctrl+S"/>
-                <MenuItem Header="Guardar sesión como..."/>
+                <MenuItem Header="Guardar sesión" InputGestureText="Ctrl+S" Click="GuardarSesion_Click"/>
+                <MenuItem Header="Guardar sesión como..." Click="GuardarSesionComo_Click"/>
                 <Separator/>
-                <MenuItem Header="Exportar como .bat..."/>
-                <MenuItem Header="Exportar como .ps1..."/>
-                <MenuItem Header="Exportar como .cmd..."/>
+                <MenuItem Header="Exportar como .bat..." Click="GuardarBat_Click"/>
+                <MenuItem Header="Exportar como .ps1..." IsEnabled="False"/>
+                <MenuItem Header="Exportar como .cmd..." IsEnabled="False"/>
                 <Separator/>
-                <MenuItem Header="Salir"                 InputGestureText="Alt+F4"/>
+                <MenuItem Header="Salir" InputGestureText="Alt+F4" Click="Salir_Click"/>
             </MenuItem>
 
             <MenuItem Header="_Editar">
@@ -691,6 +691,7 @@ IsEnabled="{Binding EstaEjecutando, Converter={StaticResource InverseBoolConvert
          IsReadOnly="False"
          IsEnabled="True"
          Focusable="True"
+         GotFocus="EditorInPlace_GotFocus"                                                 
          PreviewKeyDown="EditorInPlace_PreviewKeyDown"
          LostFocus="EditorInPlace_LostFocus"
          IsVisibleChanged="EditorInPlace_IsVisibleChanged"/>
