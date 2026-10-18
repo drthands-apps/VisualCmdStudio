@@ -1775,6 +1775,31 @@ namespace VisualCommander.ViewModels
                     System.Windows.MessageBoxImage.Error);
             }
         }
+        
+
+        /// <summary>
+        /// Exporta el plan actual como archivo .sh (Bash) para revisión.
+        /// </summary>
+        public void ExportarASh(string ruta, OpcionesExportacionSh opciones)
+        {
+            try
+            {
+                var contenido = ExportadorSh.GenerarContenido(Lineas, opciones);
+                ExportadorSh.GuardarEnArchivo(ruta, contenido);
+
+                SetStatus($"Exportado (para revisión): {ruta}");
+            }
+            catch (Exception ex)
+            {
+                SetStatus($"Error al exportar: {ex.Message}");
+                System.Windows.MessageBox.Show(
+                    $"No se pudo exportar el archivo:\n{ex.Message}",
+                    "Error de exportación",
+                    System.Windows.MessageBoxButton.OK,
+                    System.Windows.MessageBoxImage.Error);
+            }
+        }
+
 
         /// <summary>
         /// Nombre sugerido para el archivo de exportación.
@@ -1789,5 +1814,11 @@ namespace VisualCommander.ViewModels
           /// <summary>Nombre sugerido para el archivo de exportación .cmd.</summary>
         public string NombreSugeridoCmd =>
             $"plan_{DateTime.Now:yyyyMMdd_HHmmss}.cmd";
+
+        /// <summary>Nombre sugerido para el archivo de exportación .sh.</summary>
+        public string NombreSugeridoSh =>
+            $"plan_{DateTime.Now:yyyyMMdd_HHmmss}.sh";
+
+
     }
 }

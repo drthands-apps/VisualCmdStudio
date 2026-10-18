@@ -658,13 +658,22 @@ namespace VisualCommander
                 return;
             }
 
-            // Ctrl+S → guardar sesión
+            // Ctrl+Shift+S → Guardar como
+            if (Keyboard.Modifiers == (ModifierKeys.Control | ModifierKeys.Shift) && e.Key == Key.S)
+            {
+                GuardarSesionComo_Click(sender, e);
+                e.Handled = true;
+                return;
+            }
+
+            // Ctrl+S → Guardar sesión
             if (Keyboard.Modifiers == ModifierKeys.Control && e.Key == Key.S)
             {
                 GuardarSesion_Click(sender, e);
                 e.Handled = true;
                 return;
             }
+
 
             // ===== Atajos solo cuando el foco NO está en un TextBox =====
 
@@ -1182,6 +1191,35 @@ namespace VisualCommander
             if (dialogo.ShowDialog() == true)
             {
                 ViewModel.ExportarAPs1(dialogo.RutaSeleccionada, dialogo.Opciones);
+            }
+        }
+        private void GuardarSh_Click(object sender, RoutedEventArgs e)
+        {
+            EmpujarEditorActivoAlModelo();
+
+            var lineasConTexto = ViewModel.Lineas
+                .Where(l => !string.IsNullOrWhiteSpace(l.Texto))
+                .ToList();
+
+            if (lineasConTexto.Count == 0)
+            {
+                ViewModel.SetStatus("No hay nada que exportar");
+                MessageBox.Show("El plan está vacío. Añade al menos una línea con comandos.",
+                    "Nada que exportar", MessageBoxButton.OK, MessageBoxImage.Information);
+                return;
+            }
+
+            var escritorio = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
+            var rutaSugerida = System.IO.Path.Combine(escritorio, ViewModel.NombreSugeridoSh);
+
+            var dialogo = new DialogoExportarSh(ViewModel.Lineas, rutaSugerida)
+            {
+                Owner = this
+            };
+
+            if (dialogo.ShowDialog() == true)
+            {
+                ViewModel.ExportarASh(dialogo.RutaSeleccionada, dialogo.Opciones);
             }
         }
     }

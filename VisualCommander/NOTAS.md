@@ -411,3 +411,46 @@ Ambos se ejecutan con `cmd.exe` y producen el mismo resultado.
 
 **Decisión**: reutilizar `ExportadorBat` con un parámetro de extensión.
 El contenido es idéntico; solo cambia el nombre del archivo.
+
+### A4-sh — Exportar a .sh (para revisión) (2026-10-18)
+
+**Concepto**: generar un archivo .sh con los comandos tal cual + advertencia
+clara de que son comandos de Windows y no funcionan en Bash nativo.
+
+**Características**:
+- Shebang `#!/bin/bash`.
+- Cabecera de metadatos (comentarios con `#`).
+- Advertencia sobre comandos de Windows + tabla de traducciones típicas.
+- Directorio de trabajo comentado (las rutas de Windows no funcionan en Bash).
+- Comandos tal cual, sin traducir.
+- Saltos de línea **LF** (obligatorio para Bash).
+- Codificación **UTF-8 sin BOM** (Bash no quiere BOM).
+
+**Filosofía**: es un punto de partida para que el usuario lo adapte,
+no un script ejecutable directamente.
+
+**Futuro (Tier 3/4)**:
+- Módulo traductor de comandos (`dir` → `ls`, `copy` → `cp`...).
+- Evaluar viabilidad técnica y coste.
+- Alternativa: generar `.sh` con comandos ya traducidos.
+
+**Nota**: la traducción automática tiene limitaciones. No todos los
+comandos de Windows tienen equivalente directo en Bash. Requiere
+análisis caso por caso.
+
+
+## Plan próximo (2026-10-18)
+
+### Orden de trabajo
+1. **Terminar la interfaz**: acabar todas las funciones del menú.
+2. **Ampliar los tokens** de la zona derecha (comandos, operadores, variables, plantillas).
+3. **Modularizar el catálogo**: JSON por familias, añadir/eliminar sin recompilar.
+
+### Prioridad
+Interfaz completa antes de features avanzadas.
+
+### Catálogo modular (idea)
+- Un archivo JSON por familia (Archivos.json, Red.json...).
+- Un index que los carga todos.
+- El usuario puede añadir/eliminar archivos sin tocar código.
+- Los plugins futuros podrían usar el mismo sistema.

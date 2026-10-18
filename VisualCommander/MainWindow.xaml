@@ -180,11 +180,12 @@
                 <MenuItem Header="Abrir sesión..." InputGestureText="Ctrl+O" Click="AbrirSesion_Click"/>
                 <Separator/>
                 <MenuItem Header="Guardar sesión" InputGestureText="Ctrl+S" Click="GuardarSesion_Click"/>
-                <MenuItem Header="Guardar sesión como..." Click="GuardarSesionComo_Click"/>
+                <MenuItem Header="Guardar sesión como..." InputGestureText="Ctrl+Shift+S" Click="GuardarSesionComo_Click"/>
                 <Separator/>
                 <MenuItem Header="Exportar como .bat..." Click="GuardarBat_Click"/>
                 <MenuItem Header="Exportar como .ps1..." Click="GuardarPs1_Click"/>
                 <MenuItem Header="Exportar como .cmd..." Click="GuardarCmd_Click"/>
+                <MenuItem Header="Exportar como .sh..." Click="GuardarSh_Click"/>
                 <Separator/>
                 <MenuItem Header="Salir" InputGestureText="Alt+F4" Click="Salir_Click"/>
             </MenuItem>
