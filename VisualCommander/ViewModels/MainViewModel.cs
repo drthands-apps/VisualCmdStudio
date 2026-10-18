@@ -1576,12 +1576,6 @@ namespace VisualCommander.ViewModels
         }
 
         /// <summary>
-        /// Nombre sugerido para el archivo de exportación.
-        /// </summary>
-        public string NombreSugeridoBat =>
-            $"plan_{DateTime.Now:yyyyMMdd_HHmmss}.bat";
-
-        /// <summary>
         /// Comprueba si la línea activa puede cerrarse.
         /// Si tiene dummies requeridos, muestra un diálogo de confirmación.
         /// Devuelve true si el usuario decide continuar con el cierre.
@@ -1759,5 +1753,41 @@ namespace VisualCommander.ViewModels
 
             SetStatus("Nueva sesión");
         }
+        /// <summary>
+        /// Exporta el plan actual como archivo .ps1 (PowerShell).
+        /// </summary>
+        public void ExportarAPs1(string ruta, OpcionesExportacionPs1 opciones)
+        {
+            try
+            {
+                var contenido = ExportadorPs1.GenerarContenido(Lineas, opciones);
+                ExportadorPs1.GuardarEnArchivo(ruta, contenido);
+
+                SetStatus($"Exportado a: {ruta}");
+            }
+            catch (Exception ex)
+            {
+                SetStatus($"Error al exportar: {ex.Message}");
+                System.Windows.MessageBox.Show(
+                    $"No se pudo exportar el archivo:\n{ex.Message}",
+                    "Error de exportación",
+                    System.Windows.MessageBoxButton.OK,
+                    System.Windows.MessageBoxImage.Error);
+            }
+        }
+
+        /// <summary>
+        /// Nombre sugerido para el archivo de exportación.
+        /// </summary>
+        public string NombreSugeridoBat =>
+            $"plan_{DateTime.Now:yyyyMMdd_HHmmss}.bat";
+      
+        /// <summary>Nombre sugerido para el archivo de exportación .ps1.</summary>
+        public string NombreSugeridoPs1 =>
+            $"plan_{DateTime.Now:yyyyMMdd_HHmmss}.ps1";
+
+          /// <summary>Nombre sugerido para el archivo de exportación .cmd.</summary>
+        public string NombreSugeridoCmd =>
+            $"plan_{DateTime.Now:yyyyMMdd_HHmmss}.cmd";
     }
 }

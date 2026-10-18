@@ -183,8 +183,8 @@
                 <MenuItem Header="Guardar sesión como..." Click="GuardarSesionComo_Click"/>
                 <Separator/>
                 <MenuItem Header="Exportar como .bat..." Click="GuardarBat_Click"/>
-                <MenuItem Header="Exportar como .ps1..." IsEnabled="False"/>
-                <MenuItem Header="Exportar como .cmd..." IsEnabled="False"/>
+                <MenuItem Header="Exportar como .ps1..." Click="GuardarPs1_Click"/>
+                <MenuItem Header="Exportar como .cmd..." Click="GuardarCmd_Click"/>
                 <Separator/>
                 <MenuItem Header="Salir" InputGestureText="Alt+F4" Click="Salir_Click"/>
             </MenuItem>

@@ -11,28 +11,44 @@ namespace VisualCommander
         private readonly System.Collections.Generic.IList<LineaComando> _lineas;
         private readonly string _rutaSugerida;
 
+        private readonly string _extension = ".bat";
+
         public string RutaSeleccionada => TxtRuta.Text;
         public OpcionesExportacionBat Opciones { get; private set; } = new();
 
         public DialogoExportarBat(
-            System.Collections.Generic.IList<LineaComando> lineas,
-            string rutaSugerida)
+            IList<LineaComando> lineas,
+            string rutaSugerida,
+            string extension = ".bat")
         {
             InitializeComponent();
+
             _lineas = lineas;
             _rutaSugerida = rutaSugerida;
+            _extension = extension;
+
             TxtRuta.Text = rutaSugerida;
+
+            // Ajustar título según extensión.
+            if (extension == ".cmd")
+                Title = "Exportar como archivo CMD";
+            else
+                Title = "Exportar como archivo batch";
 
             ActualizarPreview();
         }
 
         private void Examinar_Click(object sender, RoutedEventArgs e)
         {
+            var filtro = _extension == ".cmd"
+                ? "Scripts CMD (*.cmd)|*.cmd|Todos los archivos (*.*)|*.*"
+                : "Archivos batch (*.bat)|*.bat|Todos los archivos (*.*)|*.*";
+
             var dlg = new Microsoft.Win32.SaveFileDialog
             {
-                Title = "Guardar archivo batch",
-                Filter = "Archivos batch (*.bat)|*.bat|Todos los archivos (*.*)|*.*",
-                DefaultExt = ".bat",
+                Title = $"Guardar archivo {_extension}",
+                Filter = filtro,
+                DefaultExt = _extension,
                 FileName = Path.GetFileName(_rutaSugerida),
                 InitialDirectory = Path.GetDirectoryName(_rutaSugerida)
             };

@@ -867,7 +867,19 @@ namespace VisualCommander
         }
         private void GuardarBat_Click(object sender, RoutedEventArgs e)
         {
-            // Verificamos que hay algo que exportar.
+            ExportarBatch(".bat");
+        }
+
+        private void GuardarCmd_Click(object sender, RoutedEventArgs e)
+        {
+            ExportarBatch(".cmd");
+        }
+
+        private void ExportarBatch(string extension)
+        {
+            // Empujar el texto del TextBox activo al modelo antes de guardar.
+            EmpujarEditorActivoAlModelo();
+
             var lineasConTexto = ViewModel.Lineas
                 .Where(l => !string.IsNullOrWhiteSpace(l.Texto))
                 .ToList();
@@ -880,11 +892,13 @@ namespace VisualCommander
                 return;
             }
 
-            // Ruta sugerida: carpeta del escritorio, o la última usada.
             var escritorio = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
-            var rutaSugerida = System.IO.Path.Combine(escritorio, ViewModel.NombreSugeridoBat);
+            var nombreSugerido = extension == ".cmd"
+                ? ViewModel.NombreSugeridoCmd
+                : ViewModel.NombreSugeridoBat;
+            var rutaSugerida = System.IO.Path.Combine(escritorio, nombreSugerido);
 
-            var dialogo = new DialogoExportarBat(ViewModel.Lineas, rutaSugerida)
+            var dialogo = new DialogoExportarBat(ViewModel.Lineas, rutaSugerida, extension)
             {
                 Owner = this
             };
@@ -1049,6 +1063,8 @@ namespace VisualCommander
 
         private void NuevaSesion_Click(object sender, RoutedEventArgs e)
         {
+            // Empujar el texto del TextBox activo al modelo antes de guardar.
+            EmpujarEditorActivoAlModelo();                      
             // TODO futuro: preguntar si guardar cambios pendientes.
 
             ViewModel.NuevaSesionVacia();
@@ -1138,6 +1154,35 @@ namespace VisualCommander
         {
             // Aquí podrías mostrar un indicador visual en la barra de estado.
             // Por simplicidad, lo mostramos como parte del texto del prompt.
+        }
+        private void GuardarPs1_Click(object sender, RoutedEventArgs e)
+        {
+            // Empujar el texto del TextBox activo al modelo antes de guardar.
+            EmpujarEditorActivoAlModelo();
+            var lineasConTexto = ViewModel.Lineas
+                .Where(l => !string.IsNullOrWhiteSpace(l.Texto))
+                .ToList();
+
+            if (lineasConTexto.Count == 0)
+            {
+                ViewModel.SetStatus("No hay nada que exportar");
+                MessageBox.Show("El plan está vacío. Añade al menos una línea con comandos.",
+                    "Nada que exportar", MessageBoxButton.OK, MessageBoxImage.Information);
+                return;
+            }
+
+            var escritorio = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
+            var rutaSugerida = System.IO.Path.Combine(escritorio, ViewModel.NombreSugeridoPs1);
+
+            var dialogo = new DialogoExportarPs1(ViewModel.Lineas, rutaSugerida)
+            {
+                Owner = this
+            };
+
+            if (dialogo.ShowDialog() == true)
+            {
+                ViewModel.ExportarAPs1(dialogo.RutaSeleccionada, dialogo.Opciones);
+            }
         }
     }
 }

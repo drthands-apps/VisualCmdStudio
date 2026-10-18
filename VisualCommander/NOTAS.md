@@ -367,3 +367,47 @@ Método `EncontrarEditorActivo()` que:
 
 **Mejora adicional**: asignar `_editorActivo` también en `GotFocus` del
 TextBox del editor de línea.
+### A1 completada (2026-10-17)
+
+**Funcionamiento**:
+- Comandos con `requiereAdmin: true` en JSON piden UAC al ejecutar.
+- La app corre sin privilegios; cada comando admin eleva puntualmente.
+- Salida capturada a archivos temporales (UAC no permite pipes).
+- Detener funciona correctamente.
+- Escape durante ejecución también detiene.
+
+**Indicadores visuales**:
+- 🛡 en el bloque del comando admin.
+- Aviso rojo en la barra de estado si la línea activa requiere admin.
+
+**Limitación conocida**: la salida del comando elevado no es en vivo
+(se lee al terminar). Aceptable para comandos largos (sfc, chkdsk).
+Futuro: ConPTY.
+
+**Archivos temporales**: `%LOCALAPPDATA%\VisualCmdStudio\temp\` con GUID único.
+Limpieza de restos al arrancar.
+
+### A4 — Fix de empujón pendiente (2026-10-18)
+
+Añadir `EmpujarEditorActivoAlModelo()` al principio de `GuardarPs1_Click`
+para conservar el texto pendiente en el campo CMD.
+
+**Aplicar también a `GuardarBat_Click`** si no lo tiene.
+
+**Verificado**: acentos y ñ funcionan correctamente (UTF-8 con BOM).
+
+### .bat vs .cmd — Decisión técnica (2026-10-18)
+
+**En Windows moderno (NT en adelante), son funcionalmente idénticos.**
+Ambos se ejecutan con `cmd.exe` y producen el mismo resultado.
+
+**Diferencias reales**:
+1. Histórica: `.bat` viene de MS-DOS; `.cmd` de Windows NT.
+2. Técnica (irrelevante para nosotros): `.cmd` resetea `ERRORLEVEL` a 0
+   tras ciertos comandos internos (`SET`, `PATH`...) con éxito; `.bat`
+   solo lo modifica en error.
+3. Prioridad: si existen ambos con el mismo nombre, `PATHEXT` prioriza
+   `.BAT` sobre `.CMD`.
+
+**Decisión**: reutilizar `ExportadorBat` con un parámetro de extensión.
+El contenido es idéntico; solo cambia el nombre del archivo.
