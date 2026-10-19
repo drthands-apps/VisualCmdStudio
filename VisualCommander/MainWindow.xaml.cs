@@ -217,6 +217,51 @@ namespace VisualCommander
         }
         private Point _posInicialDragMod;
 
+        private void Modificador_MouseEnter(object sender, MouseEventArgs e)
+        {
+            if (sender is FrameworkElement fe && fe.DataContext is ParametroVista pv)
+            {
+                MostrarInfoModificador(pv);
+            }
+        }
+
+        private void Modificador_MouseLeave(object sender, MouseEventArgs e)
+        {
+            OcultarInfoModificador();
+        }
+
+        private void MostrarInfoModificador(ParametroVista pv)
+        {
+            // Nombre
+            InfoModificadorNombre.Text = pv.Nombre;
+            InfoModificadorNombre.Visibility = Visibility.Visible;
+
+            // Descripción
+            InfoModificadorDescripcion.Text = pv.Descripcion;
+            InfoModificadorDescripcion.Visibility = Visibility.Visible;
+
+            // Valores posibles
+            if (pv.Parametro.ValoresPosibles != null && pv.Parametro.ValoresPosibles.Length > 0)
+            {
+                InfoModificadorValores.Text = string.Join(", ", pv.Parametro.ValoresPosibles);
+                PanelValoresPosibles.Visibility = Visibility.Visible;
+            }
+            else
+            {
+                PanelValoresPosibles.Visibility = Visibility.Collapsed;
+            }
+
+            // Ocultar mensaje "sin modificador"
+            InfoSinModificador.Visibility = Visibility.Collapsed;
+        }
+
+        private void OcultarInfoModificador()
+        {
+            InfoModificadorNombre.Visibility = Visibility.Collapsed;
+            InfoModificadorDescripcion.Visibility = Visibility.Collapsed;
+            PanelValoresPosibles.Visibility = Visibility.Collapsed;
+            InfoSinModificador.Visibility = Visibility.Visible;
+        }
         private void Modificador_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
             _posInicialDragMod = e.GetPosition(null);
@@ -1499,6 +1544,49 @@ namespace VisualCommander
                     ViewModel.InsertarTextoEnPosicion(variable, ViewModel.LineaActiva.Tokens.Count);
                 }
             }
+        }
+        // ==== Hover del modificador (panel derecho) ====
+
+       
+
+       
+       
+
+        // ==== Insertar variables/constantes/comodines ====
+
+        private void ListaVariables_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (ListaVariables.SelectedItem is ListBoxItem item && item.Content is string variable)
+            {
+                InsertarTextoEnLinea(variable);
+                ListaVariables.SelectedItem = null;   // Reset para permitir volver a seleccionar
+            }
+        }
+
+        private void ListaConstantes_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (ListaConstantes.SelectedItem is ListBoxItem item && item.Content is string constante)
+            {
+                InsertarTextoEnLinea(constante);
+                ListaConstantes.SelectedItem = null;
+            }
+        }
+
+        private void ListaComodines_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (ListaComodines.SelectedItem is ListBoxItem item && item.Tag is string comodin)
+            {
+                InsertarTextoEnLinea(comodin);
+                ListaComodines.SelectedItem = null;
+            }
+        }
+
+        /// <summary>Inserta un texto al final de la línea activa.</summary>
+        private void InsertarTextoEnLinea(string texto)
+        {
+            EmpujarEditorActivoAlModelo();
+            ViewModel.InsertarTextoEnPosicion(texto, ViewModel.LineaActiva.Tokens.Count);
+            EnfocarEditorActivo();
         }
     }
 }

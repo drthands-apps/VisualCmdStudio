@@ -483,3 +483,14 @@ Compartir DataContext = MainViewModel.
 
 **Prioridad**: Alta, cuando la UI esté estable.
 **Razón**: MainWindow.xaml tiene 2000+ líneas. Difícil de mantener.
+
+### Modos de trabajo (pendiente)
+
+Los radio buttons del panel izquierdo están en el XAML pero no conectados.
+Cuando se implementen:
+- Comando a comando: comportamiento actual.
+- Generar archivo batch: enfocar el flujo hacia exportar .bat.
+- Script PowerShell: enfocar hacia .ps1.
+- Modo aprendizaje: mostrar más explicaciones, ocultar opciones avanzadas.
+
+Prioridad: Tier 2.

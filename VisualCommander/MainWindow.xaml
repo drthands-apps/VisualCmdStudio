@@ -363,85 +363,103 @@ IsEnabled="{Binding EstaEjecutando, Converter={StaticResource InverseBoolConvert
                 <ColumnDefinition Width="330" MinWidth="250"/>
             </Grid.ColumnDefinitions>
 
-            <!-- Panel izquierdo -->
-            <Grid x:Name="PanelIzquierdo" Grid.Column="0" Margin="3">
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="2*"   MinHeight="120"/>
-                    <!-- Lista    -->
-                    <RowDefinition Height="5"/>
-                    <RowDefinition Height="1*"   MinHeight="60"/>
-                    <!-- Descrip. -->
-                    <RowDefinition Height="5"/>
-                    <RowDefinition Height="1.5*" MinHeight="80"/>
-                    <!-- Árbol    -->
-                </Grid.RowDefinitions>
+                    <!-- Panel izquierdo -->
+                    <Grid x:Name="PanelIzquierdo" Grid.Column="0" Margin="3">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" MinHeight="90"/>
+                            <!-- Modo de trabajo -->
+                            <RowDefinition Height="5"/>
+                            <!-- Separador -->
+                            <RowDefinition Height=".4*"   MinHeight="40"/>
+                            <!-- Buscador -->
+                            <RowDefinition Height="5"/>
+                            <!-- Separador -->
+                            <RowDefinition Height="2*"   MinHeight="100"/>
+                            <!-- Lista comandos -->
+                            <RowDefinition Height="5"/>
+                            <!-- Separador -->
+                            <RowDefinition Height="Auto"   MinHeight="80"/>
+                            <!-- Modificadores -->
+                            <RowDefinition Height="5"/>
+                            <!-- Separador -->
+                            <RowDefinition Height="2*" MinHeight="120"/>
+                            <!-- Árbol -->
+                        </Grid.RowDefinitions>
 
-                        <Border Grid.Row="0" Style="{StaticResource Pane}">
-                            <DockPanel>
-                                <TextBlock DockPanel.Dock="Top"
-                   Text="{Binding LineaActiva.TituloModificadores}"
-                   Style="{StaticResource SectionHeader}"/>
-                                <ScrollViewer VerticalScrollBarVisibility="Auto">
-                                    <ItemsControl x:Name="ListaModificadores"
-                                        ItemsSource="{Binding LineaActiva.Modificadores}"
-                                        Margin="10,6">
-                                        <ItemsControl.ItemTemplate>
-                                            <DataTemplate>
-                                                <Border x:Name="ItemModificador"
-                    Background="Transparent"
-                    Padding="2,1"
-                    Cursor="Hand"
-                    PreviewMouseLeftButtonDown="Modificador_PreviewMouseLeftButtonDown"
-                    PreviewMouseMove="Modificador_PreviewMouseMove">
-                                                    <CheckBox Margin="0,2"
-                          Content="{Binding Descripcion, StringFormat='{}{0}'}"
-                          IsChecked="{Binding EstaSeleccionado, Mode=TwoWay}"
-                          IsEnabled="{Binding EstaBloqueado, Converter={StaticResource InverseBoolConverter}}"
-                          ToolTip="{Binding Descripcion}"/>
-                                                </Border>
-                                            </DataTemplate>
-                                        </ItemsControl.ItemTemplate>
-                                    </ItemsControl>
-                                </ScrollViewer>
-                            </DockPanel>
+                        <!-- ==== Modo de trabajo ==== -->
+                        <Border Grid.Row="0" Style="{StaticResource Pane}" Margin="0,0,0,3">
+                            <StackPanel>
+                                <TextBlock Text="MODO DE TRABAJO" Style="{StaticResource SectionHeader}"/>
+                                <RadioButton x:Name="ModoComandoUnico"
+                         Content="Comando a comando"
+                         IsChecked="True"
+                         Margin="10,4,8,2"/>
+                                <RadioButton x:Name="ModoBatch"
+                         Content="Generar archivo batch"
+                         Margin="10,2,8,2"/>
+                                <RadioButton x:Name="ModoPowerShell"
+                         Content="Script PowerShell"
+                         Margin="10,2,8,2"/>
+                                <RadioButton x:Name="ModoAprendizaje"
+                         Content="Modo aprendizaje"
+                         Margin="10,2,8,6"/>
+                            </StackPanel>
                         </Border>
 
-                        <Border Grid.Row="1" Style="{StaticResource Pane}" Margin="0,0,0,3">
-                    <Grid>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="Auto"/>
-                        </Grid.ColumnDefinitions>
-                                <TextBox x:Name="CuadroBusqueda"    
-                                    Grid.Column="0" Margin="4" Padding="4,3"
-                 VerticalContentAlignment="Center"
-                 Text="{Binding Filtro, UpdateSourceTrigger=PropertyChanged}"/>
-                                    <ComboBox x:Name="ComboOrden"
-                  Grid.Column="1" Margin="4" Width="95"
-                  SelectedIndex="0" VerticalContentAlignment="Center">
-                                        <ComboBoxItem Content="Por familia"/>
-                                        <ComboBoxItem Content="A-Z"/>
-                                        <ComboBoxItem Content="Frecuencia"/>
-                                    </ComboBox>
-                            </Grid>
-                </Border>
+                        <GridSplitter Grid.Row="1"
+                  Height="5"
+                  Style="{StaticResource SplitterHorizontal}"
+                  HorizontalAlignment="Stretch"
+                  VerticalAlignment="Center"
+                  ResizeDirection="Rows"
+                  ResizeBehavior="PreviousAndNext"
+                  ShowsPreview="True"/>
 
-                <Border Grid.Row="2" Style="{StaticResource Pane}">
-                    <DockPanel>
-                        <TextBlock DockPanel.Dock="Top"
-                                   Text="COMANDOS DISPONIBLES"
-                                   Style="{StaticResource SectionHeader}"/>
+                        <!-- ==== Buscador ==== -->
+                        <Border Grid.Row="2" Style="{StaticResource Pane}" Margin="0,0,0,3">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBox x:Name="CuadroBusqueda"
+                     Grid.Column="0" Margin="4" Padding="4,3"
+                     VerticalContentAlignment="Center"
+                     Text="{Binding Filtro, UpdateSourceTrigger=PropertyChanged}"/>
+                                <ComboBox x:Name="ComboOrden"
+                      Grid.Column="1" Margin="4" Width="95"
+                      SelectedIndex="0" VerticalContentAlignment="Center">
+                                    <ComboBoxItem Content="Por familia"/>
+                                    <ComboBoxItem Content="A-Z"/>
+                                    <ComboBoxItem Content="Frecuencia"/>
+                                </ComboBox>
+                            </Grid>
+                        </Border>
+
+                        <GridSplitter Grid.Row="3"
+                  Height="5"
+                  Style="{StaticResource SplitterHorizontal}"
+                  HorizontalAlignment="Stretch"
+                  VerticalAlignment="Center"
+                  ResizeDirection="Rows"
+                  ResizeBehavior="PreviousAndNext"
+                  ShowsPreview="True"/>
+
+                        <!-- ==== Lista de comandos ==== -->
+                        <Border Grid.Row="4" Style="{StaticResource Pane}">
+                            <DockPanel>
+                                <TextBlock DockPanel.Dock="Top"
+                       Text="COMANDOS DISPONIBLES"
+                       Style="{StaticResource SectionHeader}"/>
 
                                 <ListBox x:Name="ListaComandos" Margin="2"
-                                    ScrollViewer.HorizontalScrollBarVisibility="Disabled"
-                                    ItemsSource="{Binding ComandosView}"
-                                    SelectedItem="{Binding ComandoSeleccionado}"
-                                    MouseDoubleClick="ListaComandos_MouseDoubleClick"
-                                    KeyDown="ListaComandos_KeyDown"
-                                    PreviewMouseLeftButtonDown="ListaComandos_PreviewMouseLeftButtonDown"
-                                    PreviewMouseMove="ListaComandos_PreviewMouseMove">
+                     ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                     ItemsSource="{Binding ComandosView}"
+                     SelectedItem="{Binding ComandoSeleccionado}"
+                     MouseDoubleClick="ListaComandos_MouseDoubleClick"
+                     KeyDown="ListaComandos_KeyDown"
+                     PreviewMouseLeftButtonDown="ListaComandos_PreviewMouseLeftButtonDown"
+                     PreviewMouseMove="ListaComandos_PreviewMouseMove">
 
                                     <ListBox.ItemContainerStyle>
                                         <Style TargetType="ListBoxItem">
@@ -453,13 +471,13 @@ IsEnabled="{Binding EstaEjecutando, Converter={StaticResource InverseBoolConvert
                                             <GroupStyle.HeaderTemplate>
                                                 <DataTemplate>
                                                     <Border BorderThickness="0,0,0,1"
-                            BorderBrush="#FFB0B0B0"
-                            Margin="0,8,0,4">
+                                        BorderBrush="#FFB0B0B0"
+                                        Margin="0,8,0,4">
                                                         <TextBlock Text="{Binding Name}"
-                                   FontWeight="Bold"
-                                   FontSize="12"
-                                   Foreground="#FF1F4E79"
-                                   Margin="2,0,0,4"/>
+                                               FontWeight="Bold"
+                                               FontSize="12"
+                                               Foreground="#FF1F4E79"
+                                               Margin="2,0,0,4"/>
                                                     </Border>
                                                 </DataTemplate>
                                             </GroupStyle.HeaderTemplate>
@@ -468,10 +486,10 @@ IsEnabled="{Binding EstaEjecutando, Converter={StaticResource InverseBoolConvert
                                     <ListBox.ItemTemplate>
                                         <DataTemplate>
                                             <Border x:Name="ContenedorItem"
-                    BorderThickness="2"
-                    BorderBrush="Transparent"
-                    CornerRadius="3"
-                    Margin="0,1">
+                                BorderThickness="2"
+                                BorderBrush="Transparent"
+                                CornerRadius="3"
+                                Margin="0,1">
                                                 <Grid>
                                                     <Grid.ColumnDefinitions>
                                                         <ColumnDefinition Width="10"/>
@@ -480,90 +498,113 @@ IsEnabled="{Binding EstaEjecutando, Converter={StaticResource InverseBoolConvert
                                                     </Grid.ColumnDefinitions>
 
                                                     <Border Grid.Column="0"
-                            Background="{Binding ColorFamilia, Converter={StaticResource HexToBrush}}"
-                                                          CornerRadius="3,0,0,3"
-                            MinHeight="24"/>
+                                        Background="{Binding ColorFamilia, Converter={StaticResource HexToBrush}}"
+                                        CornerRadius="3,0,0,3"
+                                        MinHeight="24"/>
 
                                                     <TextBlock Grid.Column="1"
-                               Text="{Binding Icono}"
-                               FontSize="14"
-                               Margin="10,0,8,0"
-                               VerticalAlignment="Center"/>
+                                           Text="{Binding Icono}"
+                                           FontSize="14"
+                                           Margin="10,0,8,0"
+                                           VerticalAlignment="Center"/>
 
                                                     <TextBlock Grid.Column="2"
-                               Text="{Binding TextoLista}"
-                               VerticalAlignment="Center"
-                               TextTrimming="CharacterEllipsis"
-                               Margin="0,0,4,0"/>
+                                           Text="{Binding TextoLista}"
+                                           VerticalAlignment="Center"
+                                           TextTrimming="CharacterEllipsis"
+                                           Margin="0,0,4,0"/>
                                                 </Grid>
                                             </Border>
                                             <DataTemplate.Triggers>
                                                 <DataTrigger Binding="{Binding Peligroso}" Value="True">
                                                     <Setter TargetName="ContenedorItem"
-                                                            Property="BorderBrush" Value="#FFC0392B"/>
+                                        Property="BorderBrush" Value="#FFC0392B"/>
                                                 </DataTrigger>
                                             </DataTemplate.Triggers>
                                         </DataTemplate>
                                     </ListBox.ItemTemplate>
                                 </ListBox>
-                    </DockPanel>
-                </Border>
+                            </DockPanel>
+                        </Border>
 
-                <GridSplitter Grid.Row="3"
-              Height="5"
-              Style="{StaticResource SplitterHorizontal}"       
-              HorizontalAlignment="Stretch"
-              VerticalAlignment="Center"
-              ResizeDirection="Rows"
-              ResizeBehavior="PreviousAndNext"
-              ShowsPreview="True"/>
+                        <GridSplitter Grid.Row="5"
+                  Height="5"
+                  Style="{StaticResource SplitterHorizontal}"
+                  HorizontalAlignment="Stretch"
+                  VerticalAlignment="Center"
+                  ResizeDirection="Rows"
+                  ResizeBehavior="PreviousAndNext"
+                  ShowsPreview="True"/>
 
-                <Border Grid.Row="4" Style="{StaticResource Pane}">
-                    <DockPanel>
-                        <TextBlock DockPanel.Dock="Top"
-                                   Text="DESCRIPCIÓN DEL COMANDO"
-                                   Style="{StaticResource SectionHeader}"/>
-                        <ScrollViewer VerticalScrollBarVisibility="Auto">
-                            <TextBlock x:Name="TextoDescripcion"
-                                Margin="8" TextWrapping="Wrap"
-                                Foreground="#FF333333"
-                                Text="{Binding TextoDescripcion}"/>
-                        </ScrollViewer>
-                    </DockPanel>
-                </Border>
+                        <!-- ==== Modificadores ==== -->
+                        <Border Grid.Row="6" Style="{StaticResource Pane}">
+                            <DockPanel>
+                                <TextBlock DockPanel.Dock="Top"
+                       Text="{Binding LineaActiva.TituloModificadores}"
+                       Style="{StaticResource SectionHeader}"/>
+                                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                                    <ItemsControl x:Name="ListaModificadores"
+                              ItemsSource="{Binding LineaActiva.Modificadores}"
+                              Margin="10,6">
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate>
+                                                <Border x:Name="ItemModificador"
+                                    Background="Transparent"
+                                    Padding="2,1"
+                                    Cursor="Hand"
+                                    MouseEnter="Modificador_MouseEnter"
+                                    MouseLeave="Modificador_MouseLeave"
+                                    PreviewMouseLeftButtonDown="Modificador_PreviewMouseLeftButtonDown"
+                                    PreviewMouseMove="Modificador_PreviewMouseMove">
 
-                <GridSplitter Grid.Row="5"
-              Height="5"
-              Style="{StaticResource SplitterHorizontal}"
-              HorizontalAlignment="Stretch"
-              VerticalAlignment="Center"
-              ResizeDirection="Rows"
-              ResizeBehavior="PreviousAndNext"
-              ShowsPreview="True"/>
+                                                    <CheckBox Margin="0,2"
+                                          Content="{Binding Descripcion, StringFormat='{}{0}'}"
+                                          IsChecked="{Binding EstaSeleccionado, Mode=TwoWay}"
+                                          IsEnabled="{Binding EstaBloqueado, Converter={StaticResource InverseBoolConverter}}"
+                                          ToolTip="{Binding Descripcion}"/>
+                                                </Border>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                </ScrollViewer>
+                            </DockPanel>
+                        </Border>
 
-                <Border Grid.Row="6" Style="{StaticResource Pane}">
-                    <DockPanel>
-                        <TextBlock DockPanel.Dock="Top"
-                                   Text="EXPLORADOR DE ARCHIVOS"
-                                   Style="{StaticResource SectionHeader}"/>
+                        <GridSplitter Grid.Row="7"
+                  Height="5"
+                  Style="{StaticResource SplitterHorizontal}"
+                  HorizontalAlignment="Stretch"
+                  VerticalAlignment="Center"
+                  ResizeDirection="Rows"
+                  ResizeBehavior="PreviousAndNext"
+                  ShowsPreview="True"/>
+
+                        <!-- ==== Árbol de archivos ==== -->
+                        <Border Grid.Row="8" Style="{StaticResource Pane}">
+                            <DockPanel>
+                                <TextBlock DockPanel.Dock="Top"
+                       Text="EXPLORADOR DE ARCHIVOS"
+                       Style="{StaticResource SectionHeader}"/>
+
                                 <TreeView x:Name="ArbolArchivos" Margin="2"
-                                         AllowDrop="True"
-                                        ScrollViewer.HorizontalScrollBarVisibility="Auto"
-                                        Loaded="ArbolArchivos_Loaded"
-                                        PreviewMouseLeftButtonDown="ArbolArchivos_PreviewMouseLeftButtonDown"
-                                        PreviewMouseMove="ArbolArchivos_PreviewMouseMove">
-                                          
+                      AllowDrop="True"
+                      ScrollViewer.HorizontalScrollBarVisibility="Auto"
+                      Loaded="ArbolArchivos_Loaded"
+                      PreviewMouseLeftButtonDown="ArbolArchivos_PreviewMouseLeftButtonDown"
+                      PreviewMouseMove="ArbolArchivos_PreviewMouseMove">
+
                                     <TreeView.ItemContainerStyle>
                                         <Style TargetType="TreeViewItem">
                                             <Setter Property="IsExpanded" Value="False"/>
                                         </Style>
                                     </TreeView.ItemContainerStyle>
+
                                 </TreeView>
                             </DockPanel>
-                </Border>
-            </Grid>
+                        </Border>
+                    </Grid>
 
-            <GridSplitter Grid.Column="1" 
+                    <GridSplitter Grid.Column="1" 
                           Width="5"
                           Style="{StaticResource SplitterVertical}" 
                           ResizeDirection="Columns"
@@ -1077,50 +1118,202 @@ IsEnabled="{Binding EstaEjecutando, Converter={StaticResource InverseBoolConvert
               ResizeBehavior="PreviousAndNext"
               ShowsPreview="True"/>
 
-            <!-- Panel derecho -->
-            <Grid x:Name="PanelDerecho" Grid.Column="4" Margin="3">
-            <Grid.RowDefinitions>
-                <RowDefinition Height="2*" MinHeight="140"/>
-                <!-- Modificadores -->
-                <RowDefinition Height="5"/>
-                <RowDefinition Height="1.5*" MinHeight="120"/>
-                <!-- Operadores -->
-                <RowDefinition Height="5"/>
-                <RowDefinition Height="1*" MinHeight="120"/>
-                <!-- Ayuda -->
-            </Grid.RowDefinitions>
+                    <!-- Panel derecho -->
+                    <Grid x:Name="PanelDerecho" Grid.Column="4" Margin="3">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="2*" MinHeight="180"/>
+                            <!-- Row 0: Comando activo -->
+                            <RowDefinition Height="5"/>
+                            <!-- Row 1: Splitter -->
+                            <RowDefinition Height="1*" MinHeight="120"/>
+                            <!-- Row 2: Detalle modificador -->
+                            <RowDefinition Height="5"/>
+                            <!-- Row 3: Splitter -->
+                            <RowDefinition Height="2*" MinHeight="140"/>
+                            <!-- Row 4: Operadores -->
+                        </Grid.RowDefinitions>
 
+                        <!-- ==== Row 0: Comando activo ==== -->
                         <Border Grid.Row="0" Style="{StaticResource Pane}">
                             <DockPanel>
                                 <TextBlock DockPanel.Dock="Top"
-                   Text="INFORMACIÓN"
-                   Style="{StaticResource SectionHeader}"/>
+                       Text="COMANDO ACTIVO"
+                       Style="{StaticResource SectionHeader}"/>
                                 <ScrollViewer VerticalScrollBarVisibility="Auto">
-                                    <StackPanel Margin="10,6">
-                                        <TextBlock Text="(En reorganización)"
-                           Foreground="#FF999999"
-                           FontStyle="Italic"
-                           TextWrapping="Wrap"/>
+                                    <StackPanel Margin="10,8">
+
+                                        <!-- Contenido cuando hay comando activo -->
+                                        <StackPanel x:Name="PanelConComando">
+                                            <StackPanel.Style>
+                                                <Style TargetType="StackPanel">
+                                                    <Setter Property="Visibility" Value="Visible"/>
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding LineaActiva.ComandoActivo}" Value="{x:Null}">
+                                                            <Setter Property="Visibility" Value="Collapsed"/>
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </StackPanel.Style>
+
+                                            <!-- Nombre e icono -->
+                                            <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                                                <TextBlock Text="{Binding LineaActiva.ComandoActivo.Icono}"
+                                       FontSize="18"
+                                       VerticalAlignment="Center"
+                                       Margin="0,0,8,0"/>
+                                                <TextBlock Text="{Binding LineaActiva.ComandoActivo.Texto}"
+                                       FontSize="16"
+                                       FontWeight="Bold"
+                                       FontFamily="Consolas"
+                                       VerticalAlignment="Center"/>
+                                            </StackPanel>
+
+                                            <!-- Descripción -->
+                                            <TextBlock Text="{Binding LineaActiva.ComandoActivo.Descripcion}"
+                                   TextWrapping="Wrap"
+                                   Foreground="#FF333333"
+                                   Margin="0,0,0,10"/>
+
+                                            <!-- Sintaxis -->
+                                            <TextBlock Text="Sintaxis:"
+                                   FontWeight="SemiBold"
+                                   Foreground="#FF666666"
+                                   FontSize="11"
+                                   Margin="0,0,0,4"/>
+                                            <Border Background="#FFF8F8F8"
+                                BorderBrush="#FFDDDDDD"
+                                BorderThickness="1"
+                                CornerRadius="3"
+                                Padding="8,6"
+                                Margin="0,0,0,10">
+                                                <TextBlock Text="{Binding LineaActiva.ComandoActivo.Origen.Sintaxis}"
+                                       FontFamily="Consolas"
+                                       FontSize="11"
+                                       TextWrapping="Wrap"
+                                       Foreground="#FF222222"/>
+                                            </Border>
+
+                                            <!-- Ejemplos -->
+                                            <TextBlock Text="Ejemplos:"
+                                   FontWeight="SemiBold"
+                                   Foreground="#FF666666"
+                                   FontSize="11"
+                                   Margin="0,0,0,4"/>
+                                            <ItemsControl ItemsSource="{Binding LineaActiva.ComandoActivo.Origen.Ejemplos}">
+                                                <ItemsControl.ItemTemplate>
+                                                    <DataTemplate>
+                                                        <TextBlock Text="{Binding}"
+                                               FontFamily="Consolas"
+                                               FontSize="11"
+                                               Foreground="#FF444444"
+                                               Margin="0,2"/>
+                                                    </DataTemplate>
+                                                </ItemsControl.ItemTemplate>
+                                            </ItemsControl>
+                                        </StackPanel>
+
+                                        <!-- Mensaje cuando no hay comando activo -->
+                                        <TextBlock x:Name="InfoSinComando"
+                               Text="No hay ningún comando activo en esta línea.&#x0A;&#x0A;Selecciona un comando del catálogo o arrástralo al constructor."
+                               TextWrapping="Wrap"
+                               Foreground="#FF999999"
+                               FontStyle="Italic">
+                                            <TextBlock.Style>
+                                                <Style TargetType="TextBlock">
+                                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding LineaActiva.ComandoActivo}" Value="{x:Null}">
+                                                            <Setter Property="Visibility" Value="Visible"/>
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </TextBlock.Style>
+                                        </TextBlock>
+
                                     </StackPanel>
                                 </ScrollViewer>
                             </DockPanel>
                         </Border>
 
+                        <!-- ==== Splitter ==== -->
                         <GridSplitter Grid.Row="1"
-              Height="5"
-              Style="{StaticResource SplitterHorizontal}"                
-              HorizontalAlignment="Stretch"
-              VerticalAlignment="Center"
-              ResizeDirection="Rows"
-              ResizeBehavior="PreviousAndNext"
-              ShowsPreview="True"/>
+                  Height="5"
+                  Style="{StaticResource SplitterHorizontal}"
+                  HorizontalAlignment="Stretch"
+                  VerticalAlignment="Center"
+                  ResizeDirection="Rows"
+                  ResizeBehavior="PreviousAndNext"
+                  ShowsPreview="True"/>
 
-            <Border Grid.Row="2" Style="{StaticResource Pane}">
-                <DockPanel>
-                    <TextBlock DockPanel.Dock="Top"
-                                   Text="OPERADORES · VARIABLES · CONSTANTES"
-                                   Style="{StaticResource SectionHeader}"/>
-                    <TabControl Margin="4,2">
+                        <!-- ==== Row 2: Detalle del modificador ==== -->
+                        <Border Grid.Row="2" Style="{StaticResource Pane}">
+                            <DockPanel>
+                                <TextBlock DockPanel.Dock="Top"
+                       Text="DETALLE DEL MODIFICADOR"
+                       Style="{StaticResource SectionHeader}"/>
+                                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                                    <StackPanel Margin="10,8">
+
+                                        <!-- Nombre del modificador -->
+                                        <TextBlock x:Name="InfoModificadorNombre"
+                               FontSize="14"
+                               FontWeight="Bold"
+                               FontFamily="Consolas"
+                               Foreground="#FF1F4E79"
+                               Visibility="Collapsed"/>
+
+                                        <!-- Descripción -->
+                                        <TextBlock x:Name="InfoModificadorDescripcion"
+                               TextWrapping="Wrap"
+                               Foreground="#FF333333"
+                               Margin="0,6,0,0"
+                               Visibility="Collapsed"/>
+
+                                        <!-- Valores posibles -->
+                                        <StackPanel x:Name="PanelValoresPosibles"
+                                Margin="0,8,0,0"
+                                Visibility="Collapsed">
+                                            <TextBlock Text="Valores posibles:"
+                                   FontWeight="SemiBold"
+                                   FontSize="11"
+                                   Foreground="#FF666666"
+                                   Margin="0,0,0,4"/>
+                                            <TextBlock x:Name="InfoModificadorValores"
+                                   FontFamily="Consolas"
+                                   FontSize="11"
+                                   Foreground="#FF444444"
+                                   TextWrapping="Wrap"/>
+                                        </StackPanel>
+
+                                        <!-- Mensaje cuando no hay hover -->
+                                        <TextBlock x:Name="InfoSinModificador"
+                               Text="Pasa el ratón sobre un modificador para ver su descripción detallada."
+                               TextWrapping="Wrap"
+                               Foreground="#FF999999"
+                               FontStyle="Italic"/>
+
+                                    </StackPanel>
+                                </ScrollViewer>
+                            </DockPanel>
+                        </Border>
+
+                        <!-- ==== Splitter ==== -->
+                        <GridSplitter Grid.Row="3"
+                  Height="5"
+                  Style="{StaticResource SplitterHorizontal}"
+                  HorizontalAlignment="Stretch"
+                  VerticalAlignment="Center"
+                  ResizeDirection="Rows"
+                  ResizeBehavior="PreviousAndNext"
+                  ShowsPreview="True"/>
+
+                        <!-- ==== Row 4: Operadores/Variables/Constantes ==== -->
+                        <Border Grid.Row="4" Style="{StaticResource Pane}">
+                            <DockPanel>
+                                <TextBlock DockPanel.Dock="Top"
+                       Text="INSERTAR TOKENS"
+                       Style="{StaticResource SectionHeader}"/>
+                                <TabControl Margin="4,2">
                                     <TabItem>
                                         <TabItem.Header>
                                             <StackPanel Orientation="Horizontal">
@@ -1130,96 +1323,80 @@ IsEnabled="{Binding EstaEjecutando, Converter={StaticResource InverseBoolConvert
                                         </TabItem.Header>
                                         <StackPanel Margin="8">
                                             <TextBlock Text="Inserta un token de texto libre:"
-                   FontSize="11"
-                   Foreground="#FF666666"
-                   TextWrapping="Wrap"
-                   Margin="0,0,0,8"/>
+                                   FontSize="11"
+                                   Foreground="#FF666666"
+                                   TextWrapping="Wrap"
+                                   Margin="0,0,0,8"/>
                                             <Button Content="📝 Insertar texto"
-                Padding="10,6"
-                FontSize="12"
-                FontWeight="SemiBold"
-                HorizontalAlignment="Left"
-                Click="AgregarTexto_Click"
-                ToolTip="Añade un token de texto editable (nombres de archivo, cadenas de búsqueda, mensajes...)"/>
+                                Padding="10,6"
+                                FontSize="12"
+                                FontWeight="SemiBold"
+                                HorizontalAlignment="Left"
+                                Click="AgregarTexto_Click"
+                                ToolTip="Añade un token de texto editable"/>
                                         </StackPanel>
                                     </TabItem>
+
                                     <TabItem Header="Operadores">
-                            <WrapPanel Margin="6">
-                                            
-                                                    <Button Content="&amp;" Style="{StaticResource OpButton}" Click="InsertarOperador_Click" Tag="&amp;"/>
-                                                    <Button Content="&amp;&amp;" Style="{StaticResource OpButton}" Click="InsertarOperador_Click" Tag="&amp;&amp;"/>
-                                                    <Button Content="||"   Style="{StaticResource OpButton}" Click="InsertarOperador_Click" Tag="||"/>
-                                                    <Button Content="|"    Style="{StaticResource OpButton}" Click="InsertarOperador_Click" Tag="|"/>
-                                                    <Button Content="&gt;"    Style="{StaticResource OpButton}" Click="InsertarOperador_Click" Tag="&gt;"/>
-                                                    <Button Content="&gt;&gt;" Style="{StaticResource OpButton}" Click="InsertarOperador_Click" Tag="&gt;&gt;"/>
-                                                    <Button Content="&lt;"    Style="{StaticResource OpButton}" Click="InsertarOperador_Click" Tag="&lt;"/>
-                                                    <Button Content="^"    Style="{StaticResource OpButton}" Click="InsertarOperador_Click" Tag="^"/>
-                                                    <Button Content="%"    Style="{StaticResource OpButton}" Click="InsertarOperador_Click" Tag="%"/>
-                                                    <Button Content="=="   Style="{StaticResource OpButton}" Click="InsertarOperador_Click" Tag="=="/>
-                                                    <Button Content="NEQ"  Style="{StaticResource OpButton}" Click="InsertarOperador_Click" Tag="NEQ"/>
-                                                    <Button Content="EQU"  Style="{StaticResource OpButton}" Click="InsertarOperador_Click" Tag="EQU"/>
-                                                
+                                        <WrapPanel Margin="6">
+                                            <Button Content="&amp;" Style="{StaticResource OpButton}" Click="InsertarOperador_Click" Tag="&amp;"/>
+                                            <Button Content="&amp;&amp;" Style="{StaticResource OpButton}" Click="InsertarOperador_Click" Tag="&amp;&amp;"/>
+                                            <Button Content="||"   Style="{StaticResource OpButton}" Click="InsertarOperador_Click" Tag="||"/>
+                                            <Button Content="|"    Style="{StaticResource OpButton}" Click="InsertarOperador_Click" Tag="|"/>
+                                            <Button Content="&gt;"    Style="{StaticResource OpButton}" Click="InsertarOperador_Click" Tag="&gt;"/>
+                                            <Button Content="&gt;&gt;" Style="{StaticResource OpButton}" Click="InsertarOperador_Click" Tag="&gt;&gt;"/>
+                                            <Button Content="&lt;"    Style="{StaticResource OpButton}" Click="InsertarOperador_Click" Tag="&lt;"/>
+                                            <Button Content="^"    Style="{StaticResource OpButton}" Click="InsertarOperador_Click" Tag="^"/>
+                                            <Button Content="%"    Style="{StaticResource OpButton}" Click="InsertarOperador_Click" Tag="%"/>
+                                            <Button Content="=="   Style="{StaticResource OpButton}" Click="InsertarOperador_Click" Tag="=="/>
+                                            <Button Content="NEQ"  Style="{StaticResource OpButton}" Click="InsertarOperador_Click" Tag="NEQ"/>
+                                            <Button Content="EQU"  Style="{StaticResource OpButton}" Click="InsertarOperador_Click" Tag="EQU"/>
                                         </WrapPanel>
-                        </TabItem>
-                        
-                        <TabItem Header="Variables">
-                            <ListBox Margin="4">
-                                <ListBoxItem Content="%USERPROFILE%" />
-                                <ListBoxItem Content="%TEMP%"/>
-                                <ListBoxItem Content="%PATH%"/>
-                                <ListBoxItem Content="%DATE%"/>
-                                <ListBoxItem Content="%TIME%"/>
-                                <ListBoxItem Content="%RANDOM%"/>
-                                <ListBoxItem Content="%ERRORLEVEL%"/>
-                                <ListBoxItem Content="%CD%"/>
-                            </ListBox>
-                        </TabItem>
-                        <TabItem Header="Constantes">
-                            <ListBox Margin="4">
-                                <ListBoxItem Content="CON"/>
-                                <ListBoxItem Content="NUL"/>
-                                <ListBoxItem Content="PRN"/>
-                                <ListBoxItem Content="AUX"/>
-                                <ListBoxItem Content="COM1"/>
-                                <ListBoxItem Content="LPT1"/>
-                            </ListBox>
-                        </TabItem>
-                        <TabItem Header="Comodines">
-                            <ListBox Margin="4">
-                                <ListBoxItem Content="*      · Cualquier secuencia"/>
-                                <ListBoxItem Content="?      · Un carácter"/>
-                                <ListBoxItem Content="[abc]  · Conjunto"/>
-                                <ListBoxItem Content="[a-z]  · Rango"/>
-                            </ListBox>
-                        </TabItem>
-                    </TabControl>
-                </DockPanel>
-            </Border>
+                                    </TabItem>
 
-            <GridSplitter Grid.Row="3"
-              Height="5"
-              Style="{StaticResource SplitterHorizontal}"               
-              HorizontalAlignment="Stretch"
-              VerticalAlignment="Center"
-              ResizeDirection="Rows"
-              ResizeBehavior="PreviousAndNext"
-              ShowsPreview="True"/>
+                                    <TabItem Header="Variables">
+                                        <ListBox x:Name="ListaVariables"
+                             Margin="4"
+                             SelectionChanged="ListaVariables_SelectionChanged">
+                                            <ListBoxItem Content="%USERPROFILE%"/>
+                                            <ListBoxItem Content="%TEMP%"/>
+                                            <ListBoxItem Content="%PATH%"/>
+                                            <ListBoxItem Content="%DATE%"/>
+                                            <ListBoxItem Content="%TIME%"/>
+                                            <ListBoxItem Content="%RANDOM%"/>
+                                            <ListBoxItem Content="%ERRORLEVEL%"/>
+                                            <ListBoxItem Content="%CD%"/>
+                                        </ListBox>
+                                    </TabItem>
 
-            <Border Grid.Row="4" Style="{StaticResource Pane}">
-                <DockPanel>
-                    <TextBlock DockPanel.Dock="Top"
-                                   Text="AYUDA CONTEXTUAL"
-                                   Style="{StaticResource SectionHeader}"/>
-                    <ScrollViewer VerticalScrollBarVisibility="Auto">
-                        <TextBlock x:Name="TextoAyuda"
-                                   Margin="8" TextWrapping="Wrap"
-                                   Foreground="#FF333333"
-                                   Text="{Binding TextoAyuda}"/>
-                    </ScrollViewer>
-                </DockPanel>
-            </Border>
-        </Grid>
-        </Grid>
+                                    <TabItem Header="Constantes">
+                                        <ListBox x:Name="ListaConstantes"
+                             Margin="4"
+                             SelectionChanged="ListaConstantes_SelectionChanged">
+                                            <ListBoxItem Content="CON"/>
+                                            <ListBoxItem Content="NUL"/>
+                                            <ListBoxItem Content="PRN"/>
+                                            <ListBoxItem Content="AUX"/>
+                                            <ListBoxItem Content="COM1"/>
+                                            <ListBoxItem Content="LPT1"/>
+                                        </ListBox>
+                                    </TabItem>
+
+                                    <TabItem Header="Comodines">
+                                        <ListBox x:Name="ListaComodines"
+                             Margin="4"
+                             SelectionChanged="ListaComodines_SelectionChanged">
+                                            <ListBoxItem Content="*" Tag="*"/>
+                                            <ListBoxItem Content="?" Tag="?"/>
+                                            <ListBoxItem Content="[abc]" Tag="[abc]"/>
+                                            <ListBoxItem Content="[a-z]" Tag="[a-z]"/>
+                                        </ListBox>
+                                    </TabItem>
+                                </TabControl>
+                            </DockPanel>
+                        </Border>
+                    </Grid>
+                </Grid>
             </Grid>
 
             <!-- Splitter horizontal -->
