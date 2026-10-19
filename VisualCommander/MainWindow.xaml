@@ -178,62 +178,94 @@
             <MenuItem Header="_Archivo">
                 <MenuItem Header="Nueva sesión" InputGestureText="Ctrl+N" Click="NuevaSesion_Click"/>
                 <MenuItem Header="Abrir sesión..." InputGestureText="Ctrl+O" Click="AbrirSesion_Click"/>
+                <MenuItem Header="Nuevo desde plantilla..." Click="NuevoDesdePlantilla_Click"/>
                 <Separator/>
                 <MenuItem Header="Guardar sesión" InputGestureText="Ctrl+S" Click="GuardarSesion_Click"/>
                 <MenuItem Header="Guardar sesión como..." InputGestureText="Ctrl+Shift+S" Click="GuardarSesionComo_Click"/>
                 <Separator/>
-                <MenuItem Header="Exportar como .bat..." Click="GuardarBat_Click"/>
-                <MenuItem Header="Exportar como .ps1..." Click="GuardarPs1_Click"/>
-                <MenuItem Header="Exportar como .cmd..." Click="GuardarCmd_Click"/>
-                <MenuItem Header="Exportar como .sh..." Click="GuardarSh_Click"/>
+                <MenuItem Header="Importar desde archivo...">
+                    <MenuItem Header="Desde .bat..." Click="ImportarDesdeBat_Click"/>
+                    <MenuItem Header="Desde .cmd..." Click="ImportarDesdeCmd_Click"/>
+                    <MenuItem Header="Desde .ps1..." Click="ImportarDesdePs1_Click"/>
+                    <MenuItem Header="Desde .sh..." Click="ImportarDesdeSh_Click"/>
+                </MenuItem>
+                <MenuItem Header="Exportar como...">
+                    <MenuItem Header=".bat — Batch de Windows" Click="GuardarBat_Click"/>
+                    <MenuItem Header=".cmd — Script CMD" Click="GuardarCmd_Click"/>
+                    <MenuItem Header=".ps1 — PowerShell" Click="GuardarPs1_Click"/>
+                    <MenuItem Header=".sh — Bash (para revisión)" Click="GuardarSh_Click"/>
+                </MenuItem>
+                <Separator/>
+                <MenuItem Header="Archivos recientes" IsEnabled="False"/>
                 <Separator/>
                 <MenuItem Header="Salir" InputGestureText="Alt+F4" Click="Salir_Click"/>
             </MenuItem>
 
+
             <MenuItem Header="_Editar">
-                <MenuItem Header="Deshacer"              InputGestureText="Ctrl+Z"/>
-                <MenuItem Header="Rehacer"               InputGestureText="Ctrl+Y"/>
+                <MenuItem Header="Deshacer" InputGestureText="Ctrl+Z" Click="Deshacer_Click"/>
+                <MenuItem Header="Rehacer" InputGestureText="Ctrl+Y" Click="Rehacer_Click"/>
                 <Separator/>
-                <MenuItem Header="Cortar"                InputGestureText="Ctrl+X"/>
-                <MenuItem Header="Copiar"                InputGestureText="Ctrl+C"/>
-                <MenuItem Header="Pegar"                 InputGestureText="Ctrl+V"/>
+                <MenuItem Header="Cortar" InputGestureText="Ctrl+X" Click="Cortar_Click"/>
+                <MenuItem Header="Copiar" InputGestureText="Ctrl+C" Click="Copiar_Click"/>
+                <MenuItem Header="Pegar" InputGestureText="Ctrl+V" Click="Pegar_Click"/>
                 <Separator/>
-                <MenuItem Header="Limpiar línea de comando"/>
-                <MenuItem Header="Limpiar constructor visual"/>
+                <MenuItem Header="Seleccionar todo" InputGestureText="Ctrl+A" Click="SeleccionarTodo_Click"/>
+                <MenuItem Header="Buscar..." InputGestureText="Ctrl+F" Click="Buscar_Click"/>
+                <MenuItem Header="Reemplazar..." InputGestureText="Ctrl+H" Click="Reemplazar_Click"/>
+                <Separator/>
+                <MenuItem Header="Insertar comando..." Click="InsertarComando_Click"/>
+                <MenuItem Header="Insertar texto..." Click="InsertarTexto_Click"/>
+                <MenuItem Header="Insertar ruta..." Click="InsertarRuta_Click"/>
             </MenuItem>
 
             <MenuItem Header="_Ver">
-                <MenuItem Header="Panel izquierdo"  IsCheckable="True" IsChecked="True"/>
-                <MenuItem Header="Panel central"    IsCheckable="True" IsChecked="True"/>
-                <MenuItem Header="Panel derecho"    IsCheckable="True" IsChecked="True"/>
-                <MenuItem Header="Panel inferior"   IsCheckable="True" IsChecked="True"/>
+                <MenuItem Header="Panel izquierdo" IsCheckable="True" IsChecked="True" Click="VerPanelIzquierdo_Click"/>
+                <MenuItem Header="Panel central" IsCheckable="True" IsChecked="True" Click="VerPanelCentral_Click"/>
+                <MenuItem Header="Panel derecho" IsCheckable="True" IsChecked="True" Click="VerPanelDerecho_Click"/>
+                <MenuItem Header="Panel inferior" IsCheckable="True" IsChecked="True" Click="VerPanelInferior_Click"/>
                 <Separator/>
-                <MenuItem Header="Tema claro"       IsCheckable="True" IsChecked="True"/>
-                <MenuItem Header="Tema oscuro"      IsCheckable="True"/>
+                <MenuItem Header="Tema">
+                    <MenuItem Header="Claro" IsCheckable="True" IsChecked="True" Click="TemaClaro_Click"/>
+                    <MenuItem Header="Oscuro" IsCheckable="True" Click="TemaOscuro_Click"/>
+                    <MenuItem Header="Automático (sistema)" IsCheckable="True" Click="TemaAutomatico_Click"/>
+                </MenuItem>
+                <MenuItem Header="Zoom">
+                    <MenuItem Header="100%" Click="Zoom100_Click"/>
+                    <MenuItem Header="125%" Click="Zoom125_Click"/>
+                    <MenuItem Header="150%" Click="Zoom150_Click"/>
+                    <Separator/>
+                    <MenuItem Header="Aumentar" InputGestureText="Ctrl++" Click="ZoomAumentar_Click"/>
+                    <MenuItem Header="Disminuir" InputGestureText="Ctrl+-" Click="ZoomDisminuir_Click"/>
+                </MenuItem>
                 <Separator/>
-                <MenuItem Header="Restablecer diseño de paneles"/>
+                <MenuItem Header="Restablecer diseño de paneles" Click="RestablecerDiseno_Click"/>
+                <MenuItem Header="Pantalla completa" InputGestureText="F11" Click="PantallaCompleta_Click"/>
             </MenuItem>
 
             <MenuItem Header="_Herramientas">
-                <MenuItem Header="Editor de catálogo de comandos..."/>
-                <MenuItem Header="Recargar catálogo"/>
+                <MenuItem Header="Importar comandos..." Click="ImportarComandos_Click"/>
+                <MenuItem Header="Insertar comando..." Click="InsertarComando_Click"/>
+                <MenuItem Header="Editar catálogo de comandos..." Click="EditarCatalogo_Click"/>
+                <MenuItem Header="Recargar catálogo" Click="RecargarCatalogo_Click"/>
                 <Separator/>
                 <MenuItem Header="Modo silencioso"
               IsCheckable="True"
               IsChecked="{Binding ModoSilencioso, Mode=TwoWay}"
               ToolTip="Silencia los avisos durante la construcción y edición. No afecta a los avisos antes de ejecutar."/>
                 <Separator/>
-                <MenuItem Header="Validar línea actual"  InputGestureText="F6"/>
-                <MenuItem Header="Ejecutar"              InputGestureText="F5"/>
+                <MenuItem Header="Validar línea actual" InputGestureText="F6" Click="ValidarLinea_Click"/>
+                <MenuItem Header="Ejecutar línea" InputGestureText="F5" Click="Ejecutar_Click"/>
                 <Separator/>
-                <MenuItem Header="Opciones..."/>
+                <MenuItem Header="Opciones..." Click="Opciones_Click"/>
             </MenuItem>
 
             <MenuItem Header="_Ayuda">
-                <MenuItem Header="Documentación de comandos" InputGestureText="F1"/>
-                <MenuItem Header="Atajos de teclado"/>
+                <MenuItem Header="Documentación de comandos" InputGestureText="F1" Click="Documentacion_Click"/>
+                <MenuItem Header="Guía de inicio rápido" Click="GuiaInicio_Click"/>
+                <MenuItem Header="Atajos de teclado" Click="AtajosTeclado_Click"/>
                 <Separator/>
-                <MenuItem Header="Acerca de Visual CMD Studio..."/>
+                <MenuItem Header="Acerca de Visual CMD Studio..." Click="AcercaDe_Click"/>
             </MenuItem>
         </Menu>
 
@@ -332,7 +364,7 @@ IsEnabled="{Binding EstaEjecutando, Converter={StaticResource InverseBoolConvert
             </Grid.ColumnDefinitions>
 
             <!-- Panel izquierdo -->
-            <Grid Grid.Column="0" Margin="3">
+            <Grid x:Name="PanelIzquierdo" Grid.Column="0" Margin="3">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="Auto"/>
@@ -382,18 +414,18 @@ IsEnabled="{Binding EstaEjecutando, Converter={StaticResource InverseBoolConvert
                             <ColumnDefinition Width="*"/>
                             <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
-                        <TextBox x:Name="CuadroBusqueda"
-                            Grid.Column="0" Margin="4" Padding="4,3"
-                            VerticalContentAlignment="Center"
-                            Text="{Binding Filtro, UpdateSourceTrigger=PropertyChanged}"/>
-                        <ComboBox x:Name="ComboOrden"
-                                  Grid.Column="1" Margin="4" Width="95"
-                                  SelectedIndex="0" VerticalContentAlignment="Center">
-                            <ComboBoxItem Content="Por familia"/>
-                            <ComboBoxItem Content="A-Z"/>
-                            <ComboBoxItem Content="Frecuencia"/>
-                        </ComboBox>
-                    </Grid>
+                                <TextBox x:Name="CuadroBusqueda"    
+                                    Grid.Column="0" Margin="4" Padding="4,3"
+                 VerticalContentAlignment="Center"
+                 Text="{Binding Filtro, UpdateSourceTrigger=PropertyChanged}"/>
+                                    <ComboBox x:Name="ComboOrden"
+                  Grid.Column="1" Margin="4" Width="95"
+                  SelectedIndex="0" VerticalContentAlignment="Center">
+                                        <ComboBoxItem Content="Por familia"/>
+                                        <ComboBoxItem Content="A-Z"/>
+                                        <ComboBoxItem Content="Frecuencia"/>
+                                    </ComboBox>
+                            </Grid>
                 </Border>
 
                 <Border Grid.Row="2" Style="{StaticResource Pane}">
@@ -539,7 +571,7 @@ IsEnabled="{Binding EstaEjecutando, Converter={StaticResource InverseBoolConvert
                           ShowsPreview="True"/>
 
                     <!-- ============ PANEL CENTRAL ============ -->
-                    <Grid Grid.Column="2" Margin="3">
+                    <Grid x:Name="PanelCentral" Grid.Column="2" Margin="3">
                         <Grid.RowDefinitions>
                             <RowDefinition Height="*"   MinHeight="140"/>
                             <RowDefinition Height="5"/>
@@ -803,7 +835,7 @@ IsEnabled="{Binding EstaEjecutando, Converter={StaticResource InverseBoolConvert
                   Style="{StaticResource SplitterHorizontal}"/>
 
                         <!-- ==== Bloque CMD (línea de comandos resultante) ==== -->
-                        <Border Grid.Row="2" Style="{StaticResource Pane}">
+                        <Border  Grid.Row="2" Style="{StaticResource Pane}">
                             <Grid>
                                 <Grid.RowDefinitions>
                                     <RowDefinition Height="Auto"/>
@@ -1046,7 +1078,7 @@ IsEnabled="{Binding EstaEjecutando, Converter={StaticResource InverseBoolConvert
               ShowsPreview="True"/>
 
             <!-- Panel derecho -->
-        <Grid Grid.Column="4" Margin="3">
+            <Grid x:Name="PanelDerecho" Grid.Column="4" Margin="3">
             <Grid.RowDefinitions>
                 <RowDefinition Height="2*" MinHeight="140"/>
                 <!-- Modificadores -->
@@ -1058,27 +1090,23 @@ IsEnabled="{Binding EstaEjecutando, Converter={StaticResource InverseBoolConvert
                 <!-- Ayuda -->
             </Grid.RowDefinitions>
 
-            <Border Grid.Row="0" Style="{StaticResource Pane}">
-                <DockPanel>
-                    <TextBlock DockPanel.Dock="Top"
-                                   Text="MODIFICADORES DEL COMANDO"
-                                   Style="{StaticResource SectionHeader}"/>
-                    <ScrollViewer VerticalScrollBarVisibility="Auto">
-                        <StackPanel Margin="10,6">
-                            <CheckBox Content="/S  · Incluir subdirectorios"    Margin="0,3"/>
-                            <CheckBox Content="/B  · Formato simple"            Margin="0,3"/>
-                            <CheckBox Content="/A  · Atributos"                 Margin="0,3"/>
-                            <CheckBox Content="/O  · Ordenar"                   Margin="0,3"/>
-                            <CheckBox Content="/W  · Formato ancho"             Margin="0,3"/>
-                            <CheckBox Content="/P  · Pausa por pantalla"        Margin="0,3"/>
-                            <CheckBox Content="/Q  · Silencioso"                Margin="0,3"/>
-                            <CheckBox Content="/R  · Reintentar en error"       Margin="0,3"/>
-                        </StackPanel>
-                    </ScrollViewer>
-                </DockPanel>
-            </Border>
+                        <Border Grid.Row="0" Style="{StaticResource Pane}">
+                            <DockPanel>
+                                <TextBlock DockPanel.Dock="Top"
+                   Text="INFORMACIÓN"
+                   Style="{StaticResource SectionHeader}"/>
+                                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                                    <StackPanel Margin="10,6">
+                                        <TextBlock Text="(En reorganización)"
+                           Foreground="#FF999999"
+                           FontStyle="Italic"
+                           TextWrapping="Wrap"/>
+                                    </StackPanel>
+                                </ScrollViewer>
+                            </DockPanel>
+                        </Border>
 
-            <GridSplitter Grid.Row="1"
+                        <GridSplitter Grid.Row="1"
               Height="5"
               Style="{StaticResource SplitterHorizontal}"                
               HorizontalAlignment="Stretch"
@@ -1117,31 +1145,26 @@ IsEnabled="{Binding EstaEjecutando, Converter={StaticResource InverseBoolConvert
                                     </TabItem>
                                     <TabItem Header="Operadores">
                             <WrapPanel Margin="6">
-                                <Button Content="&amp;"    Style="{StaticResource OpButton}"/>
-                                <Button Content="&amp;&amp;" Style="{StaticResource OpButton}"/>
-                                <Button Content="||"   Style="{StaticResource OpButton}"/>
-                                <Button Content="|"    Style="{StaticResource OpButton}"/>
-                                <Button Content="&gt;"    Style="{StaticResource OpButton}"/>
-                                <Button Content="&gt;&gt;" Style="{StaticResource OpButton}"/>
-                                <Button Content="&lt;"    Style="{StaticResource OpButton}"/>
-                                <Button Content="^"    Style="{StaticResource OpButton}"/>
-                                <Button Content="%"    Style="{StaticResource OpButton}"/>
-                                <Button Content="=="   Style="{StaticResource OpButton}"/>
-                                <Button Content="NEQ"  Style="{StaticResource OpButton}"/>
-                                <Button Content="EQU"  Style="{StaticResource OpButton}"/>
-                                <Button Content="▶ Ejecutar" Padding="8,2" ToolTip="Ejecutar la línea actual"
-        Click="Ejecutar_Click"
-        IsEnabled="{Binding EstaEjecutando, Converter={StaticResource InverseBoolConverter}}"/>
-
-<Button Content="⏹ Detener" Padding="8,2" ToolTip="Detener el proceso en curso"
-        Click="Detener_Click"
-        IsEnabled="{Binding EstaEjecutando}"/>
-                            </WrapPanel>
+                                            
+                                                    <Button Content="&amp;" Style="{StaticResource OpButton}" Click="InsertarOperador_Click" Tag="&amp;"/>
+                                                    <Button Content="&amp;&amp;" Style="{StaticResource OpButton}" Click="InsertarOperador_Click" Tag="&amp;&amp;"/>
+                                                    <Button Content="||"   Style="{StaticResource OpButton}" Click="InsertarOperador_Click" Tag="||"/>
+                                                    <Button Content="|"    Style="{StaticResource OpButton}" Click="InsertarOperador_Click" Tag="|"/>
+                                                    <Button Content="&gt;"    Style="{StaticResource OpButton}" Click="InsertarOperador_Click" Tag="&gt;"/>
+                                                    <Button Content="&gt;&gt;" Style="{StaticResource OpButton}" Click="InsertarOperador_Click" Tag="&gt;&gt;"/>
+                                                    <Button Content="&lt;"    Style="{StaticResource OpButton}" Click="InsertarOperador_Click" Tag="&lt;"/>
+                                                    <Button Content="^"    Style="{StaticResource OpButton}" Click="InsertarOperador_Click" Tag="^"/>
+                                                    <Button Content="%"    Style="{StaticResource OpButton}" Click="InsertarOperador_Click" Tag="%"/>
+                                                    <Button Content="=="   Style="{StaticResource OpButton}" Click="InsertarOperador_Click" Tag="=="/>
+                                                    <Button Content="NEQ"  Style="{StaticResource OpButton}" Click="InsertarOperador_Click" Tag="NEQ"/>
+                                                    <Button Content="EQU"  Style="{StaticResource OpButton}" Click="InsertarOperador_Click" Tag="EQU"/>
+                                                
+                                        </WrapPanel>
                         </TabItem>
                         
                         <TabItem Header="Variables">
                             <ListBox Margin="4">
-                                <ListBoxItem Content="%USERPROFILE%"/>
+                                <ListBoxItem Content="%USERPROFILE%" />
                                 <ListBoxItem Content="%TEMP%"/>
                                 <ListBoxItem Content="%PATH%"/>
                                 <ListBoxItem Content="%DATE%"/>
@@ -1205,7 +1228,7 @@ IsEnabled="{Binding EstaEjecutando, Converter={StaticResource InverseBoolConvert
                   Style="{StaticResource SplitterHorizontal}"/>
 
             <!-- Panel inferior: comentarios, errores, salida, historial -->
-            <Border Grid.Row="2"
+            <Border x:Name="PanelInferior" Grid.Row="2"
             BorderBrush="#FFC8C8C8" BorderThickness="0,1,0,0"
             Background="White">
                 <TabControl>

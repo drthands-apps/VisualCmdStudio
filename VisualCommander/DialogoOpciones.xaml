@@ -1,0 +1,109 @@
+﻿<Window x:Class="VisualCommander.DialogoOpciones"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Opciones"
+        Width="640" Height="480"
+        WindowStartupLocation="CenterOwner"
+        ResizeMode="CanResize"
+        Background="#FFF5F5F5"
+        FontFamily="Segoe UI" FontSize="12"
+        ShowInTaskbar="False">
+
+    <DockPanel>
+
+        <!-- Botonera inferior -->
+        <Border DockPanel.Dock="Bottom"
+                Background="#FFEDEDED"
+                BorderBrush="#FFD0D0D0"
+                BorderThickness="0,1,0,0"
+                Padding="16,10">
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                <Button Content="Cancelar" Padding="16,6" Margin="0,0,8,0"
+                        IsCancel="True" Click="Cancelar_Click"/>
+                <Button Content="✅ Aceptar" Padding="16,6"
+                        Background="#FF1F4E79" Foreground="White"
+                        FontWeight="SemiBold" BorderThickness="0"
+                        Click="Aceptar_Click"/>
+            </StackPanel>
+        </Border>
+
+        <!-- Pestañas -->
+        <TabControl Margin="16">
+
+            <!-- General -->
+            <TabItem Header="General">
+                <StackPanel Margin="12">
+                    <TextBlock Text="Opciones generales de la aplicación."
+                               Foreground="#FF666666"
+                               Margin="0,0,0,16"/>
+                    <CheckBox x:Name="ChkModoSilencioso"
+                              Content="Modo silencioso (silencia avisos durante la edición)"
+                              Margin="0,4"/>
+                    <CheckBox x:Name="ChkGuardarConfig"
+                              Content="Guardar configuración al cerrar"
+                              IsChecked="True"
+                              Margin="0,4"/>
+                    <TextBlock Text="Más opciones generales próximamente."
+                               Foreground="#FF999999"
+                               FontStyle="Italic"
+                               Margin="0,16,0,0"/>
+                </StackPanel>
+            </TabItem>
+
+            <!-- Codificación -->
+            <TabItem Header="Codificación">
+                <StackPanel Margin="12">
+                    <TextBlock Text="Codificación por defecto de los archivos exportados."
+                               Foreground="#FF666666"
+                               Margin="0,0,0,16"/>
+                    <RadioButton x:Name="RbUtf8Bom" Content="UTF-8 con BOM (recomendado)"
+                                 IsChecked="True" Margin="0,4"/>
+                    <RadioButton x:Name="RbUtf8SinBom" Content="UTF-8 sin BOM"
+                                 Margin="0,4"/>
+                    <RadioButton x:Name="RbAnsi" Content="ANSI (Windows-1252)"
+                                 Margin="0,4"/>
+                    <TextBlock Text="Nota: los scripts .sh requieren UTF-8 sin BOM y LF."
+                               Foreground="#FF999999"
+                               FontStyle="Italic"
+                               Margin="0,16,0,0"
+                               TextWrapping="Wrap"/>
+                </StackPanel>
+            </TabItem>
+
+            <!-- Idiomas -->
+            <TabItem Header="Idiomas">
+                <StackPanel Margin="12">
+                    <TextBlock Text="Idioma de la interfaz."
+                               Foreground="#FF666666"
+                               Margin="0,0,0,16"/>
+                    <ComboBox x:Name="CmbIdioma" SelectedIndex="0">
+                        <ComboBoxItem Content="Español"/>
+                        <ComboBoxItem Content="English"/>
+                        <ComboBoxItem Content="Català"/>
+                    </ComboBox>
+                    <TextBlock Text="Los idiomas adicionales estarán disponibles próximamente."
+                               Foreground="#FF999999"
+                               FontStyle="Italic"
+                               Margin="0,16,0,0"/>
+                </StackPanel>
+            </TabItem>
+
+            <!-- Avanzado -->
+            <TabItem Header="Avanzado">
+                <StackPanel Margin="12">
+                    <TextBlock Text="Opciones avanzadas. Úsalas con precaución."
+                               Foreground="#FF666666"
+                               Margin="0,0,0,16"/>
+                    <CheckBox Content="Habilitar comandos experimentales"
+                              Margin="0,4"/>
+                    <CheckBox Content="Mostrar información de depuración en la barra de estado"
+                              Margin="0,4"/>
+                    <TextBlock Text="Opciones avanzadas próximamente."
+                               Foreground="#FF999999"
+                               FontStyle="Italic"
+                               Margin="0,16,0,0"/>
+                </StackPanel>
+            </TabItem>
+        </TabControl>
+    </DockPanel>
+</Window>

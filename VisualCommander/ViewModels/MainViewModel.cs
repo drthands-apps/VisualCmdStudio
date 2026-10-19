@@ -1819,6 +1819,13 @@ namespace VisualCommander.ViewModels
         public string NombreSugeridoSh =>
             $"plan_{DateTime.Now:yyyyMMdd_HHmmss}.sh";
 
+        public void RecargarCatalogo()
+        {
+            Comandos.Clear();
+            CargarComandos();
+            ComandosView.Refresh();
+        }
+
 
     }
 }

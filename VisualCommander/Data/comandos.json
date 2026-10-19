@@ -43,7 +43,18 @@
         "descripcion": "Ordena por criterio (N, S, E, D, A)",
         "tipo": "Lista",
         "valoresPosibles": [ "N", "S", "E", "D", "A" ]
+      },
+      {
+        "nombre": "/Q",
+        "descripcion": "Muestra el propietario de cada archivo",
+        "tipo": "Bandera"
+      },
+      {
+        "nombre": "/R",
+        "descripcion": "Muestra los flujos de datos alternativos",
+        "tipo": "Bandera"
       }
+
     ],
     "ejemplos": [ "dir", "dir /S /B", "dir C:\\Users /O:N" ]
   },

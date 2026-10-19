@@ -566,6 +566,8 @@ namespace VisualCommander
                 btn.ContextMenu.IsOpen = true;
             }
         }
+       
+
         private void Window_PreviewKeyDown(object sender, KeyEventArgs e)
         {
             
@@ -1220,6 +1222,282 @@ namespace VisualCommander
             if (dialogo.ShowDialog() == true)
             {
                 ViewModel.ExportarASh(dialogo.RutaSeleccionada, dialogo.Opciones);
+            }
+        }
+        /// <summary>
+        /// Muestra un diálogo informativo sobre una función que aún no está
+        /// implementada. Se usa como placeholder de menús y opciones pendientes.
+        /// </summary>
+        private void MostrarProximamente(string nombreFuncion, string descripcion)
+        {
+            MessageBox.Show(
+                $"Esta función estará disponible próximamente.\n\n" +
+                $"{descripcion}",
+                nombreFuncion,
+                MessageBoxButton.OK,
+                MessageBoxImage.Information);
+        }
+        private void ImportarDesdeArchivo_Click(object sender, RoutedEventArgs e)
+        {
+            MostrarProximamente(
+                "Importar desde archivo",
+                "Permitirá importar planes desde archivos .bat, .ps1, .cmd y .sh, " +
+                "reconstruyendo los comandos en el editor visual.");
+        }
+
+        private void NuevoDesdePlantilla_Click(object sender, RoutedEventArgs e)
+        {
+            MostrarProximamente(
+                "Nuevo desde plantilla",
+                "Permitirá crear un plan a partir de una plantilla predefinida " +
+                "(por ejemplo, backup, limpieza de disco, diagnóstico de red...).");
+        }
+        private void ImportarDesdeBat_Click(object sender, RoutedEventArgs e)
+    => MostrarProximamente("Importar desde .bat",
+        "Permitirá reconstruir el plan visual a partir de un archivo .bat existente. " +
+        "Los comandos se parsearán y se generarán los tokens correspondientes.");
+
+        private void ImportarDesdeCmd_Click(object sender, RoutedEventArgs e)
+            => MostrarProximamente("Importar desde .cmd",
+                "Igual que la importación desde .bat, pero para archivos .cmd.");
+
+        private void ImportarDesdePs1_Click(object sender, RoutedEventArgs e)
+            => MostrarProximamente("Importar desde .ps1",
+                "Permitirá importar scripts de PowerShell, mostrando los cmdlets como " +
+                "comandos compatibles (con advertencia si no son de CMD).");
+
+        private void ImportarDesdeSh_Click(object sender, RoutedEventArgs e)
+            => MostrarProximamente("Importar desde .sh",
+                "Permitirá importar scripts de Bash. Los comandos que no tengan " +
+                "equivalente en Windows se mostrarán como texto con una advertencia.");
+        private void Deshacer_Click(object sender, RoutedEventArgs e)
+        {
+            if (ViewModel.LineaActiva.Deshacer())
+                ViewModel.SetStatus("Deshecho");
+            else
+                ViewModel.SetStatus("Nada que deshacer");
+        }
+
+        private void Rehacer_Click(object sender, RoutedEventArgs e)
+        {
+            if (ViewModel.LineaActiva.Rehacer())
+                ViewModel.SetStatus("Rehecho");
+            else
+                ViewModel.SetStatus("Nada que rehacer");
+        }
+
+        private void Cortar_Click(object sender, RoutedEventArgs e)
+        {
+            // Si hay foco en un TextBox, usar el cortar del sistema.
+            if (Keyboard.FocusedElement is TextBox tb)
+            {
+                tb.Cut();
+            }
+            else
+            {
+                // Si no, cortar la línea completa.
+                ViewModel.CortarLineaActiva();
+                EnfocarEditorActivo();
+            }
+        }
+
+        private void Copiar_Click(object sender, RoutedEventArgs e)
+        {
+            if (Keyboard.FocusedElement is TextBox tb)
+                tb.Copy();
+            else
+                ViewModel.CopiarLineaActiva();
+        }
+
+        private void Pegar_Click(object sender, RoutedEventArgs e)
+        {
+            if (Keyboard.FocusedElement is TextBox tb)
+                tb.Paste();
+            else
+            {
+                ViewModel.PegarLinea();
+                EnfocarEditorActivo();
+            }
+        }
+
+        private void SeleccionarTodo_Click(object sender, RoutedEventArgs e)
+        {
+            if (Keyboard.FocusedElement is TextBox tb)
+                tb.SelectAll();
+        }
+
+        private void InsertarTexto_Click(object sender, RoutedEventArgs e)
+        {
+            EmpujarEditorActivoAlModelo();
+            ViewModel.AgregarTextoVacio();
+            EnfocarEditorInPlace();
+        }
+
+        private void InsertarComando_Click(object sender, RoutedEventArgs e)
+        {
+            // Por ahora: enfocar el buscador de comandos.
+            CuadroBusqueda.Focus();
+            ViewModel.SetStatus("Selecciona un comando del catálogo y pulsa Enter");
+        }
+
+        private void InsertarRuta_Click(object sender, RoutedEventArgs e)
+        {
+            // Abrir un diálogo de selección de carpeta.
+            var dlg = new Microsoft.Win32.OpenFolderDialog
+            {
+                Title = "Seleccionar carpeta para insertar"
+            };
+
+            if (dlg.ShowDialog() == true)
+            {
+                EmpujarEditorActivoAlModelo();
+                ViewModel.AgregarRuta(dlg.FolderName);
+            }
+        }
+        private void Buscar_Click(object sender, RoutedEventArgs e)
+    => MostrarProximamente("Buscar",
+        "Permitirá buscar texto dentro del plan, resaltando coincidencias " +
+        "y navegando entre ellas con F3.");
+
+        private void Reemplazar_Click(object sender, RoutedEventArgs e)
+            => MostrarProximamente("Reemplazar",
+                "Permitirá buscar y reemplazar texto en el plan completo.");
+
+        private void VerPanelIzquierdo_Click(object sender, RoutedEventArgs e)
+        {
+            var visible = (sender as MenuItem)?.IsChecked ?? true;
+            PanelIzquierdo.Visibility = visible ? Visibility.Visible : Visibility.Collapsed;
+        }
+        private void VerPanelDerecho_Click(object sender, RoutedEventArgs e)
+        {
+            var visible = (sender as MenuItem)?.IsChecked ?? true;
+            PanelDerecho.Visibility = visible ? Visibility.Visible : Visibility.Collapsed;
+        }
+        private void VerPanelCentral_Click(object sender, RoutedEventArgs e)
+        {
+            var visible = (sender as MenuItem)?.IsChecked ?? true;
+            PanelCentral.Visibility = visible ? Visibility.Visible : Visibility.Collapsed;
+        }
+        private void VerPanelInferior_Click(object sender, RoutedEventArgs e)
+        {
+            var visible = (sender as MenuItem)?.IsChecked ?? true;
+            PanelInferior.Visibility = visible ? Visibility.Visible : Visibility.Collapsed;
+        }
+
+        // ... análogos para los otros paneles ...
+        private void TemaClaro_Click(object sender, RoutedEventArgs e)
+    => MostrarProximamente("Tema claro",
+        "El tema claro es el actual. En el futuro habrá un tema oscuro " +
+        "completo y opción de seguir el tema del sistema.");
+
+        private void TemaOscuro_Click(object sender, RoutedEventArgs e)
+            => MostrarProximamente("Tema oscuro",
+                "Permitirá cambiar toda la interfaz a un tema oscuro, " +
+                "reduciendo la fatiga visual en sesiones largas.");
+
+        private void TemaAutomatico_Click(object sender, RoutedEventArgs e)
+            => MostrarProximamente("Tema automático",
+                "El tema seguirá automáticamente la configuración de Windows " +
+                "(claro u oscuro).");
+        private void Zoom100_Click(object sender, RoutedEventArgs e) { /* TODO */ }
+        private void Zoom125_Click(object sender, RoutedEventArgs e) { /* TODO */ }
+        private void Zoom150_Click(object sender, RoutedEventArgs e) { /* TODO */ }
+        private void ZoomAumentar_Click(object sender, RoutedEventArgs e) { /* TODO */ }
+        private void ZoomDisminuir_Click(object sender, RoutedEventArgs e) { /* TODO */ }
+        private void RestablecerDiseno_Click(object sender, RoutedEventArgs e)
+    => MostrarProximamente("Restablecer diseño",
+        "Restablecerá los paneles a su distribución por defecto.");
+        private void PantallaCompleta_Click(object sender, RoutedEventArgs e)
+        {
+            if (WindowState == WindowState.Maximized && WindowStyle == WindowStyle.None)
+            {
+                // Salir de pantalla completa.
+                WindowStyle = WindowStyle.SingleBorderWindow;
+                WindowState = WindowState.Normal;
+            }
+            else
+            {
+                // Entrar en pantalla completa.
+                WindowStyle = WindowStyle.None;
+                WindowState = WindowState.Maximized;
+            }
+        }
+        private void ImportarComandos_Click(object sender, RoutedEventArgs e)
+    => MostrarProximamente("Importar comandos",
+        "Permitirá importar comandos adicionales desde archivos JSON, " +
+        "ampliando el catálogo sin recompilar la aplicación.");
+
+        private void EditarCatalogo_Click(object sender, RoutedEventArgs e)
+            => MostrarProximamente("Editar catálogo",
+                "Abrirá el archivo comandos.json en el editor por defecto, " +
+                "permitiendo añadir o modificar comandos manualmente.");
+
+        private void RecargarCatalogo_Click(object sender, RoutedEventArgs e)
+        {
+            ViewModel.RecargarCatalogo();
+            ViewModel.SetStatus("Catálogo recargado");
+        }
+
+        private void ValidarLinea_Click(object sender, RoutedEventArgs e)
+            => MostrarProximamente("Validar línea",
+                "Comprobará que la línea activa tiene todos sus argumentos " +
+                "obligatorios y no tiene errores evidentes.");
+
+        private void Opciones_Click(object sender, RoutedEventArgs e)
+        {
+            var dialogo = new DialogoOpciones(ViewModel)
+            {
+                Owner = this
+            };
+            dialogo.ShowDialog();
+        }
+        private void Documentacion_Click(object sender, RoutedEventArgs e)
+    => MostrarProximamente("Documentación de comandos",
+        "Se abrirá una ventana con la documentación detallada del comando " +
+        "seleccionado, incluyendo sintaxis, parámetros y ejemplos.");
+
+        private void GuiaInicio_Click(object sender, RoutedEventArgs e)
+            => MostrarProximamente("Guía de inicio rápido",
+                "Mostrará un tutorial paso a paso para nuevos usuarios, " +
+                "explicando cómo componer, guardar y ejecutar planes.");
+
+        private void AtajosTeclado_Click(object sender, RoutedEventArgs e)
+            => MostrarProximamente("Atajos de teclado",
+                "Mostrará una ventana con todos los atajos disponibles " +
+                "en la aplicación.");
+
+        private void AcercaDe_Click(object sender, RoutedEventArgs e)
+        {
+            MessageBox.Show(
+                "Visual CMD Studio\n" +
+                "Constructor visual de línea de comandos\n\n" +
+                "Versión: 1.0 (desarrollo)\n" +
+                "Fecha: 2026-10-19\n\n" +
+                "Desarrollado con C# .NET 10 y WPF.\n\n" +
+                "Un editor de comandos para Windows, no una consola.\n" +
+                "Filosofía: componer, verificar y ejecutar.",
+                "Acerca de Visual CMD Studio",
+                MessageBoxButton.OK,
+                MessageBoxImage.Information);
+        }
+        private void InsertarOperador_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is Button btn && btn.Tag is string operador)
+            {
+                EmpujarEditorActivoAlModelo();
+                ViewModel.InsertarTextoEnPosicion(operador, ViewModel.LineaActiva.Tokens.Count);
+            }
+        }
+        private void InsertarVariable_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is ListBox lb && lb.SelectedItem is ListBoxItem item)
+            {
+                var variable = item.Content?.ToString();
+                if (!string.IsNullOrEmpty(variable))
+                {
+                    EmpujarEditorActivoAlModelo();
+                    ViewModel.InsertarTextoEnPosicion(variable, ViewModel.LineaActiva.Tokens.Count);
+                }
             }
         }
     }

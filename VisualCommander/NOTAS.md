@@ -454,3 +454,32 @@ Interfaz completa antes de features avanzadas.
 - Un index que los carga todos.
 - El usuario puede añadir/eliminar archivos sin tocar código.
 - Los plugins futuros podrían usar el mismo sistema.
+
+### Mejora pendiente: ocultar paneles debe liberar espacio (2026-10-19)
+
+**Síntoma**: al ocultar un panel desde el menú Ver, el espacio que ocupaba
+queda vacío. El panel adyacente no lo absorbe.
+
+**Causa**: los `Grid` con `ColumnDefinition Width="..."` fija siguen
+reservando el espacio aunque el `Border` interno esté `Collapsed`.
+
+**Solución propuesta (Opción C)**:
+- Guardar el ancho anterior de la columna antes de ocultar.
+- Al ocultar: `ColumnDefinition.Width = new GridLength(0)`.
+- Al mostrar: restaurar el ancho guardado.
+- Requiere `x:Name` en las `ColumnDefinition` del `Grid` principal.
+
+**Prioridad**: Media. No bloquea el uso, pero es raro visualmente.
+### Refactor: dividir MainWindow.xaml en UserControls (futuro)
+
+Después de reorganizar los paneles (2026-10-19), dividir en:
+- Views/Panels/PanelIzquierdo.xaml
+- Views/Panels/PanelCentral.xaml
+- Views/Panels/PanelDerecho.xaml
+- Views/Panels/PanelInferior.xaml
+
+MainWindow.xaml solo contiene los 4 UserControls + GridSplitters.
+Compartir DataContext = MainViewModel.
+
+**Prioridad**: Alta, cuando la UI esté estable.
+**Razón**: MainWindow.xaml tiene 2000+ líneas. Difícil de mantener.
