@@ -532,3 +532,105 @@ Ver TODOs en el código y secciones anteriores.
 - El campo se limpia tras insertar y el foco vuelve al campo.
 - Texto vacío → mensaje, no se inserta nada.
 - Se empuja el texto pendiente del editor antes de insertar.
+- ### Mejora pendiente: inserciones inteligentes de dummies (Tier 3)
+
+**Síntoma**: al insertar un token de texto (o cualquier token) en una línea
+con dummies pendientes, el sistema lo coloca al final y **consume** el
+siguiente dummie en orden, aunque el tipo no coincida.
+
+**Ejemplo**:
+- Línea: `copy [dummy:origen] [dummy:destino]` (con 2 argumentos pendientes).
+- El usuario inserta un texto `"hola"`.
+- Resultado: `copy "hola" [dummy:destino]`.
+- **Problema**: `"hola"` no es una ruta válida para `copy origen`. El dummie
+  `[origen]` debería seguir ahí, esperando una **ruta**.
+
+**Comportamiento deseado**: inserción **inteligente**.
+- Si el dummie espera `Ruta` y se inserta un `Texto`, **no consumirlo**.
+- El texto se añade como argumento extra (el usuario decide si es válido).
+- Si el dummie espera `CadenaLibre` y se inserta un `Texto`, **consumirlo**.
+
+**Requisito previo**: `ArgumentoComando.Tipo` (ya existe: "Ruta",
+"ArchivoExistente", "CadenaLibre"...) debe usarse para validar la
+compatibilidad antes de consumir un dummie.
+
+**Diseño de la lógica**:
+1. Al insertar un token, recorrer los dummies desde el primer pendiente.
+2. Para cada dummie:
+   - Si el tipo de token es compatible con `ArgumentoComando.Tipo` →
+     consumir el dummie.
+   - Si no → saltar al siguiente dummie.
+3. Si ningún dummie es compatible, insertar el token al final
+   (comportamiento actual).
+
+**Compatibilidades propuestas**:
+| Tipo de dummie | Acepta tokens de tipo |
+|---|---|
+| Ruta | Ruta, Texto (con advertencia) |
+| ArchivoExistente | Ruta (que exista) |
+| DirectorioExistente | Ruta (que exista y sea carpeta) |
+| CadenaLibre | Texto, Variable, Comando (a veces) |
+| NombreNuevo | Texto (nombre), Ruta |
+| Numero | Texto numérico, Variable |
+
+**Prioridad**: Tier 3. Antes hay features más urgentes (drag & drop,
+menú contextual, undo/redo global).
+
+**Referencia**: al comentar en la sesión del 2026-10-20, el usuario
+apunta que "las inserciones deben ser más inteligentes".
+### Mejoras de edición de tokens (Tier 3, 2026-10-20)
+
+**Comodines**:
+- Al editar un comodín, si el usuario introduce un carácter que necesita
+  corchetes (por ejemplo `a-z` en lugar de `[a-z]`), envolverlo
+  automáticamente.
+- Sugerencia: ComboBox de valores comunes (`*`, `?`, `[a-z]`, `[0-9]`...).
+
+**Constantes**:
+- Al editar una constante, ofrecer un ComboBox con las constantes conocidas
+  (`CON`, `NUL`, `PRN`, `AUX`, `COM1`, `LPT1`).
+- Si el usuario escribe algo que no es constante, avisar y convertirlo en
+  `Texto` (o rechazar la edición).
+
+**Prioridad**: Tier 3. Antes hay features más urgentes.
+
+**Diseño posible**:
+- Diálogo especial de edición para tokens de tipo Constante y Comodín.
+- O un ComboBox en el panel derecho que se active al editar.
+- O un "selector visual" al hacer doble clic.
+
+**Nota**: cuando lleguemos a Tier 3, diseñar bien el flujo antes de
+implementar.
+### Tier 2 tarea 4: ampliar JSON con descripciones de valores (2026-10-20)
+
+**Implementado**:
+- Campo `descripcionValores` en `Parametro` (Dictionary<string, string>).
+- `MostrarInfoModificador` muestra cada valor con su descripción.
+- Ampliado `comandos.json` con descripciones para:
+  - dir /A, dir /O
+  - tasklist /FO, systeminfo /FO, driverquery /fo
+  - format /FS:
+  - takeown /D
+  - bcdboot /f
+  - wmic /format
+
+**Pendiente (Tier 3)**:
+- Mejora de edición de comodines (auto-corchetes).
+- Mejora de edición de constantes (ComboBox con valores).
+- ### Tarea 9 (Tier 2, pendiente): edición visual de parámetros de modificadores
+
+**Concepto**: los modificadores que admiten parámetro (`/A:D`, `/O:N`, `/FS:NTFS`...)
+deberían poder editarse desde un **selector visual** homogéneo con la edición
+de constantes.
+
+**Diseño propuesto**:
+- Al editar in-place un parámetro de tipo `Lista`, ofrecer un ComboBox
+  con los valores posibles (ya definidos en `valoresPosibles` del JSON).
+- Al seleccionar, actualizar el token con `nombre:valor`.
+- Homogéneo con el futuro selector de constantes.
+
+**Relación con otras tareas**:
+- Se solapa con la "edición de constantes con ComboBox" (Tier 3).
+- Ambas deberían compartir el mismo diálogo/selector visual.
+
+**Prioridad**: Tier 2, media-alta. Mejora la UX del editor de forma visible.

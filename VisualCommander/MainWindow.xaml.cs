@@ -233,18 +233,32 @@ namespace VisualCommander
         private void MostrarInfoModificador(ParametroVista pv)
         {
             TituloDetalle.Text = "DETALLE DEL MODIFICADOR";
-            // Nombre
+
             InfoModificadorNombre.Text = pv.Nombre;
             InfoModificadorNombre.Visibility = Visibility.Visible;
 
-            // Descripción
             InfoModificadorDescripcion.Text = pv.Descripcion;
             InfoModificadorDescripcion.Visibility = Visibility.Visible;
 
-            // Valores posibles
             if (pv.Parametro.ValoresPosibles != null && pv.Parametro.ValoresPosibles.Length > 0)
             {
-                InfoModificadorValores.Text = string.Join(", ", pv.Parametro.ValoresPosibles);
+                var sb = new System.Text.StringBuilder();
+
+                foreach (var valor in pv.Parametro.ValoresPosibles)
+                {
+                    sb.Append(valor);
+
+                    // Si hay descripción para este valor, añadirla.
+                    if (pv.Parametro.DescripcionValores != null &&
+                        pv.Parametro.DescripcionValores.TryGetValue(valor, out var desc))
+                    {
+                        sb.Append(" → ").Append(desc);
+                    }
+
+                    sb.AppendLine();
+                }
+
+                InfoModificadorValores.Text = sb.ToString().TrimEnd();
                 PanelValoresPosibles.Visibility = Visibility.Visible;
             }
             else
@@ -252,7 +266,6 @@ namespace VisualCommander
                 PanelValoresPosibles.Visibility = Visibility.Collapsed;
             }
 
-            // Ocultar mensaje "sin modificador"
             InfoSinModificador.Visibility = Visibility.Collapsed;
         }
 
@@ -1079,11 +1092,21 @@ namespace VisualCommander
         {
             // Regla: un token de texto se elimina si queda VACÍO (0 caracteres).
             // Pero `""` (dos comillas) es un texto válido.
-            if (token.Tipo == TipoToken.Texto && string.IsNullOrEmpty(nuevoTexto))
+            if (string.IsNullOrEmpty(nuevoTexto))
             {
-                token.EstoyEditando = false;
-                ViewModel.EliminarToken(token);
-                return;
+                if (token.Tipo == TipoToken.Texto || token.Tipo == TipoToken.Comodin)
+                {
+                    token.EstoyEditando = false;
+                    ViewModel.EliminarToken(token);
+                    return;
+                }
+                else if (token.Tipo == TipoToken.Constante)
+                {
+                    // Una constante vacía no tiene sentido: restaurar.
+                    token.Texto = token.TextoAntesDeEditar ?? token.Texto;
+                    token.EstoyEditando = false;
+                    return;
+                }
             }
 
             // Actualizamos el texto del token.
@@ -1720,6 +1743,15 @@ namespace VisualCommander
                     sb.AppendLine("Dispositivo del sistema. Al escribir o leer, se interactúa con el dispositivo real.");
                     break;
 
+                case TipoToken.Comodin:
+                    sb.AppendLine("Comodín de búsqueda. Se usa para buscar archivos que coincidan con un patrón.");
+                    sb.AppendLine();
+                    sb.AppendLine("Ejemplos:");
+                    sb.AppendLine("  *.txt     → todos los archivos con extensión .txt");
+                    sb.AppendLine("  foto?.jpg → foto1.jpg, foto2.jpg...");
+                    sb.AppendLine("  [abc]*.txt → archivos que empiezan por a, b o c");
+                    break;
+
                 case TipoToken.Ruta:
                     if (token.Origen is string ruta)
                     {
@@ -1731,6 +1763,7 @@ namespace VisualCommander
                             sb.AppendLine("⚠ La ruta no existe actualmente.");
                     }
                     break;
+                
 
                 case TipoToken.Texto:
                     if (token.EsDummy)
@@ -1741,6 +1774,7 @@ namespace VisualCommander
                         else
                             sb.AppendLine("  Es opcional.");
                     }
+
                     else
                     {
                         sb.AppendLine("Texto libre. Se insertará tal cual en la línea.");

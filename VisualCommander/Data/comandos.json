@@ -34,15 +34,29 @@
       },
       {
         "nombre": "/A",
-        "descripcion": "Filtra por atributos (D, R, H, S, A)",
+        "descripcion": "Filtra por atributos",
         "tipo": "Lista",
-        "valoresPosibles": [ "D", "R", "H", "S", "A" ]
+        "valoresPosibles": [ "D", "R", "H", "S", "A" ],
+        "descripcionValores": {
+          "D": "Directorios",
+          "R": "Archivos de solo lectura",
+          "H": "Archivos ocultos",
+          "S": "Archivos de sistema",
+          "A": "Archivos listos para archivar"
+        }
       },
       {
         "nombre": "/O",
-        "descripcion": "Ordena por criterio (N, S, E, D, A)",
+        "descripcion": "Ordena por criterio",
         "tipo": "Lista",
-        "valoresPosibles": [ "N", "S", "E", "D", "A" ]
+        "valoresPosibles": [ "N", "S", "E", "D", "A" ],
+        "descripcionValores": {
+          "N": "Por nombre (alfabético)",
+          "S": "Por tamaño (menor a mayor)",
+          "E": "Por extensión (alfabético)",
+          "D": "Por fecha (más antiguo primero)",
+          "A": "Por fecha de acceso (más antiguo primero)"
+        }
       },
       {
         "nombre": "/Q",
@@ -463,9 +477,14 @@
       },
       {
         "nombre": "/FO",
-        "descripcion": "Formato de salida (TABLE, LIST, CSV)",
+        "descripcion": "Formato de salida",
         "tipo": "Lista",
-        "valoresPosibles": [ "TABLE", "LIST", "CSV" ]
+        "valoresPosibles": [ "TABLE", "LIST", "CSV" ],
+        "descripcionValores": {
+          "TABLE": "Tabla con columnas (por defecto)",
+          "LIST": "Lista vertical con clave: valor",
+          "CSV": "Valores separados por comas (para hojas de cálculo)"
+        }
       }
     ],
     "ejemplos": [ "tasklist", "tasklist /FI \"STATUS eq RUNNING\"" ]
@@ -519,9 +538,14 @@
     "parametros": [
       {
         "nombre": "/FO",
-        "descripcion": "Formato (TABLE, LIST, CSV)",
+        "descripcion": "Formato de salida",
         "tipo": "Lista",
-        "valoresPosibles": [ "TABLE", "LIST", "CSV" ]
+        "valoresPosibles": [ "TABLE", "LIST", "CSV" ],
+        "descripcionValores": {
+          "TABLE": "Tabla con columnas",
+          "LIST": "Lista vertical con clave: valor",
+          "CSV": "Valores separados por comas"
+        }
       }
     ],
     "ejemplos": [ "systeminfo", "systeminfo /FO CSV" ]
@@ -783,9 +807,14 @@
       },
       {
         "nombre": "/fo",
-        "descripcion": "Formato de salida (TABLE, LIST, CSV)",
+        "descripcion": "Formato de salida",
         "tipo": "Lista",
-        "valoresPosibles": [ "TABLE", "LIST", "CSV" ]
+        "valoresPosibles": [ "TABLE", "LIST", "CSV" ],
+        "descripcionValores": {
+          "TABLE": "Tabla con columnas",
+          "LIST": "Lista vertical",
+          "CSV": "Valores separados por comas"
+        }
       }
     ],
     "ejemplos": [ "driverquery", "driverquery /v /fo CSV" ]
@@ -813,9 +842,14 @@
       },
       {
         "nombre": "/format",
-        "descripcion": "Formato de salida (list, table, csv)",
+        "descripcion": "Formato de salida",
         "tipo": "Lista",
-        "valoresPosibles": [ "list", "table", "csv" ]
+        "valoresPosibles": [ "list", "table", "csv" ],
+        "descripcionValores": {
+          "list": "Lista vertical (clave: valor)",
+          "table": "Tabla con columnas",
+          "csv": "Valores separados por comas"
+        }
       }
     ],
     "ejemplos": [ "wmic os get caption,version", "wmic cpu get name" ]
@@ -1512,9 +1546,15 @@
     "parametros": [
       {
         "nombre": "/FS:",
-        "descripcion": "Sistema de archivos (FAT, FAT32, NTFS, exFAT)",
+        "descripcion": "Sistema de archivos",
         "tipo": "Lista",
-        "valoresPosibles": [ "FAT", "FAT32", "NTFS", "exFAT" ]
+        "valoresPosibles": [ "FAT", "FAT32", "NTFS", "exFAT" ],
+        "descripcionValores": {
+          "FAT": "FAT16 (obsoleto, para discos pequeños)",
+          "FAT32": "FAT32 (compatible con muchos dispositivos, límite 32GB)",
+          "NTFS": "NTFS (moderno, con permisos y journaling)",
+          "exFAT": "exFAT (para unidades extraíbles grandes)"
+        }
       },
       {
         "nombre": "/Q",
@@ -1699,9 +1739,13 @@
       },
       {
         "nombre": "/D",
-        "descripcion": "Respuesta por defecto a la confirmación (y/n)",
+        "descripcion": "Respuesta por defecto a la confirmación",
         "tipo": "Lista",
-        "valoresPosibles": [ "y", "n" ]
+        "valoresPosibles": [ "y", "n" ],
+        "descripcionValores": {
+          "y": "Sí (tomar posesión automáticamente)",
+          "n": "No (omitir y continuar)"
+        }
       }
     ],
     "ejemplos": [ "takeown /F C:\\carpeta /R", "takeown /F archivo.txt" ]
@@ -1843,9 +1887,15 @@
         "valoresPosibles": [ "BIOS", "UEFI", "ALL" ]
       },
       {
-        "nombre": "/d",
-        "descripcion": "Conservar archivos del BCD existente",
-        "tipo": "Bandera"
+        "nombre": "/f",
+        "descripcion": "Tipo de firmware",
+        "tipo": "Lista",
+        "valoresPosibles": [ "BIOS", "UEFI", "ALL" ],
+        "descripcionValores": {
+          "BIOS": "Sistema BIOS (heredado)",
+          "UEFI": "Sistema UEFI (moderno)",
+          "ALL": "Ambos (detecta automáticamente)"
+        }
       }
     ],
     "ejemplos": [ "bcdboot C:\\Windows", "bcdboot C:\\Windows /s S: /f UEFI" ]

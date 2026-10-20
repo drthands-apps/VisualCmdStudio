@@ -39,6 +39,12 @@ namespace VisualCommander.Models
         /// <summary>Lista de valores válidos si Tipo == Lista.</summary>
         public string[]? ValoresPosibles { get; set; }
 
+        /// <summary>
+        /// Diccionario de descripciones de los valores posibles.
+        /// Clave: valor. Valor: descripción.
+        /// </summary>
+        public Dictionary<string, string>? DescripcionValores { get; set; }
+
         // ================== NUEVO (Paso 3.1) ==================
 
         /// <summary>

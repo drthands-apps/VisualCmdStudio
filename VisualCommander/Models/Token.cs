@@ -11,6 +11,7 @@ namespace VisualCommander.Models
         Operador,
         Variable,
         Constante,
+        Comodin,
         Ruta,
         Texto,
         Separador
@@ -21,6 +22,7 @@ namespace VisualCommander.Models
     Dummy,      // Placeholder esperando ser rellenado
     Invalido    // Token con contenido que no encaja en su contexto
 }
+
 
     /// <summary>
     /// Una pieza atómica del comando que el usuario va componiendo.
@@ -122,9 +124,16 @@ namespace VisualCommander.Models
         /// ¿Es este token editable in-place (doble clic)?
         /// Los tokens de tipo Texto y Ruta son editables.
         /// </summary>
+
+
         public bool EsEditable =>
-            Estado == EstadoToken.Normal &&
-            (Tipo == TipoToken.Texto || Tipo == TipoToken.Ruta);
+     Estado == EstadoToken.Normal &&
+     (Tipo == TipoToken.Texto ||
+      Tipo == TipoToken.Ruta ||
+      Tipo == TipoToken.Constante ||
+      Tipo == TipoToken.Comodin);
+
+
         /// <summary>
         /// ¿Está este token en modo edición in-place?
         /// Propiedad de UI, no de negocio. Se usa para el DataTrigger.

@@ -112,6 +112,18 @@ namespace VisualCommander.Models
                     Descripcion = $"Operador: {limpio}"
                 };
             }
+            // 4.5) Constantes 
+            if (limpio is "NULL" or "CON" or "PRN" or "AUX" or "COM1" or "LPT1")
+            {
+                return new Token
+                {
+                    Tipo = TipoToken.Constante,
+                    Texto = trozo,
+                    Color = "CCDE86",
+                    Icono = "▣",
+                    Descripcion = $"Constante: {limpio}"
+                };
+            }
 
             // 4) Variables
             if (limpio.Contains('%'))
@@ -123,6 +135,18 @@ namespace VisualCommander.Models
                     Color = "E4D7F5",
                     Icono = "📌",
                     Descripcion = "Variable de entorno"
+                };
+            }
+            // 4.5) ¿Es un comodín? (*, ?, [abc], [a-z])
+            if (EsComodin(limpio))
+            {
+                return new Token
+                {
+                    Tipo = TipoToken.Comodin,
+                    Texto = trozo,
+                    Color = "FFF2CC",         // amarillo pálido
+                    Icono = "◆",              // rombo relleno, distintivo
+                    Descripcion = "Comodín de búsqueda"
                 };
             }
 
@@ -154,6 +178,7 @@ namespace VisualCommander.Models
                     Origen = comoRuta
                 };
             }
+           
 
             // 7) Texto genérico
             return new Token
@@ -174,6 +199,22 @@ namespace VisualCommander.Models
             if (!s.Contains('*') && !s.Contains('?')) return false;
             if (s.Length >= 2 && s[1] == ':') return false; // C:\algo\*
             return true;
+        }
+        /// <summary>Helper para determinar si un string es un comodin.</summary>
+        private static bool EsComodin(string s)
+        {
+            if (string.IsNullOrEmpty(s)) return false;
+            if (s == "*" || s == "?") return true;
+            if (s.StartsWith("[") && s.EndsWith("]")) return true;
+            if (s.Contains('*') || s.Contains('?'))
+            {
+                // Si ya es un patrón de archivo, lo clasificamos como comodín
+                // en lugar de Texto. Pero si es una ruta completa (C:\...\*.txt),
+                // lo dejamos como Ruta.
+                if (s.Length >= 2 && s[1] == ':') return false;
+                return true;
+            }
+            return false;
         }
 
         // ==================== Detección de rutas ====================
