@@ -975,6 +975,7 @@ namespace VisualCommander
 
         private void Token_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
+
             // Solo doble clic.
             if (e.ClickCount != 2) return;
 
@@ -992,7 +993,7 @@ namespace VisualCommander
 
             e.Handled = true;
 
-            EnfocarEditorActivo();
+            //EnfocarEditorActivo();
         }
 
         private void EditorInPlace_IsVisibleChanged(object sender, DependencyPropertyChangedEventArgs e)
@@ -1036,7 +1037,6 @@ namespace VisualCommander
         {
             if (sender is not TextBox tb) return;
             if (tb.DataContext is not Token token) return;
-
             // Si todavía estamos en modo edición (no se ha confirmado/cancelado),
             // confirmamos por defecto (como hace cualquier editor).
             if (token.EstoyEditando)
@@ -1601,12 +1601,22 @@ namespace VisualCommander
         {
             if (sender is FrameworkElement fe && fe.DataContext is Token token)
             {
+                // Si está en edición, no interferir con el foco del TextBox.
+                if (token.EstoyEditando) return;
+
                 MostrarInfoToken(token);
             }
         }
 
         private void Token_MouseLeave(object sender, MouseEventArgs e)
         {
+            if (sender is FrameworkElement fe && fe.DataContext is Token token)
+            {
+
+                // Si el token está en edición, no ocultar la info (el ratón está
+                // sobre el TextBox de edición, no sobre el bloque).
+                if (token.EstoyEditando) return;
+            }
             OcultarInfoToken();
         }
 
@@ -1966,6 +1976,50 @@ namespace VisualCommander
 
             PanelValoresPosibles.Visibility = Visibility.Collapsed;
             InfoSinModificador.Visibility = Visibility.Collapsed;
+        }
+        // ==== Pestaña "Texto" del panel derecho ====
+
+        private void TxtTextoLibre_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Enter)
+            {
+                InsertarTextoLibre_Click(sender, e);
+                e.Handled = true;
+            }
+        }
+
+        private void InsertarTextoLibre_Click(object sender, RoutedEventArgs e)
+        {
+            var texto = TxtTextoLibre.Text?.Trim();
+
+            if (string.IsNullOrEmpty(texto))
+            {
+                EmpujarEditorActivoAlModelo();
+
+                ViewModel.AgregarTextoVacio();
+                EnfocarEditorInPlace();
+                return;
+            }
+
+            // Entrecomillar siempre.
+            var textoEntrecomillado = $"\"{texto}\"";
+
+            // Empujar el texto pendiente del editor al modelo.
+            EmpujarEditorActivoAlModelo();
+
+            // Insertar el token en la línea activa.
+            ViewModel.InsertarTextoEnPosicion(
+                textoEntrecomillado,
+                ViewModel.LineaActiva.Tokens.Count);
+
+            // Limpiar el campo para permitir insertar otro texto.
+            TxtTextoLibre.Clear();
+
+            // Devolver el foco al campo.
+            TxtTextoLibre.Focus();
+
+            ViewModel.SetStatus($"Insertado: {textoEntrecomillado}");
+
         }
     }
 }

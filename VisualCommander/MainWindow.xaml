@@ -1321,28 +1321,60 @@ IsEnabled="{Binding EstaEjecutando, Converter={StaticResource InverseBoolConvert
                        Text="INSERTAR TOKENS"
                        Style="{StaticResource SectionHeader}"/>
                                 <TabControl Margin="4,2">
-                                    <TabItem>
-                                        <TabItem.Header>
-                                            <StackPanel Orientation="Horizontal">
-                                                <TextBlock Text="📝" Margin="0,0,4,0"/>
-                                                <TextBlock Text="Texto"/>
-                                            </StackPanel>
-                                        </TabItem.Header>
-                                        <StackPanel Margin="8">
-                                            <TextBlock Text="Inserta un token de texto libre:"
-                                   FontSize="11"
-                                   Foreground="#FF666666"
-                                   TextWrapping="Wrap"
-                                   Margin="0,0,0,8"/>
-                                            <Button Content="📝 Insertar texto"
-                                Padding="10,6"
-                                FontSize="12"
-                                FontWeight="SemiBold"
-                                HorizontalAlignment="Left"
-                                Click="AgregarTexto_Click"
-                                ToolTip="Añade un token de texto editable"/>
-                                        </StackPanel>
-                                    </TabItem>
+                                   <TabItem>
+    <TabItem.Header>
+        <StackPanel Orientation="Horizontal">
+            <TextBlock Text="📝" Margin="0,0,4,0"/>
+            <TextBlock Text="Texto"/>
+        </StackPanel>
+    </TabItem.Header>
+    <StackPanel Margin="8">
+        <TextBlock Text="Escribe el texto a insertar:"
+                   FontSize="11"
+                   Foreground="#FF666666"
+                   Margin="0,0,0,6"/>
+
+        <TextBox x:Name="TxtTextoLibre"
+                 Padding="6,4"
+                 FontFamily="Consolas"
+                 FontSize="12"
+                 VerticalContentAlignment="Center"
+                 KeyDown="TxtTextoLibre_KeyDown"
+                 ToolTip="Pulsa Enter para insertar el texto"/>
+
+        <Button Content="📝 Insertar texto"
+                Padding="10,6"
+                FontSize="12"
+                FontWeight="SemiBold"
+                HorizontalAlignment="Left"
+                Margin="0,8,0,0"
+                Click="InsertarTextoLibre_Click"
+                ToolTip="Inserta el texto entre comillas al final de la línea"/>
+
+        <TextBlock Text="Texto con espacios se entrecomilla automáticamente."
+                   FontSize="10"
+                   Foreground="#FF999999"
+                   FontStyle="Italic"
+                   TextWrapping="Wrap"
+                   Margin="0,6,0,12"/>
+
+        <Separator Margin="0,0,0,8"/>
+
+        <Button Content="◇ Insertar token vacío"
+                Padding="10,6"
+                FontSize="11"
+                HorizontalAlignment="Left"
+                Click="AgregarTexto_Click"
+                ToolTip="Inserta un token vacío para editar después"/>
+
+        <TextBlock Text="El token vacío se abre para editar directamente. Útil como placeholder."
+                   FontSize="10"
+                   Foreground="#FF999999"
+                   FontStyle="Italic"
+                   TextWrapping="Wrap"
+                   Margin="0,6,0,0"/>
+    </StackPanel>
+</TabItem>
 
                                     <TabItem Header="Operadores">
                                         <WrapPanel Margin="6">

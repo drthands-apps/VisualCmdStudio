@@ -520,3 +520,15 @@ Prioridad: Tier 2.
 
 ### Visión
 Ver TODOs en el código y secciones anteriores.
+### Tier 2 tarea 2: botón "Insertar texto" con campo previo (2026-10-20)
+
+**Implementado**:
+- Pestaña "Texto" del panel derecho con:
+  - TextBox para escribir el texto a insertar.
+  - Enter en el TextBox → inserta el texto.
+  - Botón "Insertar texto" para el mismo efecto.
+  - Botón "Insertar token vacío" para el comportamiento anterior.
+- El texto se entrecomilla siempre.
+- El campo se limpia tras insertar y el foco vuelve al campo.
+- Texto vacío → mensaje, no se inserta nada.
+- Se empuja el texto pendiente del editor antes de insertar.
