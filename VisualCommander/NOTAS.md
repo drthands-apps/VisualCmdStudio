@@ -494,3 +494,29 @@ Cuando se implementen:
 - Modo aprendizaje: mostrar más explicaciones, ocultar opciones avanzadas.
 
 Prioridad: Tier 2.
+## Hito: interfaz completa (2026-10-19)
+
+### Estado
+- Menú completo y funcional (con placeholders informativos).
+- Paneles reorganizados: modificadores a la izquierda, información
+  a la derecha.
+- Todos los paneles redimensionables.
+- Diálogo de opciones con pestañas.
+
+### Pendientes inmediatos (Tier 2)
+- [ ] Hover sobre tokens del constructor.
+- [ ] Botón insertar texto con campo previo.
+- [ ] Constantes y comodines editables in-place.
+- [ ] Ampliar explicaciones de /A, /O.
+- [ ] Organizador de comandos (ComboBox de orden).
+- [ ] Drag & drop de tokens (reordenar, mover).
+- [ ] Menú contextual (clic derecho).
+- [ ] Undo/Redo global (operaciones sobre líneas).
+
+### Pendientes de Tier 1 (postpuestos)
+- [ ] Import desde .bat, .ps1, .sh.
+- [ ] Plantillas (A3).
+- [ ] Comandos modulares (JSON por familias).
+
+### Visión
+Ver TODOs en el código y secciones anteriores.

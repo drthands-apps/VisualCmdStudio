@@ -489,7 +489,9 @@ IsEnabled="{Binding EstaEjecutando, Converter={StaticResource InverseBoolConvert
                                 BorderThickness="2"
                                 BorderBrush="Transparent"
                                 CornerRadius="3"
-                                Margin="0,1">
+                                Margin="0,1"
+                                MouseEnter="ComandoCatalogo_MouseEnter"
+                                MouseLeave="Token_MouseLeave">
                                                 <Grid>
                                                     <Grid.ColumnDefinitions>
                                                         <ColumnDefinition Width="10"/>
@@ -706,6 +708,7 @@ IsEnabled="{Binding EstaEjecutando, Converter={StaticResource InverseBoolConvert
                                                 <Grid>
                                                     
                                                     <!-- ============ MODO DISPLAY ============ -->
+                                                    
                                                     <Border x:Name="BlockRoot"
                     Style="{StaticResource BlockBase}"
                     Background="{Binding Color, Converter={StaticResource HexToBrush}}"
@@ -713,6 +716,8 @@ IsEnabled="{Binding EstaEjecutando, Converter={StaticResource InverseBoolConvert
                     BorderBrush="#FF666666"
                     ToolTip="{Binding Descripcion}"
                     Cursor="Hand"
+                    MouseEnter="Token_MouseEnter"
+                    MouseLeave="Token_MouseLeave"                                    
                     MouseLeftButtonDown="Token_MouseLeftButtonDown">
                                                         <StackPanel Orientation="Horizontal">
                                                             
@@ -1245,12 +1250,13 @@ IsEnabled="{Binding EstaEjecutando, Converter={StaticResource InverseBoolConvert
                   ResizeBehavior="PreviousAndNext"
                   ShowsPreview="True"/>
 
-                        <!-- ==== Row 2: Detalle del modificador ==== -->
+                        <!-- ==== Row 2: Detalle del modificador o token ==== -->
                         <Border Grid.Row="2" Style="{StaticResource Pane}">
                             <DockPanel>
-                                <TextBlock DockPanel.Dock="Top"
-                       Text="DETALLE DEL MODIFICADOR"
-                       Style="{StaticResource SectionHeader}"/>
+                                <TextBlock x:Name="TituloDetalle"
+           DockPanel.Dock="Top"
+           Text="DETALLE"
+           Style="{StaticResource SectionHeader}"/>
                                 <ScrollViewer VerticalScrollBarVisibility="Auto">
                                     <StackPanel Margin="10,8">
 
@@ -1287,7 +1293,7 @@ IsEnabled="{Binding EstaEjecutando, Converter={StaticResource InverseBoolConvert
 
                                         <!-- Mensaje cuando no hay hover -->
                                         <TextBlock x:Name="InfoSinModificador"
-                               Text="Pasa el ratón sobre un modificador para ver su descripción detallada."
+                               Text="Pasa el ratón sobre un modificador o un token en el constructor para ver su descripción detallada."
                                TextWrapping="Wrap"
                                Foreground="#FF999999"
                                FontStyle="Italic"/>
@@ -1296,6 +1302,7 @@ IsEnabled="{Binding EstaEjecutando, Converter={StaticResource InverseBoolConvert
                                 </ScrollViewer>
                             </DockPanel>
                         </Border>
+                        
 
                         <!-- ==== Splitter ==== -->
                         <GridSplitter Grid.Row="3"
@@ -1339,18 +1346,18 @@ IsEnabled="{Binding EstaEjecutando, Converter={StaticResource InverseBoolConvert
 
                                     <TabItem Header="Operadores">
                                         <WrapPanel Margin="6">
-                                            <Button Content="&amp;" Style="{StaticResource OpButton}" Click="InsertarOperador_Click" Tag="&amp;"/>
-                                            <Button Content="&amp;&amp;" Style="{StaticResource OpButton}" Click="InsertarOperador_Click" Tag="&amp;&amp;"/>
-                                            <Button Content="||"   Style="{StaticResource OpButton}" Click="InsertarOperador_Click" Tag="||"/>
-                                            <Button Content="|"    Style="{StaticResource OpButton}" Click="InsertarOperador_Click" Tag="|"/>
-                                            <Button Content="&gt;"    Style="{StaticResource OpButton}" Click="InsertarOperador_Click" Tag="&gt;"/>
-                                            <Button Content="&gt;&gt;" Style="{StaticResource OpButton}" Click="InsertarOperador_Click" Tag="&gt;&gt;"/>
-                                            <Button Content="&lt;"    Style="{StaticResource OpButton}" Click="InsertarOperador_Click" Tag="&lt;"/>
-                                            <Button Content="^"    Style="{StaticResource OpButton}" Click="InsertarOperador_Click" Tag="^"/>
-                                            <Button Content="%"    Style="{StaticResource OpButton}" Click="InsertarOperador_Click" Tag="%"/>
-                                            <Button Content="=="   Style="{StaticResource OpButton}" Click="InsertarOperador_Click" Tag="=="/>
-                                            <Button Content="NEQ"  Style="{StaticResource OpButton}" Click="InsertarOperador_Click" Tag="NEQ"/>
-                                            <Button Content="EQU"  Style="{StaticResource OpButton}" Click="InsertarOperador_Click" Tag="EQU"/>
+                                            <Button Content="&amp;" Style="{StaticResource OpButton}" Click="InsertarOperador_Click" Tag="&amp;" MouseEnter="Operador_MouseEnter" MouseLeave="Token_MouseLeave"/>
+                                            <Button Content="&amp;&amp;" Style="{StaticResource OpButton}" Click="InsertarOperador_Click" Tag="&amp;&amp;" MouseEnter="Operador_MouseEnter" MouseLeave="Token_MouseLeave"/>
+                                            <Button Content="||"   Style="{StaticResource OpButton}" Click="InsertarOperador_Click" Tag="||" MouseEnter="Operador_MouseEnter" MouseLeave="Token_MouseLeave"/>
+                                            <Button Content="|"    Style="{StaticResource OpButton}" Click="InsertarOperador_Click" Tag="|" MouseEnter="Operador_MouseEnter" MouseLeave="Token_MouseLeave"/>
+                                            <Button Content="&gt;"    Style="{StaticResource OpButton}" Click="InsertarOperador_Click" Tag="&gt;" MouseEnter="Operador_MouseEnter" MouseLeave="Token_MouseLeave"/>
+                                            <Button Content="&gt;&gt;" Style="{StaticResource OpButton}" Click="InsertarOperador_Click" Tag="&gt;&gt;" MouseEnter="Operador_MouseEnter" MouseLeave="Token_MouseLeave"/>
+                                            <Button Content="&lt;"    Style="{StaticResource OpButton}" Click="InsertarOperador_Click" Tag="&lt;" MouseEnter="Operador_MouseEnter" MouseLeave="Token_MouseLeave"/>
+                                            <Button Content="^"    Style="{StaticResource OpButton}" Click="InsertarOperador_Click" Tag="^" MouseEnter="Operador_MouseEnter" MouseLeave="Token_MouseLeave"/>
+                                            <Button Content="%"    Style="{StaticResource OpButton}" Click="InsertarOperador_Click" Tag="%" MouseEnter="Operador_MouseEnter" MouseLeave="Token_MouseLeave"/>
+                                            <Button Content="=="   Style="{StaticResource OpButton}" Click="InsertarOperador_Click" Tag="==" MouseEnter="Operador_MouseEnter" MouseLeave="Token_MouseLeave"/>
+                                            <Button Content="NEQ"  Style="{StaticResource OpButton}" Click="InsertarOperador_Click" Tag="NEQ" MouseEnter="Operador_MouseEnter" MouseLeave="Token_MouseLeave"/>
+                                            <Button Content="EQU"  Style="{StaticResource OpButton}" Click="InsertarOperador_Click" Tag="EQU" MouseEnter="Operador_MouseEnter" MouseLeave="Token_MouseLeave"/>
                                         </WrapPanel>
                                     </TabItem>
 
@@ -1358,14 +1365,14 @@ IsEnabled="{Binding EstaEjecutando, Converter={StaticResource InverseBoolConvert
                                         <ListBox x:Name="ListaVariables"
                              Margin="4"
                              SelectionChanged="ListaVariables_SelectionChanged">
-                                            <ListBoxItem Content="%USERPROFILE%"/>
-                                            <ListBoxItem Content="%TEMP%"/>
-                                            <ListBoxItem Content="%PATH%"/>
-                                            <ListBoxItem Content="%DATE%"/>
-                                            <ListBoxItem Content="%TIME%"/>
-                                            <ListBoxItem Content="%RANDOM%"/>
-                                            <ListBoxItem Content="%ERRORLEVEL%"/>
-                                            <ListBoxItem Content="%CD%"/>
+                                            <ListBoxItem Content="%USERPROFILE%" MouseEnter="Variable_MouseEnter" MouseLeave="Token_MouseLeave"/>
+                                            <ListBoxItem Content="%TEMP%" MouseEnter="Variable_MouseEnter" MouseLeave="Token_MouseLeave"/>
+                                            <ListBoxItem Content="%PATH%" MouseEnter="Variable_MouseEnter" MouseLeave="Token_MouseLeave"/>
+                                            <ListBoxItem Content="%DATE%" MouseEnter="Variable_MouseEnter" MouseLeave="Token_MouseLeave"/>
+                                            <ListBoxItem Content="%TIME%" MouseEnter="Variable_MouseEnter" MouseLeave="Token_MouseLeave"/>
+                                            <ListBoxItem Content="%RANDOM%" MouseEnter="Variable_MouseEnter" MouseLeave="Token_MouseLeave"/>
+                                            <ListBoxItem Content="%ERRORLEVEL%" MouseEnter="Variable_MouseEnter" MouseLeave="Token_MouseLeave"/>
+                                            <ListBoxItem Content="%CD%" MouseEnter="Variable_MouseEnter" MouseLeave="Token_MouseLeave"/>
                                         </ListBox>
                                     </TabItem>
 
@@ -1373,12 +1380,12 @@ IsEnabled="{Binding EstaEjecutando, Converter={StaticResource InverseBoolConvert
                                         <ListBox x:Name="ListaConstantes"
                              Margin="4"
                              SelectionChanged="ListaConstantes_SelectionChanged">
-                                            <ListBoxItem Content="CON"/>
-                                            <ListBoxItem Content="NUL"/>
-                                            <ListBoxItem Content="PRN"/>
-                                            <ListBoxItem Content="AUX"/>
-                                            <ListBoxItem Content="COM1"/>
-                                            <ListBoxItem Content="LPT1"/>
+                                            <ListBoxItem Content="CON" MouseEnter="Constante_MouseEnter" MouseLeave="Token_MouseLeave"/>
+                                            <ListBoxItem Content="NUL" MouseEnter="Constante_MouseEnter" MouseLeave="Token_MouseLeave"/>
+                                            <ListBoxItem Content="PRN" MouseEnter="Constante_MouseEnter" MouseLeave="Token_MouseLeave"/>
+                                            <ListBoxItem Content="AUX" MouseEnter="Constante_MouseEnter" MouseLeave="Token_MouseLeave"/>
+                                            <ListBoxItem Content="COM1" MouseEnter="Constante_MouseEnter" MouseLeave="Token_MouseLeave"/>
+                                            <ListBoxItem Content="LPT1" MouseEnter="Constante_MouseEnter" MouseLeave="Token_MouseLeave"/>
                                         </ListBox>
                                     </TabItem>
 
@@ -1386,10 +1393,10 @@ IsEnabled="{Binding EstaEjecutando, Converter={StaticResource InverseBoolConvert
                                         <ListBox x:Name="ListaComodines"
                              Margin="4"
                              SelectionChanged="ListaComodines_SelectionChanged">
-                                            <ListBoxItem Content="*" Tag="*"/>
-                                            <ListBoxItem Content="?" Tag="?"/>
-                                            <ListBoxItem Content="[abc]" Tag="[abc]"/>
-                                            <ListBoxItem Content="[a-z]" Tag="[a-z]"/>
+                                            <ListBoxItem Content="*" Tag="*" MouseEnter="Comodin_MouseEnter" MouseLeave="Token_MouseLeave"/>
+                                            <ListBoxItem Content="?" Tag="?" MouseEnter="Comodin_MouseEnter" MouseLeave="Token_MouseLeave"/>
+                                            <ListBoxItem Content="[abc]" Tag="[abc]" MouseEnter="Comodin_MouseEnter" MouseLeave="Token_MouseLeave"/>
+                                            <ListBoxItem Content="[a-z]" Tag="[a-z]" MouseEnter="Comodin_MouseEnter" MouseLeave="Token_MouseLeave"/>
                                         </ListBox>
                                     </TabItem>
                                 </TabControl>

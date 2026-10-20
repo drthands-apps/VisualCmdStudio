@@ -232,6 +232,7 @@ namespace VisualCommander
 
         private void MostrarInfoModificador(ParametroVista pv)
         {
+            TituloDetalle.Text = "DETALLE DEL MODIFICADOR";
             // Nombre
             InfoModificadorNombre.Text = pv.Nombre;
             InfoModificadorNombre.Visibility = Visibility.Visible;
@@ -257,6 +258,7 @@ namespace VisualCommander
 
         private void OcultarInfoModificador()
         {
+            TituloDetalle.Text = "DETALLE";
             InfoModificadorNombre.Visibility = Visibility.Collapsed;
             InfoModificadorDescripcion.Visibility = Visibility.Collapsed;
             PanelValoresPosibles.Visibility = Visibility.Collapsed;
@@ -334,9 +336,11 @@ namespace VisualCommander
                 };
                 nodoDrive.Items.Add(new TreeViewItem { Header = "Cargando..." });
                 nodoDrive.Expanded += NodoDrive_Expanded;
+                nodoDrive.MouseEnter += NodoArchivo_MouseEnter;
+                nodoDrive.MouseLeave += Token_MouseLeave;
                 raiz.Items.Add(nodoDrive);
             }
-
+            
             ArbolArchivos.Items.Add(raiz);
         }
 
@@ -361,8 +365,11 @@ namespace VisualCommander
                     };
                     hijo.Items.Add(new TreeViewItem { Header = "Cargando..." });
                     hijo.Expanded += NodoDrive_Expanded;
+                    hijo.MouseEnter += NodoArchivo_MouseEnter;
+                    hijo.MouseLeave += Token_MouseLeave;
                     nodo.Items.Add(hijo);
                 }
+
             }
             catch
             {
@@ -1587,6 +1594,378 @@ namespace VisualCommander
             EmpujarEditorActivoAlModelo();
             ViewModel.InsertarTextoEnPosicion(texto, ViewModel.LineaActiva.Tokens.Count);
             EnfocarEditorActivo();
+        }
+        // ==== Hover sobre tokens del constructor ====
+
+        private void Token_MouseEnter(object sender, MouseEventArgs e)
+        {
+            if (sender is FrameworkElement fe && fe.DataContext is Token token)
+            {
+                MostrarInfoToken(token);
+            }
+        }
+
+        private void Token_MouseLeave(object sender, MouseEventArgs e)
+        {
+            OcultarInfoToken();
+        }
+
+        private void MostrarInfoToken(Token token)
+        {
+            // Cambiar título.
+            TituloDetalle.Text = "DETALLE DEL TOKEN";
+
+            // Nombre.
+            InfoModificadorNombre.Text = token.Texto;
+            InfoModificadorNombre.Visibility = Visibility.Visible;
+
+            // Descripción según tipo.
+            InfoModificadorDescripcion.Text = ObtenerDescripcionToken(token);
+            InfoModificadorDescripcion.Visibility = Visibility.Visible;
+
+            // Valores posibles (solo si es parámetro de tipo Lista).
+            if (token.Origen is Parametro p &&
+                p.ValoresPosibles != null &&
+                p.ValoresPosibles.Length > 0)
+            {
+                InfoModificadorValores.Text = string.Join(", ", p.ValoresPosibles);
+                PanelValoresPosibles.Visibility = Visibility.Visible;
+            }
+            else
+            {
+                PanelValoresPosibles.Visibility = Visibility.Collapsed;
+            }
+
+            // Ocultar mensaje de "sin hover".
+            InfoSinModificador.Visibility = Visibility.Collapsed;
+        }
+
+        private void OcultarInfoToken()
+        {
+            // Volver al título neutro.
+            TituloDetalle.Text = "DETALLE";
+
+            InfoModificadorNombre.Visibility = Visibility.Collapsed;
+            InfoModificadorDescripcion.Visibility = Visibility.Collapsed;
+            PanelValoresPosibles.Visibility = Visibility.Collapsed;
+            InfoSinModificador.Visibility = Visibility.Visible;
+        }
+
+        /// <summary>
+        /// Construye la descripción detallada de un token según su tipo.
+        /// </summary>
+        private string ObtenerDescripcionToken(Token token)
+        {
+            var sb = new System.Text.StringBuilder();
+
+            // Descripción general (la que ya tiene el token).
+            if (!string.IsNullOrEmpty(token.Descripcion))
+            {
+                sb.AppendLine(token.Descripcion);
+                sb.AppendLine();
+            }
+
+            // Contenido específico según tipo.
+            switch (token.Tipo)
+            {
+                case TipoToken.Comando:
+                    if (token.Origen is Comando cmd)
+                    {
+                        if (!string.IsNullOrEmpty(cmd.Sintaxis))
+                        {
+                            sb.AppendLine("Sintaxis:");
+                            sb.AppendLine(cmd.Sintaxis);
+                            sb.AppendLine();
+                        }
+                        if (cmd.Ejemplos != null && cmd.Ejemplos.Count > 0)
+                        {
+                            sb.AppendLine("Ejemplos:");
+                            foreach (var ej in cmd.Ejemplos)
+                                sb.AppendLine("  " + ej);
+                        }
+                    }
+                    break;
+
+                case TipoToken.Parametro:
+                    if (token.Origen is Parametro p)
+                    {
+                        if (p.ValoresPosibles != null && p.ValoresPosibles.Length > 0)
+                        {
+                            sb.AppendLine("Valores posibles:");
+                            foreach (var v in p.ValoresPosibles)
+                                sb.AppendLine("  " + v);
+                        }
+                    }
+                    break;
+
+                case TipoToken.Operador:
+                    sb.AppendLine("Operador de shell. Conecta comandos o redirige la salida.");
+                    break;
+
+                case TipoToken.Variable:
+                    sb.AppendLine("Variable de entorno. Su valor se sustituye al ejecutar.");
+                    break;
+
+                case TipoToken.Constante:
+                    sb.AppendLine("Dispositivo del sistema. Al escribir o leer, se interactúa con el dispositivo real.");
+                    break;
+
+                case TipoToken.Ruta:
+                    if (token.Origen is string ruta)
+                    {
+                        if (System.IO.Directory.Exists(ruta))
+                            sb.AppendLine("✓ Directorio existente.");
+                        else if (System.IO.File.Exists(ruta))
+                            sb.AppendLine("✓ Archivo existente.");
+                        else
+                            sb.AppendLine("⚠ La ruta no existe actualmente.");
+                    }
+                    break;
+
+                case TipoToken.Texto:
+                    if (token.EsDummy)
+                    {
+                        sb.AppendLine("◇ Argumento esperado. Aún no rellenado.");
+                        if (token.EsRequerido)
+                            sb.AppendLine("  Es obligatorio para que el comando sea válido.");
+                        else
+                            sb.AppendLine("  Es opcional.");
+                    }
+                    else
+                    {
+                        sb.AppendLine("Texto libre. Se insertará tal cual en la línea.");
+                    }
+                    break;
+            }
+
+            return sb.ToString().Trim();
+        }
+        private void Operador_MouseEnter(object sender, MouseEventArgs e)
+        {
+            if (sender is Button btn && btn.Tag is string operador)
+            {
+                MostrarInfoOperador(operador);
+            }
+        }
+
+        private void MostrarInfoOperador(string operador)
+        {
+            TituloDetalle.Text = "DETALLE DEL OPERADOR";
+
+            InfoModificadorNombre.Text = operador;
+            InfoModificadorNombre.Visibility = Visibility.Visible;
+
+            InfoModificadorDescripcion.Text = ObtenerDescripcionOperador(operador);
+            InfoModificadorDescripcion.Visibility = Visibility.Visible;
+
+            PanelValoresPosibles.Visibility = Visibility.Collapsed;
+            InfoSinModificador.Visibility = Visibility.Collapsed;
+        }
+
+        private string ObtenerDescripcionOperador(string operador)
+        {
+            return operador switch
+            {
+                "&" => "Ejecuta el comando en segundo plano (sin esperar a que termine).",
+                "&&" => "Ejecuta el segundo comando SOLO si el primero tiene éxito (código 0).",
+                "||" => "Ejecuta el segundo comando SOLO si el primero falla (código distinto de 0).",
+                "|" => "Conecta la salida del primer comando a la entrada del segundo (pipe).",
+                ">" => "Redirige la salida del comando a un archivo (sobrescribe).",
+                ">>" => "Redirige la salida del comando a un archivo (añade al final).",
+                "<" => "Redirige la entrada del comando desde un archivo.",
+                "^" => "Escapa el carácter siguiente (le quita su significado especial).",
+                "%" => "Delimita variables de entorno (%VARIABLE%).",
+                "==" => "Compara dos valores (usado en if).",
+                "NEQ" => "Compara dos valores: distinto (usado en if).",
+                "EQU" => "Compara dos valores: igual (usado en if).",
+                _ => $"Operador: {operador}"
+            };
+        }
+        private void Variable_MouseEnter(object sender, MouseEventArgs e)
+        {
+            if (sender is ListBoxItem item && item.Content is string variable)
+            {
+                MostrarInfoVariable(variable);
+            }
+        }
+
+        private void MostrarInfoVariable(string variable)
+        {
+            TituloDetalle.Text = "DETALLE DE LA VARIABLE";
+
+            InfoModificadorNombre.Text = variable;
+            InfoModificadorNombre.Visibility = Visibility.Visible;
+
+            InfoModificadorDescripcion.Text = ObtenerDescripcionVariable(variable);
+            InfoModificadorDescripcion.Visibility = Visibility.Visible;
+
+            PanelValoresPosibles.Visibility = Visibility.Collapsed;
+            InfoSinModificador.Visibility = Visibility.Collapsed;
+        }
+
+        private string ObtenerDescripcionVariable(string variable)
+        {
+            return variable switch
+            {
+                "%USERPROFILE%" => "Carpeta del perfil del usuario actual. Ejemplo: C:\\Users\\User1",
+                "%TEMP%" => "Carpeta temporal del usuario. Los archivos aquí se pueden borrar sin afectar al sistema.",
+                "%PATH%" => "Lista de directorios donde se buscan los comandos.",
+                "%DATE%" => "Fecha actual en formato local.",
+                "%TIME%" => "Hora actual en formato local.",
+                "%RANDOM%" => "Número aleatorio entre 0 y 32767.",
+                "%ERRORLEVEL%" => "Código de salida del último comando ejecutado.",
+                "%CD%" => "Directorio actual.",
+                _ => $"Variable de entorno: {variable}"
+            };
+        }
+        private void Constante_MouseEnter(object sender, MouseEventArgs e)
+        {
+            if (sender is ListBoxItem item && item.Content is string constante)
+            {
+                MostrarInfoConstante(constante);
+            }
+        }
+
+        private void MostrarInfoConstante(string constante)
+        {
+            TituloDetalle.Text = "DETALLE DE LA CONSTANTE";
+
+            InfoModificadorNombre.Text = constante;
+            InfoModificadorNombre.Visibility = Visibility.Visible;
+
+            InfoModificadorDescripcion.Text = ObtenerDescripcionConstante(constante);
+            InfoModificadorDescripcion.Visibility = Visibility.Visible;
+
+            PanelValoresPosibles.Visibility = Visibility.Collapsed;
+            InfoSinModificador.Visibility = Visibility.Collapsed;
+        }
+
+        private string ObtenerDescripcionConstante(string constante)
+        {
+            return constante switch
+            {
+                "CON" => "Consola. Al escribir en CON, se muestra en pantalla. Al leer de CON, se toma del teclado.",
+                "NUL" => "Dispositivo nulo. Todo lo que se escribe se descarta. Útil para silenciar salidas.",
+                "PRN" => "Impresora. Envía la salida a la impresora predeterminada.",
+                "AUX" => "Puerto auxiliar (histórico).",
+                "COM1" => "Puerto serie COM1.",
+                "LPT1" => "Puerto paralelo LPT1 (impresora).",
+                _ => $"Dispositivo del sistema: {constante}"
+            };
+        }
+        private void Comodin_MouseEnter(object sender, MouseEventArgs e)
+        {
+            if (sender is ListBoxItem item && item.Tag is string comodin)
+            {
+                MostrarInfoComodin(comodin);
+            }
+        }
+
+        private void MostrarInfoComodin(string comodin)
+        {
+            TituloDetalle.Text = "DETALLE DEL COMODÍN";
+
+            InfoModificadorNombre.Text = comodin;
+            InfoModificadorNombre.Visibility = Visibility.Visible;
+
+            InfoModificadorDescripcion.Text = ObtenerDescripcionComodin(comodin);
+            InfoModificadorDescripcion.Visibility = Visibility.Visible;
+
+            PanelValoresPosibles.Visibility = Visibility.Collapsed;
+            InfoSinModificador.Visibility = Visibility.Collapsed;
+        }
+
+        private string ObtenerDescripcionComodin(string comodin)
+        {
+            return comodin switch
+            {
+                "*" => "Coincide con cualquier secuencia de caracteres (incluida vacía). Ejemplo: *.txt",
+                "?" => "Coincide con un único carácter cualquiera. Ejemplo: foto?.jpg",
+                "[abc]" => "Coincide con uno de los caracteres entre corchetes. Ejemplo: archivo[123].txt",
+                "[a-z]" => "Coincide con cualquier carácter del rango. Ejemplo: archivo[a-z].txt",
+                _ => $"Comodín: {comodin}"
+            };
+        }
+        private void NodoArchivo_MouseEnter(object sender, MouseEventArgs e)
+        {
+            if (sender is TreeViewItem item && item.Tag is string ruta)
+            {
+                MostrarInfoRuta(ruta);
+            }
+        }
+
+        private void MostrarInfoRuta(string ruta)
+        {
+            TituloDetalle.Text = "DETALLE DE LA RUTA";
+
+            InfoModificadorNombre.Text = ruta;
+            InfoModificadorNombre.Visibility = Visibility.Visible;
+
+            var descripcion = new System.Text.StringBuilder();
+            if (System.IO.Directory.Exists(ruta))
+            {
+                descripcion.AppendLine("✓ Directorio existente.");
+                try
+                {
+                    var numArchivos = System.IO.Directory.GetFiles(ruta).Length;
+                    var numCarpetas = System.IO.Directory.GetDirectories(ruta).Length;
+                    descripcion.AppendLine($"Contiene {numArchivos} archivo(s) y {numCarpetas} carpeta(s).");
+                }
+                catch { }
+            }
+            else if (System.IO.File.Exists(ruta))
+            {
+                descripcion.AppendLine("✓ Archivo existente.");
+            }
+            else
+            {
+                descripcion.AppendLine("⚠ La ruta no existe actualmente.");
+            }
+
+            InfoModificadorDescripcion.Text = descripcion.ToString().Trim();
+            InfoModificadorDescripcion.Visibility = Visibility.Visible;
+
+            PanelValoresPosibles.Visibility = Visibility.Collapsed;
+            InfoSinModificador.Visibility = Visibility.Collapsed;
+        }
+        private void ComandoCatalogo_MouseEnter(object sender, MouseEventArgs e)
+        {
+            if (sender is FrameworkElement fe && fe.DataContext is Comando cmd)
+            {
+                MostrarInfoComando(cmd);
+            }
+        }
+
+        private void MostrarInfoComando(Comando cmd)
+        {
+            TituloDetalle.Text = "DETALLE DEL COMANDO";
+
+            InfoModificadorNombre.Text = cmd.Nombre;
+            InfoModificadorNombre.Visibility = Visibility.Visible;
+
+            var descripcion = new System.Text.StringBuilder();
+            descripcion.AppendLine(cmd.Descripcion);
+
+            if (!string.IsNullOrEmpty(cmd.Sintaxis))
+            {
+                descripcion.AppendLine();
+                descripcion.AppendLine("Sintaxis:");
+                descripcion.AppendLine(cmd.Sintaxis);
+            }
+
+            if (cmd.Ejemplos != null && cmd.Ejemplos.Count > 0)
+            {
+                descripcion.AppendLine();
+                descripcion.AppendLine("Ejemplos:");
+                foreach (var ej in cmd.Ejemplos)
+                    descripcion.AppendLine("  " + ej);
+            }
+
+            InfoModificadorDescripcion.Text = descripcion.ToString().Trim();
+            InfoModificadorDescripcion.Visibility = Visibility.Visible;
+
+            PanelValoresPosibles.Visibility = Visibility.Collapsed;
+            InfoSinModificador.Visibility = Visibility.Collapsed;
         }
     }
 }
