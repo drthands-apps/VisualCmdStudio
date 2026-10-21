@@ -57,6 +57,27 @@ namespace VisualCommander
                 }
             };
         }
+        // ==== Estado de visibilidad de paneles ====
+
+        private GridLength _anchoIzquierdoOriginal = new GridLength(310);
+        private double _minAnchoIzquierdoOriginal = 230;
+
+        private GridLength _anchoCentralOriginal = new GridLength(1, GridUnitType.Star);
+        private double _minAnchoCentralOriginal = 450;
+
+        private GridLength _anchoDerechoOriginal = new GridLength(330);
+        private double _minAnchoDerechoOriginal = 250;
+
+        private GridLength _altoInferiorOriginal = new GridLength(160);
+        private double _minAltoInferiorOriginal = 80;
+        private GridLength _altoConstructorVisualOriginal = new GridLength(1, GridUnitType.Star);
+        private double _minAltoConstructorVisualOriginal = 140;
+
+        private GridLength _altoLineaComandosOriginal = new GridLength(1, GridUnitType.Star);
+        private double _minAltoLineaComandosOriginal = 120;
+
+
+
         private TextBox? _editorActivo;
 
         private bool _scrollPendiente;
@@ -1441,22 +1462,103 @@ namespace VisualCommander
         private void VerPanelIzquierdo_Click(object sender, RoutedEventArgs e)
         {
             var visible = (sender as MenuItem)?.IsChecked ?? true;
-            PanelIzquierdo.Visibility = visible ? Visibility.Visible : Visibility.Collapsed;
+
+            if (visible)
+            {
+                PanelIzquierdo.Visibility = Visibility.Visible;
+                SplitterIzquierdo.Visibility = Visibility.Visible;
+                ColumnIzquierda.MinWidth = _minAnchoIzquierdoOriginal;
+                ColumnIzquierda.Width = _anchoIzquierdoOriginal;
+            }
+            else
+            {
+                _anchoIzquierdoOriginal = ColumnIzquierda.Width;
+                _minAnchoIzquierdoOriginal = ColumnIzquierda.MinWidth;
+                PanelIzquierdo.Visibility = Visibility.Collapsed;
+                SplitterIzquierdo.Visibility = Visibility.Collapsed;
+                ColumnIzquierda.MinWidth = 0;
+                ColumnIzquierda.Width = new GridLength(0);
+            }
         }
+
+        private void VerConstructorVisual_Click(object sender, RoutedEventArgs e)
+        {
+            var visible = (sender as MenuItem)?.IsChecked ?? true;
+
+            if (visible)
+            {
+                FilaConstructorVisual.MinHeight = _minAltoConstructorVisualOriginal;
+                FilaConstructorVisual.Height = _altoConstructorVisualOriginal;
+            }
+            else
+            {
+                _altoConstructorVisualOriginal = FilaConstructorVisual.Height;
+                _minAltoConstructorVisualOriginal = FilaConstructorVisual.MinHeight;
+                FilaConstructorVisual.MinHeight = 0;
+                FilaConstructorVisual.Height = new GridLength(0);
+            }
+        }
+
+        private void VerLineaComandos_Click(object sender, RoutedEventArgs e)
+        {
+            var visible = (sender as MenuItem)?.IsChecked ?? true;
+
+            if (visible)
+            {
+                FilaLineaComandos.MinHeight = _minAltoLineaComandosOriginal;
+                FilaLineaComandos.Height = _altoLineaComandosOriginal;
+            }
+            else
+            {
+                _altoLineaComandosOriginal = FilaLineaComandos.Height;
+                _minAltoLineaComandosOriginal = FilaLineaComandos.MinHeight;
+                FilaLineaComandos.MinHeight = 0;
+                FilaLineaComandos.Height = new GridLength(0);
+            }
+        }
+
         private void VerPanelDerecho_Click(object sender, RoutedEventArgs e)
         {
             var visible = (sender as MenuItem)?.IsChecked ?? true;
-            PanelDerecho.Visibility = visible ? Visibility.Visible : Visibility.Collapsed;
+
+            if (visible)
+            {
+                PanelDerecho.Visibility = Visibility.Visible;
+                SplitterDerecho.Visibility = Visibility.Visible;
+                ColumnDerecha.MinWidth = _minAnchoDerechoOriginal;
+                ColumnDerecha.Width = _anchoDerechoOriginal;
+            }
+            else
+            {
+                _anchoDerechoOriginal = ColumnDerecha.Width;
+                _minAnchoDerechoOriginal = ColumnDerecha.MinWidth;
+                PanelDerecho.Visibility = Visibility.Collapsed;
+                SplitterDerecho.Visibility = Visibility.Collapsed;
+                ColumnDerecha.MinWidth = 0;
+                ColumnDerecha.Width = new GridLength(0);
+            }
         }
-        private void VerPanelCentral_Click(object sender, RoutedEventArgs e)
-        {
-            var visible = (sender as MenuItem)?.IsChecked ?? true;
-            PanelCentral.Visibility = visible ? Visibility.Visible : Visibility.Collapsed;
-        }
+
         private void VerPanelInferior_Click(object sender, RoutedEventArgs e)
         {
             var visible = (sender as MenuItem)?.IsChecked ?? true;
-            PanelInferior.Visibility = visible ? Visibility.Visible : Visibility.Collapsed;
+
+            if (visible)
+            {
+                PanelInferior.Visibility = Visibility.Visible;
+                SplitterInferior.Visibility = Visibility.Visible;
+                FilaInferior.MinHeight = _minAltoInferiorOriginal;
+                FilaInferior.Height = _altoInferiorOriginal;
+            }
+            else
+            {
+                _altoInferiorOriginal = FilaInferior.Height;
+                _minAltoInferiorOriginal = FilaInferior.MinHeight;
+                PanelInferior.Visibility = Visibility.Collapsed;
+                SplitterInferior.Visibility = Visibility.Collapsed;
+                FilaInferior.MinHeight = 0;
+                FilaInferior.Height = new GridLength(0);
+            }
         }
 
         // ... análogos para los otros paneles ...

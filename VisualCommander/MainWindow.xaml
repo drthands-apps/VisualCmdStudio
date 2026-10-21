@@ -221,9 +221,11 @@
 
             <MenuItem Header="_Ver">
                 <MenuItem Header="Panel izquierdo" IsCheckable="True" IsChecked="True" Click="VerPanelIzquierdo_Click"/>
-                <MenuItem Header="Panel central" IsCheckable="True" IsChecked="True" Click="VerPanelCentral_Click"/>
                 <MenuItem Header="Panel derecho" IsCheckable="True" IsChecked="True" Click="VerPanelDerecho_Click"/>
                 <MenuItem Header="Panel inferior" IsCheckable="True" IsChecked="True" Click="VerPanelInferior_Click"/>
+                <Separator/>
+                <MenuItem Header="Constructor visual" IsCheckable="True" IsChecked="True" Click="VerConstructorVisual_Click"/>
+                <MenuItem Header="Línea de comandos" IsCheckable="True" IsChecked="True" Click="VerLineaComandos_Click"/>
                 <Separator/>
                 <MenuItem Header="Tema">
                     <MenuItem Header="Claro" IsCheckable="True" IsChecked="True" Click="TemaClaro_Click"/>
@@ -347,7 +349,7 @@ IsEnabled="{Binding EstaEjecutando, Converter={StaticResource InverseBoolConvert
             <Grid.RowDefinitions>
                 <RowDefinition Height="*"   MinHeight="200"/>
                 <RowDefinition Height="5"/>
-                <RowDefinition Height="160" MinHeight="80"/>
+                <RowDefinition x:Name="FilaInferior" Height="160" MinHeight="80"/>
             </Grid.RowDefinitions>
 
             <!-- Grid de las 3 columnas: le añadimos Grid.Row="0" -->
@@ -355,13 +357,13 @@ IsEnabled="{Binding EstaEjecutando, Converter={StaticResource InverseBoolConvert
 
                 <!-- Contenido principal: tres columnas -->
         <Grid>
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="310" MinWidth="230"/>
-                <ColumnDefinition Width="5"/>
-                <ColumnDefinition Width="*"   MinWidth="450"/>
-                <ColumnDefinition Width="5"/>
-                <ColumnDefinition Width="330" MinWidth="250"/>
-            </Grid.ColumnDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition x:Name="ColumnIzquierda" Width="310" MinWidth="230"/>
+                        <ColumnDefinition Width="5"/>
+                        <ColumnDefinition x:Name="ColumnCentral" Width="*" MinWidth="450"/>
+                        <ColumnDefinition Width="5"/>
+                        <ColumnDefinition x:Name="ColumnDerecha" Width="330" MinWidth="250"/>
+                    </Grid.ColumnDefinitions>
 
                     <!-- Panel izquierdo -->
                     <Grid x:Name="PanelIzquierdo" Grid.Column="0" Margin="3">
@@ -416,7 +418,8 @@ IsEnabled="{Binding EstaEjecutando, Converter={StaticResource InverseBoolConvert
                   ShowsPreview="True"/>
 
                         <!-- ==== Buscador ==== -->
-                        <Border Grid.Row="2" Style="{StaticResource Pane}" Margin="0,0,0,3">
+                        <Border Grid.Row="2" 
+                                Style="{StaticResource Pane}" Margin="0,0,0,3">
                             <Grid>
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*"/>
@@ -607,7 +610,7 @@ IsEnabled="{Binding EstaEjecutando, Converter={StaticResource InverseBoolConvert
                         </Border>
                     </Grid>
 
-                    <GridSplitter Grid.Column="1" 
+                    <GridSplitter Grid.Column="1" x:Name="SplitterIzquierdo"
                           Width="5"
                           Style="{StaticResource SplitterVertical}" 
                           ResizeDirection="Columns"
@@ -617,12 +620,13 @@ IsEnabled="{Binding EstaEjecutando, Converter={StaticResource InverseBoolConvert
                     <!-- ============ PANEL CENTRAL ============ -->
                     <Grid x:Name="PanelCentral" Grid.Column="2" Margin="3">
                         <Grid.RowDefinitions>
-                            <RowDefinition Height="*"   MinHeight="140"/>
+                            <RowDefinition x:Name="FilaConstructorVisual" Height="*" MinHeight="140"/>
                             <RowDefinition Height="5"/>
-                            <RowDefinition Height="*"   MinHeight="120"/>
+                            <RowDefinition x:Name="FilaLineaComandos" Height="*" MinHeight="120"/>
                         </Grid.RowDefinitions>
+                      
 
-                        <!-- ==== Constructor visual (bloques arrastrables) ==== -->
+                    <!-- ==== Constructor visual (bloques arrastrables) ==== -->
                         <Border Grid.Row="0" Style="{StaticResource Pane}">
                             <DockPanel>
                                 <Grid DockPanel.Dock="Top" Background="#FFE8F0F8">
@@ -876,10 +880,10 @@ IsEnabled="{Binding EstaEjecutando, Converter={StaticResource InverseBoolConvert
                                 </ScrollViewer>
                             </DockPanel>
                         </Border>
-
-                        <GridSplitter Grid.Row="1"
-                  Height="5"
-                  Style="{StaticResource SplitterHorizontal}"/>
+                        <!--== GridSplitter  entre bloques constructor y cmd ==-->
+                        <GridSplitter Grid.Row="1" x:Name="SplitterCentral"
+              Height="5"
+              Style="{StaticResource SplitterHorizontal}"/>
 
                         <!-- ==== Bloque CMD (línea de comandos resultante) ==== -->
                         <Border  Grid.Row="2" Style="{StaticResource Pane}">
@@ -1117,7 +1121,7 @@ IsEnabled="{Binding EstaEjecutando, Converter={StaticResource InverseBoolConvert
               ResizeBehavior="PreviousAndNext"
               ShowsPreview="True"/>
 
-            <GridSplitter Grid.Column="3" 
+              <GridSplitter Grid.Column="3" x:Name="SplitterDerecho" 
               Width="5"
               Style="{StaticResource SplitterVertical}" 
               ResizeDirection="Columns"
@@ -1439,13 +1443,13 @@ IsEnabled="{Binding EstaEjecutando, Converter={StaticResource InverseBoolConvert
                 </Grid>
             </Grid>
 
-            <!-- Splitter horizontal -->
-            <GridSplitter Grid.Row="1"
+            <!-- Splitter horizontal del panel inferior-->
+            <GridSplitter Grid.Row="1" x:Name="SplitterInferior"
                   Height="5"
                   Style="{StaticResource SplitterHorizontal}"/>
 
             <!-- Panel inferior: comentarios, errores, salida, historial -->
-            <Border x:Name="PanelInferior" Grid.Row="2"
+            <Border Grid.Row="2" x:Name="PanelInferior"
             BorderBrush="#FFC8C8C8" BorderThickness="0,1,0,0"
             Background="White">
                 <TabControl>
