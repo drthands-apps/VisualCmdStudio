@@ -305,6 +305,7 @@ namespace VisualCommander.ViewModels
 
             // Cargar configuración PRIMERO, antes que cualquier otra cosa.
             _configuracion = Services.ConfiguracionService.Cargar();
+            _registroUso = UsoService.Cargar();
 
 
             CargarComandos();
@@ -313,7 +314,7 @@ namespace VisualCommander.ViewModels
             LineaComando.Proyector = (texto, dirTrabajo) =>
                 ComandoParser.Parsear(texto, Comandos, dirTrabajo);
             ComandosView = CollectionViewSource.GetDefaultView(Comandos);
-            ComandosView.GroupDescriptions.Add(new PropertyGroupDescription(nameof(Comando.Familia)));
+            AplicarOrdenacion();   // ← en lugar de solo GroupDescriptions.Filter
             ComandosView.Filter = FiltroComando;
 
             Lineas.CollectionChanged += (_, _) =>
@@ -387,6 +388,7 @@ namespace VisualCommander.ViewModels
                 SetStatus($"Nueva línea en {nuevoDir}");
             else
                 SetStatus($"Nueva línea en {nueva.DirectorioTrabajo}");
+            ConfigurarNuevaLinea(nueva);
         }
 
         /// <summary>
@@ -531,6 +533,7 @@ namespace VisualCommander.ViewModels
                 Origen = cmd,
                 RequiereAdmin = cmd.RequiereAdmin
             });
+            RegistrarUso(cmd);  
             SetStatus($"Añadido: {cmd.Nombre}");
         }
         /// <summary>
@@ -550,7 +553,6 @@ namespace VisualCommander.ViewModels
 
             LineaActiva.ActualizarDesdeTexto(string.Join(" ", textos));
             LineaActiva.ConfirmarEstado();
-
             SetStatus($"Insertado en posición {indice}: {texto}");
         }
 
@@ -609,7 +611,12 @@ namespace VisualCommander.ViewModels
             if (lista == null) return;
 
             foreach (var c in lista.OrderBy(c => c.Familia).ThenBy(c => c.Nombre))
+            {
+                if (_registroUso.Comandos.TryGetValue(c.Nombre, out var usos))
+                    c.Usos = usos;
+
                 Comandos.Add(c);
+            }
         }
 
         /// <summary>
@@ -1444,6 +1451,7 @@ namespace VisualCommander.ViewModels
             if (_lineaCopiada != null)
             {
                 aPegar = _lineaCopiada.Clonar();
+                ConfigurarNuevaLinea(aPegar);
             }
             else if (System.Windows.Clipboard.ContainsText())
             {
@@ -1514,7 +1522,7 @@ namespace VisualCommander.ViewModels
             if (idx < 0) idx = Lineas.Count - 1;
             Lineas.Insert(idx + 1, copia);
             LineaActiva = copia;
-
+            ConfigurarNuevaLinea(copia);
             SetStatus($"Línea duplicada como {copia.NumeroLinea}");
         }
         // ==== Reordenación ====
@@ -1709,6 +1717,7 @@ namespace VisualCommander.ViewModels
                         linea.ConfirmarEstado();
 
                         Lineas.Add(linea);
+                        ConfigurarNuevaLinea(linea);
                     }
                 }
 
@@ -1752,6 +1761,7 @@ namespace VisualCommander.ViewModels
             LineaActiva = primera;
 
             SetStatus("Nueva sesión");
+            ConfigurarNuevaLinea(primera);
         }
         /// <summary>
         /// Exporta el plan actual como archivo .ps1 (PowerShell).
@@ -1825,7 +1835,99 @@ namespace VisualCommander.ViewModels
             CargarComandos();
             ComandosView.Refresh();
         }
+        // ==== Registro de uso y orden de comandos ====
 
+        private readonly RegistroUso _registroUso;
+        private readonly object _registroUsoLock = new();
 
+        private int _ordenSeleccionado = 0;
+        /// <summary>
+        /// Modo de ordenación del catálogo:
+        /// 0 = Por familia (por defecto)
+        /// 1 = A-Z
+        /// 2 = Frecuencia
+        /// </summary>
+        public int OrdenSeleccionado
+        {
+            get => _ordenSeleccionado;
+            set
+            {
+                if (_ordenSeleccionado == value) return;
+                _ordenSeleccionado = value;
+                OnPropertyChanged();
+                AplicarOrdenacion();
+            }
+        }
+        /// <summary>
+        /// Aplica la agrupación y ordenación al catálogo según OrdenSeleccionado.
+        /// </summary>
+        private void AplicarOrdenacion()
+        {
+            if (ComandosView == null) return;
+
+            // Limpiar agrupación y ordenación previas.
+            ComandosView.GroupDescriptions.Clear();
+            ComandosView.SortDescriptions.Clear();
+
+            switch (_ordenSeleccionado)
+            {
+                case 1:   // A-Z
+                    ComandosView.SortDescriptions.Add(
+                        new SortDescription(nameof(Comando.Nombre), ListSortDirection.Ascending));
+                    break;
+
+                case 2:   // Frecuencia
+                          // Ordenar por uso descendente, luego alfabético.
+                          // Como no podemos ordenar directamente por un diccionario,
+                          // ordenamos por una propiedad calculada.
+                    ComandosView.SortDescriptions.Add(
+                        new SortDescription(nameof(Comando.Nombre), ListSortDirection.Ascending));
+                    // Necesitamos una propiedad Usos en Comando que actualizaremos.
+                    ComandosView.SortDescriptions.Clear();
+                    ComandosView.SortDescriptions.Add(
+                        new SortDescription(nameof(Comando.Usos), ListSortDirection.Descending));
+                    ComandosView.SortDescriptions.Add(
+                        new SortDescription(nameof(Comando.Nombre), ListSortDirection.Ascending));
+                   
+                    break;
+
+                default:  // 0 = Por familia
+                    ComandosView.GroupDescriptions.Add(
+                        new PropertyGroupDescription(nameof(Comando.Familia)));
+                    ComandosView.SortDescriptions.Add(
+                        new SortDescription(nameof(Comando.Familia), ListSortDirection.Ascending));
+                    ComandosView.SortDescriptions.Add(
+                        new SortDescription(nameof(Comando.Nombre), ListSortDirection.Ascending));
+                    break;
+            }
+        }
+        /// <summary>
+        /// Registra el uso de un comando. Actualiza el contador y persiste.
+        /// </summary>
+        private void RegistrarUso(Comando cmd)
+        {
+            lock (_registroUsoLock)
+            {
+                if (_registroUso.Comandos.TryGetValue(cmd.Nombre, out var cuenta))
+                    _registroUso.Comandos[cmd.Nombre] = cuenta + 1;
+                else
+                    _registroUso.Comandos[cmd.Nombre] = 1;
+
+                UsoService.Guardar(_registroUso);
+            }
+
+            // Actualizar la propiedad Usos del comando para que la ordenación
+            // por frecuencia funcione.
+            cmd.Usos = _registroUso.Comandos.TryGetValue(cmd.Nombre, out var n) ? n : 0;
+
+            // Si estamos en modo frecuencia, refrescar.
+            if (_ordenSeleccionado == 2)
+                ComandosView.Refresh();
+            
+        }
+        private void ConfigurarNuevaLinea(LineaComando linea)
+        {
+            linea.ComandoReconocido += cmd => RegistrarUso(cmd);
+        }
     }
 }

@@ -110,6 +110,12 @@ namespace VisualCommander.Models
         public bool EsCerrada => !EsActiva;
 
         private EstadoEjecucion _estado = EstadoEjecucion.Pendiente;
+
+        /// <summary>
+        /// Evento que se dispara cuando aparece un comando nuevo en los tokens
+        /// (por ejemplo, al escribir el comando en el campo CMD).
+        /// </summary>
+        public event Action<Comando>? ComandoReconocido;
         public EstadoEjecucion Estado
         {
             get => _estado;
@@ -422,32 +428,37 @@ namespace VisualCommander.Models
         /// </summary>
         private void ReprojectarTokens()
         {
-            if (Proyector == null)
-            {
-                // Sin proyector configurado, dejamos los tokens vacíos.
-                // Esto solo ocurriría si el MainViewModel no ha cargado aún.
-                return;
-            }
+            if (Proyector == null) return;
+
+            // Guardar comandos antiguos antes de reproyectar.
+            var comandosAntiguos = Tokens
+                .Where(t => t.Tipo == TipoToken.Comando && t.Origen is Comando)
+                .Select(t => ((Comando)t.Origen!).Nombre)
+                .ToHashSet();
 
             IEnumerable<Token> nuevos;
-            try
-            {
-                nuevos = Proyector(Texto, DirectorioTrabajo);
-            }
-            catch
-            {
-                nuevos = Array.Empty<Token>();
-            }
+            try { nuevos = Proyector(Texto, DirectorioTrabajo); }
+            catch { nuevos = Array.Empty<Token>(); }
 
             Tokens.Clear();
             foreach (var t in nuevos)
                 Tokens.Add(t);
 
-            // Recalcular comando activo.
+            // Detectar comandos nuevos.
+            foreach (var t in Tokens)
+            {
+                if (t.Tipo == TipoToken.Comando && t.Origen is Comando cmd)
+                {
+                    if (!comandosAntiguos.Contains(cmd.Nombre))
+                    {
+                        // Comando nuevo. Disparar evento.
+                        ComandoReconocido?.Invoke(cmd);
+                    }
+                }
+            }
+
             RecalcularComandoActivo();
-            // Después de recalcular Tokens y ComandoActivo:
             RecalcularDummies();
-            OnPropertyChanged(nameof(RequiereAdmin));
         }
 
         private void RecalcularComandoActivo()

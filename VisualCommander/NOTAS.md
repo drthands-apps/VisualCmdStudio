@@ -22,96 +22,116 @@ Analogía: Excel es un editor de cálculos, no un intérprete.
 4. **Multi-línea con contexto por línea**: cada `LineaComando` tiene su
    propio `DirectorioTrabajo`.
 5. **Permisos elevados comando-a-comando** (no app-wide).
-6. **Modo simulación para comandos destructivos**: diferencial frente a CMD.
-7. **Apariencia CMD con marca de simulación**: familiaridad + seguridad.
+6. **Modo simulación para comandos destructivos**.
+7. **Apariencia CMD con marca de simulación**.
 8. **Validación permisiva**: solo validar lo que es seguro. En caso de
    duda, aceptar. CMD no tiene un parser único.
+9. **Pensar en la maldad ajena**: los archivos pueden ser modificados.
+   Las firmas deben ser criptográficamente verificables.
 
 ---
 
-## Estado actual (2026-10-14)
+## Estado actual (2026-10-21)
 
 ### Completado
 
 **Editor visual:**
 - Catálogo JSON con ~55 comandos, agrupados por familia.
 - Multi-línea con contexto de directorio independiente.
-- Editor in-place con foco y cursor correctos.
-- Token de texto editable (doble clic, forma achaflanada + lápiz).
+- Editor in-place de tokens (Texto, Ruta) con forma achaflanada + lápiz.
 - Regla de "línea viva única".
-- Copiar / Cortar / Pegar / Duplicar / Mover líneas.
-- Atajos: Ctrl+C/X/V/D, Ctrl+Shift+↑/↓, Ctrl+Enter, Ctrl+Z/Y/Shift+Z.
-- Parser reforzado: comillas abren "modo sin dividir", espacios colapsados.
+- Copiar/Cortar/Pegar/Duplicar/Mover líneas.
 - Undo/Redo por línea con historial de estados.
+- Parser reforzado: comillas, espacios colapsados.
+- Dummies guía (Fase 3 completa): visuales, requeridos/opcionales,
+  bloqueo al cerrar con requeridos, aviso pre-ejecución combinado.
+- Modo silencioso persistente (afecta solo a edición, no a ejecución).
 
 **Apariencia CMD:**
-- Prompt dinámico coloreado (verde/amarillo/rojo según peligrosidad).
-- Prompt acortado con tooltip cuando es muy largo.
-- Wrapping estilo CMD real (continuación alineada con el comando).
+- Prompt dinámico coloreado (verde/amarillo/rojo).
+- Prompt acortado con tooltip.
+- Wrapping estilo CMD real.
 
 **Ejecución:**
 - Ejecución de línea individual y del plan completo (F5).
 - Estados por línea (○ ▶ ✓ ✗ ⊘) + toggle "Detener en error".
-- Buffer de salida (RangeObservableCollection) para no saturar la UI.
-- Escape detiene la ejecución en curso.
+- Buffer de salida (RangeObservableCollection).
+- Escape/Detener durante la ejecución.
+- Elevación UAC puntual para comandos `requiereAdmin`.
+- Indicador 🛡 en bloque y en barra de estado.
 
 **Seguridad:**
-- Detección de comandos peligrosos (`peligroso: true` en JSON).
+- Detección de comandos peligrosos (`peligroso: true`).
 - Simuladores específicos: del, rd/rmdir, taskkill.
-- Simulador genérico para el resto.
-- Diálogo de confirmación con directorio destacado y lista de afectados.
+- Diálogo de confirmación con directorio y afectados.
 - Opción "No volver a preguntar para esta línea en esta sesión".
 
-**Exportación:**
-- Guardar como `.bat` con cabecera, codificación configurable, `pause`.
-- Diálogo con vista previa y opciones.
+**Sesiones y exportación:**
+- Guardar/Cargar sesión `.vcmd` (JSON legible, campo `firma` nullable
+  preparado para Tier 3).
+- Metadatos: creador, verificado (aún no firma criptográfica).
+- Exportar a `.bat`, `.cmd`, `.ps1` (completo), `.sh` (para revisión).
+- Diálogos con opciones y vista previa.
+- Atajos Ctrl+N/O/S/Shift+S.
 
-**Otros:**
+**Interfaz:**
+- Menú completo y funcional (Archivo, Editar, Ver, Herramientas, Ayuda).
+- Placeholders informativos para funciones no implementadas.
+- Panel izquierdo: modo (radio buttons placeholder), buscador, catálogo,
+  modificadores, árbol de archivos.
+- Panel derecho: comando activo, detalle del modificador (hover),
+  detalle del token (hover), insertar tokens (texto/operadores/variables/
+  constantes/comodines).
+- Panel inferior: comentarios, errores, salida, historial.
+- Panel derecho responde al comando activo y al hover de modificadores.
+- Botón "Insertar texto" con campo previo y Enter para confirmar.
+- Explicaciones ampliadas para valores de /A, /O y otros.
 - Árbol de archivos con unidades reales (carga perezosa).
 - Drag & drop desde catálogo, panel de modificadores y árbol.
 
-### En curso
+### Pendiente (Tier 2)
 
-**Fase 3 — Sistema de dummies guía:**
-- [x] 1. Extender Token con estado (Normal, Dummy, Invalido) y TextoDummy.
-- [x] 2. Extender Comando con lista de ArgumentoComando.
-- [x] 3. Añadir campo "argumentos" al JSON de 8 comandos iniciales.
-- [ ] 4. Generación de dummies al insertar un comando.
-- [ ] 5. Renderizado visual de dummies (borde punteado, parpadeo, tooltip).
-- [ ] 6. Algoritmo de relleno (escribir en orden, arrastrar a posición).
-- [ ] 7. Reglas al cerrar línea (obligatorios vs opcionales).
-- [ ] 8. Modo silencioso global.
-
----
-
-## Roadmap
-
-### Tier 1 — Funcionalidad núcleo
-- [ ] `requiereAdmin` + elevación puntual con UAC + indicador visual.
-- [ ] Guardar/cargar sesión completa (.vcmd en JSON).
-- [ ] Plantillas de comandos frecuentes.
-- [ ] Exportar a .ps1 y .sh.
-- [ ] Dummies guía (Fase 3, en curso).
-
-### Tier 2 — Ergonomía
-- [ ] Undo/Redo global (operaciones sobre líneas: crear, mover, borrar).
+- [ ] Hover sobre tokens del constructor → info en panel derecho.
+  *(Nota: pendiente de verificar si ya está implementado.)*
+- [ ] Drag & drop de variables/operadores/comodines desde panel derecho
+      al constructor, con posición exacta.
+- [ ] Drag & drop de tokens dentro del constructor (reordenar).
+- [ ] Organizador de comandos (ComboBox de orden funcional).
 - [ ] Menú contextual (clic derecho sobre línea).
+- [ ] Undo/Redo global (operaciones sobre líneas: crear, mover, borrar).
 - [ ] Auto-scroll al editor al añadir líneas.
 - [ ] Botón ✕ por línea cerrada.
 - [ ] Modo aprendiz vs experto.
 - [ ] Historial con contexto.
-- [ ] Análisis contextual del parser (REM, ECHO, comillas sin cerrar...).
+- [ ] Análisis contextual del parser (REM, ECHO, comillas sin cerrar).
+- [ ] Ocultar paneles debe liberar espacio (Opción C: GridLength 0).
+- [ ] Indicador visual permanente del modo silencioso.
+- [ ] Edición visual de parámetros con valor (`/A:D`, `/O:N`, `/FS:NTFS`)
+      mediante ComboBox homogéneo con la edición de constantes.
+- [ ] Modos de trabajo: conectar los radio buttons del panel izquierdo.
 
-### Tier 3 — Visión futura
-- [ ] Pestaña de Utilidades con ConPTY (diskpart interactivo, vi, etc.).
+### Pendiente (Tier 1 postpuesto)
+
+- [ ] Import desde `.bat`, `.ps1`, `.sh`.
+- [ ] Plantillas de comandos (A3).
+- [ ] Comandos modulares (JSON por familias).
+
+### Pendiente (Tier 3)
+
+- [ ] Firma criptográfica del `.vcmd` (RSA-SHA256, lista de confianza).
+- [ ] Inserciones inteligentes de dummies (por tipo, no solo por orden).
+- [ ] Edición de comodines con auto-corchetes.
+- [ ] Edición de constantes con ComboBox de valores.
+- [ ] Pestaña de Utilidades con ConPTY (diskpart, vi, etc.).
 - [ ] Sistema de plugins (JSON + carpeta `Plugins/`).
 - [ ] Simulación con estado (predice efectos entre líneas).
+- [ ] Módulo traductor de comandos para `.sh`.
 - [ ] Port a Linux.
 - [ ] Colaboración / compartir.
 
 ### Refactorización pendiente
-- [ ] Dividir `comandos.json` (2000+ líneas) en múltiples archivos por
-      familia (Archivos.json, Sistema.json, Red.json...).
+
+- [ ] Dividir `comandos.json` (2000+ líneas) en archivos por familia.
 - [ ] Dividir `MainViewModel.cs` en partials por área funcional.
 - [ ] Dividir `MainWindow.xaml` en `UserControl`s por panel.
 - [ ] Extraer estilos a `ResourceDictionary`.
@@ -120,517 +140,124 @@ Razón de esperar: no dividir código que aún va a cambiar mucho.
 
 ---
 
-## Decisiones de diseño específicas
+## Decisiones de diseño consolidadas
 
 ### Editor
 
-**Enfoque E3 — grading por espacios:**
-- El usuario escribe libremente en el campo CMD.
-- Cada espacio (o Enter) dispara el parseo.
-- Un token de texto puede "crecer" mientras se escribe.
-- Espacios consecutivos se colapsan a uno.
-- Solo un campo activo a la vez (visual o textual).
-- Solo la línea activa es editable (modelo Excel).
-
-**Edición in-place de tokens:**
-- Doble clic sobre token de tipo Texto o Ruta.
-- El texto actual se SELECCIONA (reemplazar es escribir directamente).
-- Enter confirma, Escape descarta, blur confirma.
+- **Enfoque E3 — grading por espacios**: escribir libre, parseo al
+  espacio/Enter, tokens de texto pueden crecer.
+- **Solo un campo activo a la vez** (visual o textual).
+- **Solo la línea activa es editable** (modelo Excel).
+- **Edición in-place**: doble clic sobre Texto o Ruta. Texto actual
+  seleccionado. Enter confirma, Escape descarta, blur confirma.
 - Vacío (0 chars) → se elimina. `""` (dos comillas) → se conserva.
-- Forma visual diferenciada: esquina achaflanada + icono lápiz.
+- **Portapapeles**: doble (interno con metadatos + sistema texto plano).
+  Pegar del sistema parsea como si el usuario hubiera escrito.
 
-**Portapapeles:**
-- Doble portapapeles: interno (con metadatos) + sistema (texto plano).
-- Pegar del sistema parsea el texto como si lo hubiera escrito el usuario.
-- Cortar la única línea la vacía en lugar de eliminarla.
+### Undo/Redo
 
-**Undo/Redo:**
-- Cada línea tiene su propio historial de estados confirmados.
-- List<string> + índice, límite de 100 estados por línea.
-- Se confirma después de cada acción: Enter, blur, cambiar línea,
+- Cada línea tiene su propio historial (List<string> + índice, límite 100).
+- Se confirma después de cada acción: Enter, blur, cambio de línea,
   `＋ Nueva`, `✓ Cerrar`, ejecutar, drag & drop, checkbox, eliminar token.
-- NO se confirma al pulsar espacio solo (excepto cuando ya hay texto
-  pendiente y se pulsa espacio tras escribir una palabra).
-- `Ctrl+Z` deshace, `Ctrl+Y`/`Ctrl+Shift+Z` rehace.
-- `Escape` descarta cambios NO confirmados.
-
-**Señales visuales de la línea activa:**
-- Borde izquierdo azul + fondo claro → marca "activa".
-- Símbolo de estado (○ ▶ ✓ ✗ ⊘) → marca el estado de ejecución.
+- NO se confirma al pulsar espacio solo.
+- Ctrl+Z deshace, Ctrl+Y / Ctrl+Shift+Z rehace.
+- Escape descarta cambios NO confirmados.
 
 ### Contexto de ejecución
 
-Tres contextos distintos:
-1. **Composición**: dónde navega el usuario mientras construye.
-2. **Ejecución inmediata**: `WorkingDirectory = DirectorioTrabajo`.
-3. **Ejecución diferida**: el `.bat` exportado antepone `C:` + `cd /D`.
-
-Reglas:
 - El prompt verde muestra siempre `DirectorioTrabajo`.
 - Se colorea: normal verde, sistema amarillo, raíz rojo.
-- Al exportar `.bat`: cabecera con `cd /D "ruta"` siempre.
+- Al exportar `.bat`/`.cmd`: cabecera con `cd /D "ruta"`.
+- Al exportar `.ps1`: `Set-Location -Path "ruta"`.
+- Al exportar `.sh`: `cd` comentado (rutas de Windows no funcionan).
 - El diálogo de confirmación muestra el directorio en grande.
 
-### Confirmación de comandos peligrosos
+### Dummies guía (Fase 3 completa)
 
-- Detección: campo `peligroso: true` en el JSON.
-- Simuladores específicos: del, rd/rmdir, taskkill.
-- Simulador genérico para el resto.
-- Diálogo modal con: directorio destacado, comando, efectos, lista de
-  afectados, botones "Ejecutar de todas formas" / "Cancelar".
-- Opción "No volver a preguntar para esta línea en esta sesión".
-- **NO se avisa durante la ejecución del plan**: todos los avisos se
-  hacen antes de empezar. Interrumpir a mitad rompe el flujo.
+- Se generan al insertar un comando con `argumentos` declarados en JSON.
+- NO están en el texto: son solo visuales.
+- Se recalculan automáticamente tras cada cambio.
+- Requeridos: `[origen]` (corchetes), opacidad 0.75.
+- Opcionales: `(mensaje)` (paréntesis), opacidad 0.5.
+- Al cerrar con requeridos pendientes: diálogo de confirmación.
+- Al cerrar con opcionales pendientes: se descartan.
+- Modo silencioso: no pregunta al cerrar.
 
-### Sistema de tipos de argumentos (base para Fase 3)
+### Aviso pre-ejecución
 
-Declarados en el JSON de cada comando (`campo "argumentos"`):
+- Antes de ejecutar (plan o línea), si hay dummies requeridos pendientes
+  o comandos peligrosos, se muestra un diálogo único con dos secciones.
+- **Nunca se silencia**, ni en modo silencioso.
 
-| Tipo | Validación |
-|---|---|
-| `Ruta` | `Path.GetFullPath` no falla |
-| `ArchivoExistente` | `File.Exists` |
-| `DirectorioExistente` | `Directory.Exists` |
-| `NombreNuevo` | `!File.Exists && !Directory.Exists` (opcional) |
-| `CadenaLibre` | Sin restricción |
-| `Modificador` | Está en la lista de parámetros del comando |
-| `Variable` | Patrón `%...%` |
+### Modo silencioso
 
-Validación permisiva:
-- NO validar el orden de los argumentos.
-- SOLO validar existencia del comando, pertenencia de modificadores,
-  compatibilidad básica de tipos.
-- En caso de duda, ACEPTAR.
+- Menú Herramientas → Modo silencioso.
+- Persiste en `%APPDATA%\VisualCmdStudio\config.json`.
+- Silencia avisos de construcción/edición.
+- NO silencia avisos antes de ejecutar.
+
+### Elevación UAC
+
+- Comandos con `requiereAdmin: true` piden UAC al ejecutar.
+- Salida capturada a archivos temporales en
+  `%LOCALAPPDATA%\VisualCmdStudio\temp\` (GUID único).
+- Limitación: la salida no es en vivo. Futuro: ConPTY.
+
+### Sistema de firma (Tier 3, preparado)
+
+- Bloque `firma` nullable en `.vcmd` ya en el modelo.
+- RSA-SHA256 del contenido completo.
+- Lista de verificadores de confianza en
+  `%APPDATA%\VisualCmdStudio\verificadores.json`.
+- Estados: Sin verificar / Verificado por X / Verificador desconocido /
+  Firma inválida.
+
+### Ficheros y formatos
+
+- **`.bat` y `.cmd` son funcionalmente idénticos** en Windows moderno.
+  Reutilizamos `ExportadorBat` con un parámetro de extensión.
+- **`.ps1`**: advertencia sobre política de ejecución.
+- **`.sh`**: "para revisión", comandos de Windows sin traducir, LF y
+  UTF-8 sin BOM.
+- **`.vcmd`**: JSON legible, texto por línea + directorio + metadatos.
+
+### Reparto de responsabilidades (Vista)
+
+- **Panel izquierdo**: modo, buscador, catálogo, modificadores, árbol.
+- **Panel derecho**: comando activo, detalle del modificador/token,
+  insertar tokens, ayuda contextual.
+- **Panel inferior**: comentarios, errores, salida, historial.
+- **Panel central**: constructor visual, línea CMD.
 
 ### Parser
 
 - Divide por espacios respetando comillas dobles.
-- Mientras haya una comilla abierta, los espacios NO dividen.
 - Comilla sin cerrar → todo el resto es un único token.
-- Las comillas se preservan en el token (CMD las necesita).
-- Espacios múltiples colapsados, extremos recortados.
+- Comillas se preservan en el token (CMD las necesita).
+- Espacios colapsados, extremos recortados.
 - NO reordena argumentos ni corrige sintaxis.
 
 ---
 
-## Visión: Pestaña de Utilidades (ConPTY)
+## Visión futura
 
-Espacio para utilidades avanzadas que aprovechan la misma infraestructura.
-
+### Pestaña de Utilidades (ConPTY)
 - Plugin = archivo JSON en carpeta `Plugins/`.
 - Motor ConPTY para utilidades interactivas (editores, REPLs).
-- Ejemplos: análisis de redes, comparación de ficheros, integridad del
-  sistema, gestión de licencias, diskpart script, bcdboot, vi/vim.
+- Ejemplos: análisis de redes, comparación de ficheros, integridad,
+  gestión de licencias, diskpart script, bcdboot, vi/vim.
 
-Se hará después de Tier 1. Es **aditiva**, no invasiva.
-
----
-
-## Port a Linux (futuro lejano)
-
-Si el proyecto llega a ser funcional y estable en Windows, plantear un
-port a Linux es un reto interesante. Consideraciones:
+### Port a Linux (futuro lejano)
 - El motor de tokens/texto es agnóstico de plataforma.
-- El catálogo sería otro JSON con comandos de bash/zsh.
-- Muchas features (simulación, undo/redo, multi-línea) son reutilizables.
-- Cambios necesarios: ejecución de procesos, rutas (/, ~), variables ($VAR).
-- No urgente. Requiere que Windows esté consolidado primero.
+- Catálogo distinto (bash/zsh), rutas (/, ~), variables ($VAR).
+- Muchas features reutilizables (simulación, undo/redo, multi-línea).
 
-### Pieza 4 completada (2026-10-15)
-
-- `LineaComando.Dummies` como ObservableCollection paralela a Tokens.
-- `RecalcularDummies()` se ejecuta tras cada `ReprojectarTokens`.
-- Regla: se cuentan los tokens reales (Texto o Ruta) DESPUÉS del
-  comando activo. Los que cubren argumentos no generan dummy.
-- Los dummies NO están en `Tokens`, son solo UI.
-- Solo se generan si el comando activo tiene `argumentos` declarados.
-
-### Detalle observado
-`echo` con argumento `mensaje` marcado como NO requerido aún genera
-dummie. Se distinguirá en la Pieza 7.
-### Patrón: try/finally para garantizar limpieza
-
-Cuando un método modifica colecciones derivadas (`BloquesVisibles` a partir
-de `Tokens` + `Dummies`) y tiene varios `return` tempranos:
-
-- Poner TODO el cuerpo dentro del `try`.
-- Poner la limpieza/reconstrucción en el `finally`.
-- NO dejar validaciones con `return` fuera del `try`.
-
-Error cometido: los `return` de las validaciones estaban fuera del `try`,
-así que el `finally` no se ejecutaba cuando había un `return` temprano.
-### Pieza 8-bis — Aviso pre-ejecución de líneas incompletas (2026-10-15)
-
-**Concepto**: antes de ejecutar (plan o línea), comprobar si hay líneas
-con dummies requeridos sin rellenar. Si las hay, mostrar aviso combinado
-con los comandos peligrosos.
-
-**Un solo diálogo**: ConfirmarPlanDialog incluye dos secciones:
-- LÍNEAS PELIGROSAS (comandos destructivos).
-- LÍNEAS INCOMPLETAS (dummies requeridos sin rellenar).
-
-**El aviso NUNCA se silencia**, ni en modo silencioso. Es información
-crítica antes de ejecutar.
-
-**Las líneas incompletas NO se añaden a "no preguntar"** porque pueden
-completarse en el futuro; se vuelven a comprobar cada vez.
-
-**Aplica a**:
-- Ejecutar plan completo (F5).
-- Ejecutar línea individual.
-
-## Fase 3 — Completada (2026-10-15)
-
-### Sistema de dummies guía
-
-**Funcionamiento**:
-- Al insertar un comando con `argumentos` declarados, se generan
-  dummies visuales en el constructor.
-- Los dummies NO están en el texto: son solo visuales.
-- Se recalculan automáticamente tras cada cambio del texto.
-- El usuario los rellena escribiendo o arrastrando.
-- Al rellenarse, el dummie desaparece (el token real lo cubre).
-
-**Visual**:
-- Requeridos: `[origen]` (corchetes), opacidad 0.75, tooltip "Obligatorio".
-- Opcionales: `(mensaje)` (paréntesis), opacidad 0.5, tooltip "Opcional".
-- Borde punteado gris, cursiva, icono rombo hueco.
-
-**Reglas al cerrar**:
-- Requeridos sin rellenar → diálogo `ConfirmarCierreDialog`.
-- Opcionales sin rellenar → se descartan silenciosamente.
-- Modo silencioso → no se pregunta, cierra directamente.
-
-**Aviso pre-ejecución**:
-- Antes de ejecutar (plan o línea), si hay dummies requeridos
-  pendientes o comandos peligrosos, se muestra un diálogo único
-  con ambas secciones.
-- NO se silencia nunca, ni en modo silencioso.
-
-**Modo silencioso**:
-- Menú Herramientas → Modo silencioso.
-- Persiste entre sesiones (`%APPDATA%\VisualCmdStudio\config.json`).
-- Silencia avisos de construcción/edición.
-- NO silencia avisos antes de ejecutar.
-
-### Pendiente (Tier 2)
-- [ ] Indicador visual permanente del modo silencioso.
-- [ ] Relleno inteligente: al arrastrar un token de tipo concreto,
-      colocarlo en el dummie correcto por tipo (no solo en orden).
-- [ ] Marcado de tokens huérfanos al cambiar de comando.
-- [ ] Análisis contextual (REM, ECHO, comillas sin cerrar).
-- [ ] Modificadores siempre detrás del comando al insertarlos.
-- [ ] Encadenar comandos al arrastrar un segundo: auto-insertar `&&`.
-
-
- ## Principio de diseño: pensar en la maldad ajena (2026-10-17)
-
-Los archivos pueden ser modificados después de crearse. Las firmas
-deben ser verificables criptográficamente.
-
-- Un campo `verificado: true` en texto plano NO aporta seguridad real.
-- Cada programa tiene su propia firma.
-- "Verificado para otro" no significa "verificado para nosotros".
-- La confianza debe ganarse, no declararse.
-
-### Sistema de firma previsto para .vcmd
-
-- Firma RSA-SHA256 del contenido completo.
-- Bloque `firma` opcional con: algoritmo, verificadorId, clavePublica, valor.
-- Al cargar: verificar firma + comprobar si el verificador está en la
-  lista de confianza local (`%APPDATA%\VisualCmdStudio\verificadores.json`).
-- Estados posibles: "Sin verificar", "Verificado por X", "Firmado por
-  verificador desconocido", "Firma inválida (archivo modificado)".
-
-### Prioridad
-Tier 3. La infraestructura queda preparada en el modelo `.vcmd`
-desde hoy (campo `firma` nullable), pero la lógica criptográfica
-se implementa más adelante.
+### Módulo traductor de comandos (Tier 3/4)
+- `.bat` → `.sh` con traducción automática de comandos.
+- Evaluar viabilidad técnica y coste.
+- No todos los comandos tienen equivalente directo.
 
 ### Compromiso mutuo
 Como asistentes, no ayudamos a usuarios a realizar actividades
 maliciosas. Del mismo modo, diseñamos herramientas que empoderan
 al usuario sin exponerlo a riesgos innecesarios.
-### Fix: EmpujarEditorActivoAlModelo con _editorActivo null (2026-10-17)
-
-**Problema**: al guardar sin haber hecho clic en el campo CMD, `_editorActivo`
-era null y no se empujaba el texto pendiente al modelo.
-
-**Causa**: `_editorActivo` se asigna en `IsVisibleChanged`, que no se dispara
-si el TextBox ya nace visible (al arrancar la app o al cargar una sesión).
-
-**Fix**: buscar el TextBox activo en el árbol visual como fallback.
-Método `EncontrarEditorActivo()` que:
-1. Intenta `_editorActivo` si existe y es visible.
-2. Si no, busca en `PanelLineas` el contenedor de la línea activa
-   y encuentra su TextBox.
-
-**Mejora adicional**: asignar `_editorActivo` también en `GotFocus` del
-TextBox del editor de línea.
-### A1 completada (2026-10-17)
-
-**Funcionamiento**:
-- Comandos con `requiereAdmin: true` en JSON piden UAC al ejecutar.
-- La app corre sin privilegios; cada comando admin eleva puntualmente.
-- Salida capturada a archivos temporales (UAC no permite pipes).
-- Detener funciona correctamente.
-- Escape durante ejecución también detiene.
-
-**Indicadores visuales**:
-- 🛡 en el bloque del comando admin.
-- Aviso rojo en la barra de estado si la línea activa requiere admin.
-
-**Limitación conocida**: la salida del comando elevado no es en vivo
-(se lee al terminar). Aceptable para comandos largos (sfc, chkdsk).
-Futuro: ConPTY.
-
-**Archivos temporales**: `%LOCALAPPDATA%\VisualCmdStudio\temp\` con GUID único.
-Limpieza de restos al arrancar.
-
-### A4 — Fix de empujón pendiente (2026-10-18)
-
-Añadir `EmpujarEditorActivoAlModelo()` al principio de `GuardarPs1_Click`
-para conservar el texto pendiente en el campo CMD.
-
-**Aplicar también a `GuardarBat_Click`** si no lo tiene.
-
-**Verificado**: acentos y ñ funcionan correctamente (UTF-8 con BOM).
-
-### .bat vs .cmd — Decisión técnica (2026-10-18)
-
-**En Windows moderno (NT en adelante), son funcionalmente idénticos.**
-Ambos se ejecutan con `cmd.exe` y producen el mismo resultado.
-
-**Diferencias reales**:
-1. Histórica: `.bat` viene de MS-DOS; `.cmd` de Windows NT.
-2. Técnica (irrelevante para nosotros): `.cmd` resetea `ERRORLEVEL` a 0
-   tras ciertos comandos internos (`SET`, `PATH`...) con éxito; `.bat`
-   solo lo modifica en error.
-3. Prioridad: si existen ambos con el mismo nombre, `PATHEXT` prioriza
-   `.BAT` sobre `.CMD`.
-
-**Decisión**: reutilizar `ExportadorBat` con un parámetro de extensión.
-El contenido es idéntico; solo cambia el nombre del archivo.
-
-### A4-sh — Exportar a .sh (para revisión) (2026-10-18)
-
-**Concepto**: generar un archivo .sh con los comandos tal cual + advertencia
-clara de que son comandos de Windows y no funcionan en Bash nativo.
-
-**Características**:
-- Shebang `#!/bin/bash`.
-- Cabecera de metadatos (comentarios con `#`).
-- Advertencia sobre comandos de Windows + tabla de traducciones típicas.
-- Directorio de trabajo comentado (las rutas de Windows no funcionan en Bash).
-- Comandos tal cual, sin traducir.
-- Saltos de línea **LF** (obligatorio para Bash).
-- Codificación **UTF-8 sin BOM** (Bash no quiere BOM).
-
-**Filosofía**: es un punto de partida para que el usuario lo adapte,
-no un script ejecutable directamente.
-
-**Futuro (Tier 3/4)**:
-- Módulo traductor de comandos (`dir` → `ls`, `copy` → `cp`...).
-- Evaluar viabilidad técnica y coste.
-- Alternativa: generar `.sh` con comandos ya traducidos.
-
-**Nota**: la traducción automática tiene limitaciones. No todos los
-comandos de Windows tienen equivalente directo en Bash. Requiere
-análisis caso por caso.
-
-
-## Plan próximo (2026-10-18)
-
-### Orden de trabajo
-1. **Terminar la interfaz**: acabar todas las funciones del menú.
-2. **Ampliar los tokens** de la zona derecha (comandos, operadores, variables, plantillas).
-3. **Modularizar el catálogo**: JSON por familias, añadir/eliminar sin recompilar.
-
-### Prioridad
-Interfaz completa antes de features avanzadas.
-
-### Catálogo modular (idea)
-- Un archivo JSON por familia (Archivos.json, Red.json...).
-- Un index que los carga todos.
-- El usuario puede añadir/eliminar archivos sin tocar código.
-- Los plugins futuros podrían usar el mismo sistema.
-
-### Mejora pendiente: ocultar paneles debe liberar espacio (2026-10-19)
-
-**Síntoma**: al ocultar un panel desde el menú Ver, el espacio que ocupaba
-queda vacío. El panel adyacente no lo absorbe.
-
-**Causa**: los `Grid` con `ColumnDefinition Width="..."` fija siguen
-reservando el espacio aunque el `Border` interno esté `Collapsed`.
-
-**Solución propuesta (Opción C)**:
-- Guardar el ancho anterior de la columna antes de ocultar.
-- Al ocultar: `ColumnDefinition.Width = new GridLength(0)`.
-- Al mostrar: restaurar el ancho guardado.
-- Requiere `x:Name` en las `ColumnDefinition` del `Grid` principal.
-
-**Prioridad**: Media. No bloquea el uso, pero es raro visualmente.
-### Refactor: dividir MainWindow.xaml en UserControls (futuro)
-
-Después de reorganizar los paneles (2026-10-19), dividir en:
-- Views/Panels/PanelIzquierdo.xaml
-- Views/Panels/PanelCentral.xaml
-- Views/Panels/PanelDerecho.xaml
-- Views/Panels/PanelInferior.xaml
-
-MainWindow.xaml solo contiene los 4 UserControls + GridSplitters.
-Compartir DataContext = MainViewModel.
-
-**Prioridad**: Alta, cuando la UI esté estable.
-**Razón**: MainWindow.xaml tiene 2000+ líneas. Difícil de mantener.
-
-### Modos de trabajo (pendiente)
-
-Los radio buttons del panel izquierdo están en el XAML pero no conectados.
-Cuando se implementen:
-- Comando a comando: comportamiento actual.
-- Generar archivo batch: enfocar el flujo hacia exportar .bat.
-- Script PowerShell: enfocar hacia .ps1.
-- Modo aprendizaje: mostrar más explicaciones, ocultar opciones avanzadas.
-
-Prioridad: Tier 2.
-## Hito: interfaz completa (2026-10-19)
-
-### Estado
-- Menú completo y funcional (con placeholders informativos).
-- Paneles reorganizados: modificadores a la izquierda, información
-  a la derecha.
-- Todos los paneles redimensionables.
-- Diálogo de opciones con pestañas.
-
-### Pendientes inmediatos (Tier 2)
-- [ ] Hover sobre tokens del constructor.
-- [ ] Botón insertar texto con campo previo.
-- [ ] Constantes y comodines editables in-place.
-- [ ] Ampliar explicaciones de /A, /O.
-- [ ] Organizador de comandos (ComboBox de orden).
-- [ ] Drag & drop de tokens (reordenar, mover).
-- [ ] Menú contextual (clic derecho).
-- [ ] Undo/Redo global (operaciones sobre líneas).
-
-### Pendientes de Tier 1 (postpuestos)
-- [ ] Import desde .bat, .ps1, .sh.
-- [ ] Plantillas (A3).
-- [ ] Comandos modulares (JSON por familias).
-
-### Visión
-Ver TODOs en el código y secciones anteriores.
-### Tier 2 tarea 2: botón "Insertar texto" con campo previo (2026-10-20)
-
-**Implementado**:
-- Pestaña "Texto" del panel derecho con:
-  - TextBox para escribir el texto a insertar.
-  - Enter en el TextBox → inserta el texto.
-  - Botón "Insertar texto" para el mismo efecto.
-  - Botón "Insertar token vacío" para el comportamiento anterior.
-- El texto se entrecomilla siempre.
-- El campo se limpia tras insertar y el foco vuelve al campo.
-- Texto vacío → mensaje, no se inserta nada.
-- Se empuja el texto pendiente del editor antes de insertar.
-- ### Mejora pendiente: inserciones inteligentes de dummies (Tier 3)
-
-**Síntoma**: al insertar un token de texto (o cualquier token) en una línea
-con dummies pendientes, el sistema lo coloca al final y **consume** el
-siguiente dummie en orden, aunque el tipo no coincida.
-
-**Ejemplo**:
-- Línea: `copy [dummy:origen] [dummy:destino]` (con 2 argumentos pendientes).
-- El usuario inserta un texto `"hola"`.
-- Resultado: `copy "hola" [dummy:destino]`.
-- **Problema**: `"hola"` no es una ruta válida para `copy origen`. El dummie
-  `[origen]` debería seguir ahí, esperando una **ruta**.
-
-**Comportamiento deseado**: inserción **inteligente**.
-- Si el dummie espera `Ruta` y se inserta un `Texto`, **no consumirlo**.
-- El texto se añade como argumento extra (el usuario decide si es válido).
-- Si el dummie espera `CadenaLibre` y se inserta un `Texto`, **consumirlo**.
-
-**Requisito previo**: `ArgumentoComando.Tipo` (ya existe: "Ruta",
-"ArchivoExistente", "CadenaLibre"...) debe usarse para validar la
-compatibilidad antes de consumir un dummie.
-
-**Diseño de la lógica**:
-1. Al insertar un token, recorrer los dummies desde el primer pendiente.
-2. Para cada dummie:
-   - Si el tipo de token es compatible con `ArgumentoComando.Tipo` →
-     consumir el dummie.
-   - Si no → saltar al siguiente dummie.
-3. Si ningún dummie es compatible, insertar el token al final
-   (comportamiento actual).
-
-**Compatibilidades propuestas**:
-| Tipo de dummie | Acepta tokens de tipo |
-|---|---|
-| Ruta | Ruta, Texto (con advertencia) |
-| ArchivoExistente | Ruta (que exista) |
-| DirectorioExistente | Ruta (que exista y sea carpeta) |
-| CadenaLibre | Texto, Variable, Comando (a veces) |
-| NombreNuevo | Texto (nombre), Ruta |
-| Numero | Texto numérico, Variable |
-
-**Prioridad**: Tier 3. Antes hay features más urgentes (drag & drop,
-menú contextual, undo/redo global).
-
-**Referencia**: al comentar en la sesión del 2026-10-20, el usuario
-apunta que "las inserciones deben ser más inteligentes".
-### Mejoras de edición de tokens (Tier 3, 2026-10-20)
-
-**Comodines**:
-- Al editar un comodín, si el usuario introduce un carácter que necesita
-  corchetes (por ejemplo `a-z` en lugar de `[a-z]`), envolverlo
-  automáticamente.
-- Sugerencia: ComboBox de valores comunes (`*`, `?`, `[a-z]`, `[0-9]`...).
-
-**Constantes**:
-- Al editar una constante, ofrecer un ComboBox con las constantes conocidas
-  (`CON`, `NUL`, `PRN`, `AUX`, `COM1`, `LPT1`).
-- Si el usuario escribe algo que no es constante, avisar y convertirlo en
-  `Texto` (o rechazar la edición).
-
-**Prioridad**: Tier 3. Antes hay features más urgentes.
-
-**Diseño posible**:
-- Diálogo especial de edición para tokens de tipo Constante y Comodín.
-- O un ComboBox en el panel derecho que se active al editar.
-- O un "selector visual" al hacer doble clic.
-
-**Nota**: cuando lleguemos a Tier 3, diseñar bien el flujo antes de
-implementar.
-### Tier 2 tarea 4: ampliar JSON con descripciones de valores (2026-10-20)
-
-**Implementado**:
-- Campo `descripcionValores` en `Parametro` (Dictionary<string, string>).
-- `MostrarInfoModificador` muestra cada valor con su descripción.
-- Ampliado `comandos.json` con descripciones para:
-  - dir /A, dir /O
-  - tasklist /FO, systeminfo /FO, driverquery /fo
-  - format /FS:
-  - takeown /D
-  - bcdboot /f
-  - wmic /format
-
-**Pendiente (Tier 3)**:
-- Mejora de edición de comodines (auto-corchetes).
-- Mejora de edición de constantes (ComboBox con valores).
-- ### Tarea 9 (Tier 2, pendiente): edición visual de parámetros de modificadores
-
-**Concepto**: los modificadores que admiten parámetro (`/A:D`, `/O:N`, `/FS:NTFS`...)
-deberían poder editarse desde un **selector visual** homogéneo con la edición
-de constantes.
-
-**Diseño propuesto**:
-- Al editar in-place un parámetro de tipo `Lista`, ofrecer un ComboBox
-  con los valores posibles (ya definidos en `valoresPosibles` del JSON).
-- Al seleccionar, actualizar el token con `nombre:valor`.
-- Homogéneo con el futuro selector de constantes.
-
-**Relación con otras tareas**:
-- Se solapa con la "edición de constantes con ComboBox" (Tier 3).
-- Ambas deberían compartir el mismo diálogo/selector visual.
-
-**Prioridad**: Tier 2, media-alta. Mejora la UX del editor de forma visible.

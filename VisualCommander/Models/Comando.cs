@@ -50,6 +50,12 @@ namespace VisualCommander.Models
 
         /// <summary>Sintaxis general.</summary>
         public string Sintaxis { get; set; } = "";
+        /// <summary>
+        /// Número de veces que este comando se ha usado.
+        /// Se actualiza desde el MainViewModel al insertar el comando en un plan.
+        /// No se serializa en el JSON del catálogo.
+        /// </summary>
+        public int Usos { get; set; }
 
         /// <summary>
         /// Argumentos que este comando espera, en orden.

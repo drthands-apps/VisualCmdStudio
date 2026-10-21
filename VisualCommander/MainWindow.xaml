@@ -427,12 +427,13 @@ IsEnabled="{Binding EstaEjecutando, Converter={StaticResource InverseBoolConvert
                      VerticalContentAlignment="Center"
                      Text="{Binding Filtro, UpdateSourceTrigger=PropertyChanged}"/>
                                 <ComboBox x:Name="ComboOrden"
-                      Grid.Column="1" Margin="4" Width="95"
-                      SelectedIndex="0" VerticalContentAlignment="Center">
+          Grid.Column="1" Margin="4" Width="95"
+          SelectedIndex="{Binding OrdenSeleccionado, Mode=TwoWay}"
+          VerticalContentAlignment="Center">
                                     <ComboBoxItem Content="Por familia"/>
                                     <ComboBoxItem Content="A-Z"/>
                                     <ComboBoxItem Content="Frecuencia"/>
-                                </ComboBox>
+                                    </ComboBox>
                             </Grid>
                         </Border>
 
