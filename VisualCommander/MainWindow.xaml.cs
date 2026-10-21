@@ -6,6 +6,7 @@ using System.Windows.Media;
 using System.Windows.Shapes;
 using VisualCommander.Models;
 using VisualCommander.ViewModels;
+using static System.Net.Mime.MediaTypeNames;
 
 
 namespace VisualCommander
@@ -77,7 +78,7 @@ namespace VisualCommander
         private double _minAltoLineaComandosOriginal = 120;
 
 
-
+        private const string FormatoTexto = "VisualCommander.Texto";
         private TextBox? _editorActivo;
 
         private bool _scrollPendiente;
@@ -135,12 +136,15 @@ namespace VisualCommander
         }
         private void PanelBloques_DragEnter(object sender, DragEventArgs e)
         {
+           
             e.Effects = DeterminarEfecto(e);
             e.Handled = true;
         }
 
         private void PanelBloques_DragOver(object sender, DragEventArgs e)
         {
+           
+
             e.Effects = DeterminarEfecto(e);
 
             // Feedback visual: marcamos el panel como "destino activo".
@@ -152,11 +156,13 @@ namespace VisualCommander
 
         private void PanelBloques_DragLeave(object sender, DragEventArgs e)
         {
+            
             PanelBloques.Background = Brushes.Transparent;
         }
 
         private void PanelBloques_Drop(object sender, DragEventArgs e)
         {
+            
 
             PanelBloques.Background = Brushes.Transparent;
             // Calculamos la posición del cursor y el índice donde va a insertarse.
@@ -170,6 +176,16 @@ namespace VisualCommander
             {
                 ViewModel.InsertarTextoEnPosicion(cmd.Nombre, indice);
                 e.Handled = true;
+                return;
+            }
+
+            // --- Texto (operadores, variables, constantes, comodines) ---
+            if (e.Data.GetDataPresent(FormatoTexto) &&
+            e.Data.GetData(FormatoTexto) is string textoArrastrado)
+            {
+                ViewModel.InsertarTextoEnPosicion(textoArrastrado, indice);
+                e.Handled = true;
+                
                 return;
             }
 
@@ -208,6 +224,7 @@ namespace VisualCommander
                 e.Handled = true;
                 return;
             }
+            
         }
 
         /// <summary>
@@ -227,12 +244,13 @@ namespace VisualCommander
 
             if (e.Data.GetDataPresent(FormatoRuta))
             {
-                // Aceptamos rutas si hay un comando activo (tiene sentido: la ruta
-                // es un argumento de un comando).
                 return ViewModel.LineaActiva.ComandoActivo is null
                     ? DragDropEffects.None
                     : DragDropEffects.Copy;
             }
+
+            if (e.Data.GetDataPresent(FormatoTexto))
+                return DragDropEffects.Copy;
 
             return DragDropEffects.None;
         }
@@ -1657,69 +1675,11 @@ namespace VisualCommander
                 MessageBoxButton.OK,
                 MessageBoxImage.Information);
         }
-        private void InsertarOperador_Click(object sender, RoutedEventArgs e)
-        {
-            if (sender is Button btn && btn.Tag is string operador)
-            {
-                EmpujarEditorActivoAlModelo();
-                ViewModel.InsertarTextoEnPosicion(operador, ViewModel.LineaActiva.Tokens.Count);
-            }
-        }
-        private void InsertarVariable_Click(object sender, RoutedEventArgs e)
-        {
-            if (sender is ListBox lb && lb.SelectedItem is ListBoxItem item)
-            {
-                var variable = item.Content?.ToString();
-                if (!string.IsNullOrEmpty(variable))
-                {
-                    EmpujarEditorActivoAlModelo();
-                    ViewModel.InsertarTextoEnPosicion(variable, ViewModel.LineaActiva.Tokens.Count);
-                }
-            }
-        }
+       
         // ==== Hover del modificador (panel derecho) ====
+  
 
-       
-
-       
-       
-
-        // ==== Insertar variables/constantes/comodines ====
-
-        private void ListaVariables_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            if (ListaVariables.SelectedItem is ListBoxItem item && item.Content is string variable)
-            {
-                InsertarTextoEnLinea(variable);
-                ListaVariables.SelectedItem = null;   // Reset para permitir volver a seleccionar
-            }
-        }
-
-        private void ListaConstantes_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            if (ListaConstantes.SelectedItem is ListBoxItem item && item.Content is string constante)
-            {
-                InsertarTextoEnLinea(constante);
-                ListaConstantes.SelectedItem = null;
-            }
-        }
-
-        private void ListaComodines_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            if (ListaComodines.SelectedItem is ListBoxItem item && item.Tag is string comodin)
-            {
-                InsertarTextoEnLinea(comodin);
-                ListaComodines.SelectedItem = null;
-            }
-        }
-
-        /// <summary>Inserta un texto al final de la línea activa.</summary>
-        private void InsertarTextoEnLinea(string texto)
-        {
-            EmpujarEditorActivoAlModelo();
-            ViewModel.InsertarTextoEnPosicion(texto, ViewModel.LineaActiva.Tokens.Count);
-            EnfocarEditorActivo();
-        }
+        
         // ==== Hover sobre tokens del constructor ====
 
         private void Token_MouseEnter(object sender, MouseEventArgs e)
@@ -2156,6 +2116,91 @@ namespace VisualCommander
 
             ViewModel.SetStatus($"Insertado: {textoEntrecomillado}");
 
+        }
+        private Point _posInicialDragTexto;
+
+        private void BotonTexto_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            _posInicialDragTexto = e.GetPosition(null);
+        }
+
+        /// <summary>Flag para evitar iniciar múltiples arrastres a la vez.</summary>
+        private bool _dragEnCurso;
+
+        private void BotonTexto_PreviewMouseMove(object sender, MouseEventArgs e)
+        {
+            if (e.LeftButton != MouseButtonState.Pressed) return;
+            if (_dragEnCurso) return;   // ← NUEVO: ya hay un drag en curso, ignorar
+
+            var posActual = e.GetPosition(null);
+            var delta = posActual - _posInicialDragTexto;
+
+            if (Math.Abs(delta.X) < SystemParameters.MinimumHorizontalDragDistance &&
+                Math.Abs(delta.Y) < SystemParameters.MinimumVerticalDragDistance)
+                return;
+
+            string? texto = null;
+            if (sender is Button btn && btn.Tag is string tagTexto)
+                texto = tagTexto;
+            else if (sender is ListBoxItem item)
+            {
+                if (item.Tag is string tag) texto = tag;
+                else if (item.Content is string content) texto = content;
+            }
+
+            if (string.IsNullOrEmpty(texto)) return;
+
+            _dragEnCurso = true;   // ← NUEVO: marcar antes de iniciar
+
+            try
+            {
+                
+                var datos = new DataObject(FormatoTexto, texto);
+                DragDrop.DoDragDrop((DependencyObject)sender, datos, DragDropEffects.Copy);
+            }
+            finally
+            {
+                // Resetear el flag en el siguiente ciclo del dispatcher,
+                // para que el posible Click posterior lo vea activo.
+                Dispatcher.BeginInvoke(new Action(() =>
+                {
+                    _dragEnCurso = false;
+                }), System.Windows.Threading.DispatcherPriority.Background);
+            }
+        }
+        private void InsertarOperador_Click(object sender, RoutedEventArgs e)
+        {
+            // Si hay un drag en curso o acabamos de soltar, no insertar.
+            if (_dragEnCurso) return;
+
+            if (sender is Button btn && btn.Tag is string operador)
+            {
+                EmpujarEditorActivoAlModelo();
+                ViewModel.InsertarTextoEnPosicion(operador, ViewModel.LineaActiva.Tokens.Count);
+            }
+        }
+        private void Variable_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
+        {
+            if (_dragEnCurso) return;
+
+            if (sender is ListBoxItem item && item.Content is string texto)
+            {
+                EmpujarEditorActivoAlModelo();
+                ViewModel.InsertarTextoEnPosicion(texto, ViewModel.LineaActiva.Tokens.Count);
+            }
+        }
+        private void Comodin_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
+        {
+            if (_dragEnCurso) return;
+
+            if (sender is ListBoxItem item)
+            {
+                var texto = item.Tag as string ?? item.Content as string;
+                if (string.IsNullOrEmpty(texto)) return;
+
+                EmpujarEditorActivoAlModelo();
+                ViewModel.InsertarTextoEnPosicion(texto, ViewModel.LineaActiva.Tokens.Count);
+            }
         }
     }
 }

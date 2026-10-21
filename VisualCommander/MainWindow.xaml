@@ -1383,57 +1383,213 @@ IsEnabled="{Binding EstaEjecutando, Converter={StaticResource InverseBoolConvert
 
                                     <TabItem Header="Operadores">
                                         <WrapPanel Margin="6">
-                                            <Button Content="&amp;" Style="{StaticResource OpButton}" Click="InsertarOperador_Click" Tag="&amp;" MouseEnter="Operador_MouseEnter" MouseLeave="Token_MouseLeave"/>
-                                            <Button Content="&amp;&amp;" Style="{StaticResource OpButton}" Click="InsertarOperador_Click" Tag="&amp;&amp;" MouseEnter="Operador_MouseEnter" MouseLeave="Token_MouseLeave"/>
-                                            <Button Content="||"   Style="{StaticResource OpButton}" Click="InsertarOperador_Click" Tag="||" MouseEnter="Operador_MouseEnter" MouseLeave="Token_MouseLeave"/>
-                                            <Button Content="|"    Style="{StaticResource OpButton}" Click="InsertarOperador_Click" Tag="|" MouseEnter="Operador_MouseEnter" MouseLeave="Token_MouseLeave"/>
-                                            <Button Content="&gt;"    Style="{StaticResource OpButton}" Click="InsertarOperador_Click" Tag="&gt;" MouseEnter="Operador_MouseEnter" MouseLeave="Token_MouseLeave"/>
-                                            <Button Content="&gt;&gt;" Style="{StaticResource OpButton}" Click="InsertarOperador_Click" Tag="&gt;&gt;" MouseEnter="Operador_MouseEnter" MouseLeave="Token_MouseLeave"/>
-                                            <Button Content="&lt;"    Style="{StaticResource OpButton}" Click="InsertarOperador_Click" Tag="&lt;" MouseEnter="Operador_MouseEnter" MouseLeave="Token_MouseLeave"/>
-                                            <Button Content="^"    Style="{StaticResource OpButton}" Click="InsertarOperador_Click" Tag="^" MouseEnter="Operador_MouseEnter" MouseLeave="Token_MouseLeave"/>
-                                            <Button Content="%"    Style="{StaticResource OpButton}" Click="InsertarOperador_Click" Tag="%" MouseEnter="Operador_MouseEnter" MouseLeave="Token_MouseLeave"/>
-                                            <Button Content="=="   Style="{StaticResource OpButton}" Click="InsertarOperador_Click" Tag="==" MouseEnter="Operador_MouseEnter" MouseLeave="Token_MouseLeave"/>
-                                            <Button Content="NEQ"  Style="{StaticResource OpButton}" Click="InsertarOperador_Click" Tag="NEQ" MouseEnter="Operador_MouseEnter" MouseLeave="Token_MouseLeave"/>
-                                            <Button Content="EQU"  Style="{StaticResource OpButton}" Click="InsertarOperador_Click" Tag="EQU" MouseEnter="Operador_MouseEnter" MouseLeave="Token_MouseLeave"/>
+                                            <Button Content="&amp;" Style="{StaticResource OpButton}"
+                                                    Tag="&amp;"
+                                                    Click="InsertarOperador_Click"
+                                                    MouseEnter="Operador_MouseEnter" 
+                                                    MouseLeave="Token_MouseLeave"
+                                                    PreviewMouseLeftButtonDown="BotonTexto_PreviewMouseLeftButtonDown"
+                                                    PreviewMouseMove="BotonTexto_PreviewMouseMove"/>
+                                            <Button Content="&amp;&amp;" Style="{StaticResource OpButton}"
+                                                    Tag="&amp;&amp;"
+                                                    Click="InsertarOperador_Click"
+                                                    MouseEnter="Operador_MouseEnter" 
+                                                    MouseLeave="Token_MouseLeave"
+                                                    PreviewMouseLeftButtonDown="BotonTexto_PreviewMouseLeftButtonDown"
+                                                    PreviewMouseMove="BotonTexto_PreviewMouseMove"/>
+                                            <Button Content="||"   Style="{StaticResource OpButton}"
+                                                    Tag="||" 
+                                                    Click="InsertarOperador_Click"
+                                                    MouseEnter="Operador_MouseEnter" 
+                                                    MouseLeave="Token_MouseLeave"
+                                                    PreviewMouseLeftButtonDown="BotonTexto_PreviewMouseLeftButtonDown"
+                                                    PreviewMouseMove="BotonTexto_PreviewMouseMove"/>
+                                            <Button Content="|"    Style="{StaticResource OpButton}"
+                                                    Tag="|" 
+                                                    Click="InsertarOperador_Click"
+                                                    MouseEnter="Operador_MouseEnter" 
+                                                    MouseLeave="Token_MouseLeave"
+                                                    PreviewMouseLeftButtonDown="BotonTexto_PreviewMouseLeftButtonDown"
+                                                    PreviewMouseMove="BotonTexto_PreviewMouseMove"/>
+                                            <Button Content="&gt;"    Style="{StaticResource OpButton}"
+                                                    Tag="&gt;" 
+                                                    Click="InsertarOperador_Click"
+                                                    MouseEnter="Operador_MouseEnter" 
+                                                    MouseLeave="Token_MouseLeave"
+                                                    PreviewMouseLeftButtonDown="BotonTexto_PreviewMouseLeftButtonDown"
+                                                    PreviewMouseMove="BotonTexto_PreviewMouseMove"/>
+                                            <Button Content="&gt;&gt;" Style="{StaticResource OpButton}"
+                                                    Tag="&gt;&gt;" 
+                                                    Click="InsertarOperador_Click"
+                                                    MouseEnter="Operador_MouseEnter" 
+                                                    MouseLeave="Token_MouseLeave"
+                                                    PreviewMouseLeftButtonDown="BotonTexto_PreviewMouseLeftButtonDown"
+                                                    PreviewMouseMove="BotonTexto_PreviewMouseMove"/>
+                                            <Button Content="&lt;"    Style="{StaticResource OpButton}"
+                                                    Tag="&lt;"
+                                                    Click="InsertarOperador_Click"
+                                                    MouseEnter="Operador_MouseEnter" 
+                                                    MouseLeave="Token_MouseLeave"
+                                                    PreviewMouseLeftButtonDown="BotonTexto_PreviewMouseLeftButtonDown"
+                                                    PreviewMouseMove="BotonTexto_PreviewMouseMove"/>
+                                            <Button Content="^"    Style="{StaticResource OpButton}"
+                                                    Tag="^" 
+                                                    Click="InsertarOperador_Click"
+                                                    MouseEnter="Operador_MouseEnter" 
+                                                    MouseLeave="Token_MouseLeave"
+                                                    PreviewMouseLeftButtonDown="BotonTexto_PreviewMouseLeftButtonDown"
+                                                    PreviewMouseMove="BotonTexto_PreviewMouseMove"/>
+                                            <Button Content="%"    Style="{StaticResource OpButton}"
+                                                    Tag="%" 
+                                                    Click="InsertarOperador_Click"
+                                                    MouseEnter="Operador_MouseEnter" 
+                                                    MouseLeave="Token_MouseLeave"
+                                                    PreviewMouseLeftButtonDown="BotonTexto_PreviewMouseLeftButtonDown"
+                                                    PreviewMouseMove="BotonTexto_PreviewMouseMove"/>
+                                            <Button Content="=="   Style="{StaticResource OpButton}"
+                                                    Tag="==" 
+                                                    Click="InsertarOperador_Click"
+                                                    MouseEnter="Operador_MouseEnter" 
+                                                    MouseLeave="Token_MouseLeave"
+                                                    PreviewMouseLeftButtonDown="BotonTexto_PreviewMouseLeftButtonDown"
+                                                    PreviewMouseMove="BotonTexto_PreviewMouseMove"/>
+                                            <Button Content="NEQ"  Style="{StaticResource OpButton}"
+                                                    Tag="NEQ" 
+                                                    Click="InsertarOperador_Click"
+                                                    MouseEnter="Operador_MouseEnter" 
+                                                    MouseLeave="Token_MouseLeave"
+                                                    PreviewMouseLeftButtonDown="BotonTexto_PreviewMouseLeftButtonDown"
+                                                    PreviewMouseMove="BotonTexto_PreviewMouseMove"/>
+                                            <Button Content="EQU"  Style="{StaticResource OpButton}"
+                                                    Tag="EQU" 
+                                                    Click="InsertarOperador_Click"
+                                                    MouseEnter="Operador_MouseEnter" 
+                                                    MouseLeave="Token_MouseLeave"
+                                                    PreviewMouseLeftButtonDown="BotonTexto_PreviewMouseLeftButtonDown"
+                                                    PreviewMouseMove="BotonTexto_PreviewMouseMove"/>
                                         </WrapPanel>
                                     </TabItem>
 
                                     <TabItem Header="Variables">
-                                        <ListBox x:Name="ListaVariables"
-                             Margin="4"
-                             SelectionChanged="ListaVariables_SelectionChanged">
-                                            <ListBoxItem Content="%USERPROFILE%" MouseEnter="Variable_MouseEnter" MouseLeave="Token_MouseLeave"/>
-                                            <ListBoxItem Content="%TEMP%" MouseEnter="Variable_MouseEnter" MouseLeave="Token_MouseLeave"/>
-                                            <ListBoxItem Content="%PATH%" MouseEnter="Variable_MouseEnter" MouseLeave="Token_MouseLeave"/>
-                                            <ListBoxItem Content="%DATE%" MouseEnter="Variable_MouseEnter" MouseLeave="Token_MouseLeave"/>
-                                            <ListBoxItem Content="%TIME%" MouseEnter="Variable_MouseEnter" MouseLeave="Token_MouseLeave"/>
-                                            <ListBoxItem Content="%RANDOM%" MouseEnter="Variable_MouseEnter" MouseLeave="Token_MouseLeave"/>
-                                            <ListBoxItem Content="%ERRORLEVEL%" MouseEnter="Variable_MouseEnter" MouseLeave="Token_MouseLeave"/>
-                                            <ListBoxItem Content="%CD%" MouseEnter="Variable_MouseEnter" MouseLeave="Token_MouseLeave"/>
+                                        <ListBox x:Name="ListaVariables" Margin="4">
+                                            <ListBoxItem Content="%USERPROFILE%"
+                                                         MouseEnter="Variable_MouseEnter" 
+                                                         MouseLeave="Token_MouseLeave"
+                                                         MouseLeftButtonUp="Variable_MouseLeftButtonUp"
+                                                         PreviewMouseLeftButtonDown="BotonTexto_PreviewMouseLeftButtonDown"
+                                                         PreviewMouseMove="BotonTexto_PreviewMouseMove"/>
+                                            <ListBoxItem Content="%TEMP%" 
+                                                         MouseEnter="Variable_MouseEnter" 
+                                                         MouseLeave="Token_MouseLeave"
+                                                         MouseLeftButtonUp="Variable_MouseLeftButtonUp"
+                                                         PreviewMouseLeftButtonDown="BotonTexto_PreviewMouseLeftButtonDown"
+                                                         PreviewMouseMove="BotonTexto_PreviewMouseMove"/>
+                                            <ListBoxItem Content="%PATH%" 
+                                                         MouseEnter="Variable_MouseEnter" 
+                                                         MouseLeave="Token_MouseLeave"
+                                                         MouseLeftButtonUp="Variable_MouseLeftButtonUp"
+                                                         PreviewMouseLeftButtonDown="BotonTexto_PreviewMouseLeftButtonDown"
+                                                         PreviewMouseMove="BotonTexto_PreviewMouseMove"/>
+                                            <ListBoxItem Content="%DATE%" 
+                                                         MouseEnter="Variable_MouseEnter" 
+                                                         MouseLeave="Token_MouseLeave"
+                                                         MouseLeftButtonUp="Variable_MouseLeftButtonUp"
+                                                         PreviewMouseLeftButtonDown="BotonTexto_PreviewMouseLeftButtonDown"
+                                                         PreviewMouseMove="BotonTexto_PreviewMouseMove"/>
+                                            <ListBoxItem Content="%TIME%" 
+                                                         MouseEnter="Variable_MouseEnter" 
+                                                         MouseLeave="Token_MouseLeave"
+                                                         MouseLeftButtonUp="Variable_MouseLeftButtonUp"
+                                                         PreviewMouseLeftButtonDown="BotonTexto_PreviewMouseLeftButtonDown"
+                                                         PreviewMouseMove="BotonTexto_PreviewMouseMove"/>
+                                            <ListBoxItem Content="%RANDOM%" 
+                                                         MouseEnter="Variable_MouseEnter" 
+                                                         MouseLeave="Token_MouseLeave"
+                                                         MouseLeftButtonUp="Variable_MouseLeftButtonUp"
+                                                         PreviewMouseLeftButtonDown="BotonTexto_PreviewMouseLeftButtonDown"
+                                                         PreviewMouseMove="BotonTexto_PreviewMouseMove"/>
+                                            <ListBoxItem Content="%ERRORLEVEL%" 
+                                                         MouseEnter="Variable_MouseEnter" 
+                                                         MouseLeave="Token_MouseLeave"  
+                                                         MouseLeftButtonUp="Variable_MouseLeftButtonUp"
+                                                         PreviewMouseLeftButtonDown="BotonTexto_PreviewMouseLeftButtonDown"
+                                                         PreviewMouseMove="BotonTexto_PreviewMouseMove"/>
+                                            <ListBoxItem Content="%CD%" 
+                                                         MouseEnter="Variable_MouseEnter" 
+                                                         MouseLeave="Token_MouseLeave"
+                                                         MouseLeftButtonUp="Variable_MouseLeftButtonUp"
+                                                         PreviewMouseLeftButtonDown="BotonTexto_PreviewMouseLeftButtonDown"
+                                                         PreviewMouseMove="BotonTexto_PreviewMouseMove"/>
                                         </ListBox>
                                     </TabItem>
 
                                     <TabItem Header="Constantes">
-                                        <ListBox x:Name="ListaConstantes"
-                             Margin="4"
-                             SelectionChanged="ListaConstantes_SelectionChanged">
-                                            <ListBoxItem Content="CON" MouseEnter="Constante_MouseEnter" MouseLeave="Token_MouseLeave"/>
-                                            <ListBoxItem Content="NUL" MouseEnter="Constante_MouseEnter" MouseLeave="Token_MouseLeave"/>
-                                            <ListBoxItem Content="PRN" MouseEnter="Constante_MouseEnter" MouseLeave="Token_MouseLeave"/>
-                                            <ListBoxItem Content="AUX" MouseEnter="Constante_MouseEnter" MouseLeave="Token_MouseLeave"/>
-                                            <ListBoxItem Content="COM1" MouseEnter="Constante_MouseEnter" MouseLeave="Token_MouseLeave"/>
-                                            <ListBoxItem Content="LPT1" MouseEnter="Constante_MouseEnter" MouseLeave="Token_MouseLeave"/>
+                                        <ListBox x:Name="ListaConstantes" Margin="4">
+                                            <ListBoxItem Content="CON" 
+                                                         MouseEnter="Constante_MouseEnter" 
+                                                         MouseLeave="Token_MouseLeave"
+                                                         MouseLeftButtonUp="Variable_MouseLeftButtonUp"
+                                                         PreviewMouseLeftButtonDown="BotonTexto_PreviewMouseLeftButtonDown"
+                                                         PreviewMouseMove="BotonTexto_PreviewMouseMove"/>
+                                            <ListBoxItem Content="NUL" 
+                                                         MouseEnter="Constante_MouseEnter" 
+                                                         MouseLeave="Token_MouseLeave"
+                                                         MouseLeftButtonUp="Variable_MouseLeftButtonUp"
+                                                         PreviewMouseLeftButtonDown="BotonTexto_PreviewMouseLeftButtonDown"
+                                                         PreviewMouseMove="BotonTexto_PreviewMouseMove"/>
+                                            <ListBoxItem Content="PRN" 
+                                                         MouseEnter="Constante_MouseEnter" 
+                                                         MouseLeave="Token_MouseLeave"
+                                                         MouseLeftButtonUp="Variable_MouseLeftButtonUp"
+                                                         PreviewMouseLeftButtonDown="BotonTexto_PreviewMouseLeftButtonDown"
+                                                         PreviewMouseMove="BotonTexto_PreviewMouseMove"/>
+                                            <ListBoxItem Content="AUX" 
+                                                         MouseEnter="Constante_MouseEnter" 
+                                                         MouseLeave="Token_MouseLeave"
+                                                         MouseLeftButtonUp="Variable_MouseLeftButtonUp"
+                                                         PreviewMouseLeftButtonDown="BotonTexto_PreviewMouseLeftButtonDown"
+                                                         PreviewMouseMove="BotonTexto_PreviewMouseMove"/>
+                                            <ListBoxItem Content="COM1" 
+                                                         MouseEnter="Constante_MouseEnter" 
+                                                         MouseLeave="Token_MouseLeave"
+                                                         MouseLeftButtonUp="Variable_MouseLeftButtonUp"
+                                                         PreviewMouseLeftButtonDown="BotonTexto_PreviewMouseLeftButtonDown"
+                                                         PreviewMouseMove="BotonTexto_PreviewMouseMove"/>
+                                            <ListBoxItem Content="LPT1" 
+                                                         MouseEnter="Constante_MouseEnter" 
+                                                         MouseLeave="Token_MouseLeave"
+                                                         MouseLeftButtonUp="Variable_MouseLeftButtonUp"
+                                                         PreviewMouseLeftButtonDown="BotonTexto_PreviewMouseLeftButtonDown"
+                                                         PreviewMouseMove="BotonTexto_PreviewMouseMove"/>
                                         </ListBox>
                                     </TabItem>
 
                                     <TabItem Header="Comodines">
-                                        <ListBox x:Name="ListaComodines"
-                             Margin="4"
-                             SelectionChanged="ListaComodines_SelectionChanged">
-                                            <ListBoxItem Content="*" Tag="*" MouseEnter="Comodin_MouseEnter" MouseLeave="Token_MouseLeave"/>
-                                            <ListBoxItem Content="?" Tag="?" MouseEnter="Comodin_MouseEnter" MouseLeave="Token_MouseLeave"/>
-                                            <ListBoxItem Content="[abc]" Tag="[abc]" MouseEnter="Comodin_MouseEnter" MouseLeave="Token_MouseLeave"/>
-                                            <ListBoxItem Content="[a-z]" Tag="[a-z]" MouseEnter="Comodin_MouseEnter" MouseLeave="Token_MouseLeave"/>
+                                        <ListBox x:Name="ListaComodines" Margin="4">
+                                            <ListBoxItem Content="*" Tag="*" 
+                                                         MouseEnter="Comodin_MouseEnter" 
+                                                         MouseLeave="Token_MouseLeave"
+                                                         MouseLeftButtonUp="Comodin_MouseLeftButtonUp"
+                                                         PreviewMouseLeftButtonDown="BotonTexto_PreviewMouseLeftButtonDown"
+                                                         PreviewMouseMove="BotonTexto_PreviewMouseMove"/>
+                                            <ListBoxItem Content="?" Tag="?" 
+                                                         MouseEnter="Comodin_MouseEnter" 
+                                                         MouseLeave="Token_MouseLeave"
+                                                         MouseLeftButtonUp="Comodin_MouseLeftButtonUp"
+                                                         PreviewMouseLeftButtonDown="BotonTexto_PreviewMouseLeftButtonDown"
+                                                         PreviewMouseMove="BotonTexto_PreviewMouseMove"/>
+                                            <ListBoxItem Content="[abc]" Tag="[abc]" 
+                                                         MouseEnter="Comodin_MouseEnter" 
+                                                         MouseLeave="Token_MouseLeave"
+                                                         MouseLeftButtonUp="Comodin_MouseLeftButtonUp"
+                                                         PreviewMouseLeftButtonDown="BotonTexto_PreviewMouseLeftButtonDown"
+                                                         PreviewMouseMove="BotonTexto_PreviewMouseMove"/>
+                                            <ListBoxItem Content="[a-z]" Tag="[a-z]" 
+                                                         MouseEnter="Comodin_MouseEnter" 
+                                                         MouseLeave="Token_MouseLeave"
+                                                         MouseLeftButtonUp="Comodin_MouseLeftButtonUp"
+                                                         PreviewMouseLeftButtonDown="BotonTexto_PreviewMouseLeftButtonDown"
+                                                         PreviewMouseMove="BotonTexto_PreviewMouseMove"/>
                                         </ListBox>
                                     </TabItem>
                                 </TabControl>

@@ -101,7 +101,7 @@ namespace VisualCommander.Models
             }
 
             // 3) Operadores
-            if (limpio is "|" or "&" or "&&" or "||" or ">" or ">>" or "<")
+            if (limpio is "|" or "&" or "&&" or "||" or ">" or ">>" or "<" or"^" or "==" or "NEQ" or "EQU")
             {
                 return new Token
                 {
@@ -113,7 +113,7 @@ namespace VisualCommander.Models
                 };
             }
             // 4.5) Constantes 
-            if (limpio is "NULL" or "CON" or "PRN" or "AUX" or "COM1" or "LPT1")
+            if (limpio is "NUL" or "CON" or "PRN" or "AUX" or "COM1" or "LPT1")
             {
                 return new Token
                 {
