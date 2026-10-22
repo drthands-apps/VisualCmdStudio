@@ -334,3 +334,25 @@ Todos los tokens del panel derecho están bindeados al catálogo JSON:
 - Cambiar una descripción: editar JSON.
 - Traducir a otros idiomas: editar JSON (futuro).
 - Sin recompilar.
+## Hito: Tarea 4 completada + arquitectura de información (2026-10-22)
+
+### Completado
+- Tarea 4: descripciones enriquecidas de /A y /O.
+- TokenInfo + CatalogoTokens cargados desde tokens.json.
+- Tres métodos de info en el panel derecho, cada uno con su contexto.
+
+### Arquitectura
+- Panel derecho = centro de información único.
+- Tres contextos: modificador, token insertado, elemento pendiente.
+- Cada método tiene su responsabilidad. No hay duplicación.
+
+### Mejoras futuras (Tier 2)
+- [ ] Ampliar MostrarInfoTokenInfo con Categoria y Ejemplo.
+- [ ] Ampliar tokens.json con categoria y ejemplo para cada elemento.
+- [ ] Renombrar MostrarInfoTokenInfo a algo más claro (opcional).
+
+### Pendiente próxima sesión
+- Tarea 3: desplegable para constantes/comodines.
+- Tarea 5: drag de constantes sobre tokens existentes.
+- Tarea 6: drag & drop de tokens (reordenar).
+- Tarea 7: edición in-place de más tipos.

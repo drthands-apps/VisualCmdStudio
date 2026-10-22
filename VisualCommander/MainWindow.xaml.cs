@@ -269,7 +269,7 @@ namespace VisualCommander
         {
             OcultarInfoModificador();
         }
-
+       
         private void MostrarInfoModificador(ParametroVista pv)
         {
             TituloDetalle.Text = "DETALLE DEL MODIFICADOR";
@@ -277,7 +277,9 @@ namespace VisualCommander
             InfoModificadorNombre.Text = pv.Nombre;
             InfoModificadorNombre.Visibility = Visibility.Visible;
 
-            InfoModificadorDescripcion.Text = pv.Descripcion;
+            // Descripción principal.
+            var descripcionPrincipal = pv.Descripcion;
+            InfoModificadorDescripcion.Text = descripcionPrincipal;
             InfoModificadorDescripcion.Visibility = Visibility.Visible;
 
             if (pv.Parametro.ValoresPosibles != null && pv.Parametro.ValoresPosibles.Length > 0)
@@ -1708,23 +1710,37 @@ namespace VisualCommander
 
         private void MostrarInfoToken(Token token)
         {
-            // Cambiar título.
             TituloDetalle.Text = "DETALLE DEL TOKEN";
 
-            // Nombre.
             InfoModificadorNombre.Text = token.Texto;
             InfoModificadorNombre.Visibility = Visibility.Visible;
 
-            // Descripción según tipo.
-            InfoModificadorDescripcion.Text = ObtenerDescripcionToken(token);
+            // La descripción NO incluye los valores posibles.
+            var descripcion = ObtenerDescripcionToken(token);
+            InfoModificadorDescripcion.Text = descripcion;
             InfoModificadorDescripcion.Visibility = Visibility.Visible;
 
-            // Valores posibles (solo si es parámetro de tipo Lista).
+            // Los valores posibles van al panel dedicado.
             if (token.Origen is Parametro p &&
                 p.ValoresPosibles != null &&
                 p.ValoresPosibles.Length > 0)
             {
-                InfoModificadorValores.Text = string.Join(", ", p.ValoresPosibles);
+                var sb = new System.Text.StringBuilder();
+
+                foreach (var valor in p.ValoresPosibles)
+                {
+                    sb.Append(valor);
+
+                    if (p.DescripcionValores != null &&
+                        p.DescripcionValores.TryGetValue(valor, out var desc))
+                    {
+                        sb.Append(" → ").Append(desc);
+                    }
+
+                    sb.AppendLine();
+                }
+
+                InfoModificadorValores.Text = sb.ToString().TrimEnd();
                 PanelValoresPosibles.Visibility = Visibility.Visible;
             }
             else
@@ -1732,7 +1748,6 @@ namespace VisualCommander
                 PanelValoresPosibles.Visibility = Visibility.Collapsed;
             }
 
-            // Ocultar mensaje de "sin hover".
             InfoSinModificador.Visibility = Visibility.Collapsed;
         }
 
@@ -1754,95 +1769,58 @@ namespace VisualCommander
         {
             var sb = new System.Text.StringBuilder();
 
-            // Descripción general (la que ya tiene el token).
+            // Tipo.
+            sb.AppendLine($"Tipo: {token.Tipo}");
+
+            // Descripción del token.
             if (!string.IsNullOrEmpty(token.Descripcion))
             {
-                sb.AppendLine(token.Descripcion);
                 sb.AppendLine();
+                sb.AppendLine(token.Descripcion);
             }
 
-            // Contenido específico según tipo.
-            switch (token.Tipo)
+            // Si es un Comando, añadir sintaxis y ejemplos.
+            if (token.Origen is Comando cmd)
             {
-                case TipoToken.Comando:
-                    if (token.Origen is Comando cmd)
-                    {
-                        if (!string.IsNullOrEmpty(cmd.Sintaxis))
-                        {
-                            sb.AppendLine("Sintaxis:");
-                            sb.AppendLine(cmd.Sintaxis);
-                            sb.AppendLine();
-                        }
-                        if (cmd.Ejemplos != null && cmd.Ejemplos.Count > 0)
-                        {
-                            sb.AppendLine("Ejemplos:");
-                            foreach (var ej in cmd.Ejemplos)
-                                sb.AppendLine("  " + ej);
-                        }
-                    }
-                    break;
-
-                case TipoToken.Parametro:
-                    if (token.Origen is Parametro p)
-                    {
-                        if (p.ValoresPosibles != null && p.ValoresPosibles.Length > 0)
-                        {
-                            sb.AppendLine("Valores posibles:");
-                            foreach (var v in p.ValoresPosibles)
-                                sb.AppendLine("  " + v);
-                        }
-                    }
-                    break;
-
-                case TipoToken.Operador:
-                    sb.AppendLine("Operador de shell. Conecta comandos o redirige la salida.");
-                    break;
-
-                case TipoToken.Variable:
-                    sb.AppendLine("Variable de entorno. Su valor se sustituye al ejecutar.");
-                    break;
-
-                case TipoToken.Constante:
-                    sb.AppendLine("Dispositivo del sistema. Al escribir o leer, se interactúa con el dispositivo real.");
-                    break;
-
-                case TipoToken.Comodin:
-                    sb.AppendLine("Comodín de búsqueda. Se usa para buscar archivos que coincidan con un patrón.");
+                if (!string.IsNullOrEmpty(cmd.Sintaxis))
+                {
+                    sb.AppendLine();
+                    sb.AppendLine("Sintaxis:");
+                    sb.AppendLine(cmd.Sintaxis);
+                }
+                if (cmd.Ejemplos != null && cmd.Ejemplos.Count > 0)
+                {
                     sb.AppendLine();
                     sb.AppendLine("Ejemplos:");
-                    sb.AppendLine("  *.txt     → todos los archivos con extensión .txt");
-                    sb.AppendLine("  foto?.jpg → foto1.jpg, foto2.jpg...");
-                    sb.AppendLine("  [abc]*.txt → archivos que empiezan por a, b o c");
-                    break;
+                    foreach (var ej in cmd.Ejemplos)
+                        sb.AppendLine("  " + ej);
+                }
+            }
 
-                case TipoToken.Ruta:
-                    if (token.Origen is string ruta)
-                    {
-                        if (System.IO.Directory.Exists(ruta))
-                            sb.AppendLine("✓ Directorio existente.");
-                        else if (System.IO.File.Exists(ruta))
-                            sb.AppendLine("✓ Archivo existente.");
-                        else
-                            sb.AppendLine("⚠ La ruta no existe actualmente.");
-                    }
-                    break;
-                
+            // NOTA: NO añadimos "Valores posibles" aquí.
+            // Se muestran en el panel dedicado (PanelValoresPosibles).
 
-                case TipoToken.Texto:
-                    if (token.EsDummy)
-                    {
-                        sb.AppendLine("◇ Argumento esperado. Aún no rellenado.");
-                        if (token.EsRequerido)
-                            sb.AppendLine("  Es obligatorio para que el comando sea válido.");
-                        else
-                            sb.AppendLine("  Es opcional.");
-                    }
+            // Si es una Ruta, indicar si existe o no.
+            if (token.Origen is string ruta)
+            {
+                sb.AppendLine();
+                if (System.IO.Directory.Exists(ruta))
+                    sb.AppendLine("✓ El directorio existe.");
+                else if (System.IO.File.Exists(ruta))
+                    sb.AppendLine("✓ El archivo existe.");
+                else
+                    sb.AppendLine("✗ La ruta no existe.");
+            }
 
-                    else
-                    {
-                        sb.AppendLine("Texto libre. Se insertará tal cual en la línea.");
-                    }
-                    break;
+            // Si es un dummie.
+            if (token.EsDummy)
+            {
+                sb.AppendLine();
+                sb.AppendLine("◇ Argumento pendiente de rellenar.");
+                if (token.EsRequerido)
+                    sb.AppendLine("  Es obligatorio.");
+                else
+                    sb.AppendLine("  Es opcional.");
             }
 
             return sb.ToString().Trim();
@@ -2173,13 +2151,25 @@ namespace VisualCommander
         {
             OcultarInfoModificador();
         }
-
         private void MostrarInfoTokenInfo(TokenInfo info)
         {
+            TituloDetalle.Text = "DETALLE DEL TOKEN";
+
             InfoModificadorNombre.Text = info.Nombre;
             InfoModificadorNombre.Visibility = Visibility.Visible;
 
-            InfoModificadorDescripcion.Text = info.Descripcion;
+            // Descripción + categoría + ejemplo.
+            var sb = new System.Text.StringBuilder();
+            sb.Append(info.Descripcion);
+
+            if (!string.IsNullOrEmpty(info.Categoria))
+            {
+                sb.AppendLine();
+                sb.AppendLine();
+                sb.AppendLine($"Categoría: {info.Categoria}");
+            }
+
+            InfoModificadorDescripcion.Text = sb.ToString().TrimEnd();
             InfoModificadorDescripcion.Visibility = Visibility.Visible;
 
             if (!string.IsNullOrEmpty(info.Ejemplo))

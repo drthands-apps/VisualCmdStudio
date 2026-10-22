@@ -7,7 +7,7 @@
     "icono": "📄",
     "resumen": "Lista archivos y carpetas",
     "descripcion": "Muestra una lista de los archivos y subdirectorios de un directorio. Sin parámetros, muestra el directorio actual.",
-    "sintaxis": "dir [unidad:][ruta][nombrearchivo] [/A[[:]atributos]] [/O[[:]criterio]] [/S] [/B] [/W] [/P]",
+    "sintaxis": "dir [unidad:][ruta][nombrearchivo] [/A[[:]atributos]] [/O[[:]criterio]] [/S] [/B] [/W] [/P] [/Q] [/R]",
     "peligroso": false,
     "parametros": [
       {
