@@ -52,6 +52,8 @@ namespace VisualCommander.Models
 
             return resultado;
         }
+
+        public static CatalogoTokens? CatalogoTokens { get; set; }
         // ==================== Clasificación de un trozo ====================
 
         private static Token Clasificar(
@@ -112,10 +114,11 @@ namespace VisualCommander.Models
                     Descripcion = $"Operador: {limpio}"
                 };
             }
-            // 4.5) Constantes 
-            if (limpio is "NUL" or "CON" or "PRN" or "AUX" or "COM1" or "LPT1")
+            // 4) Constantes 
+            if (CatalogoTokens?.Constantes.Any(c =>
+                string.Equals(c.Nombre, limpio, StringComparison.OrdinalIgnoreCase)) == true)
             {
-                return new Token
+            return new Token
                 {
                     Tipo = TipoToken.Constante,
                     Texto = trozo,
@@ -125,8 +128,8 @@ namespace VisualCommander.Models
                 };
             }
 
-            // 4) Variables
-            if (limpio.Contains('%'))
+            // 5) Variables (buscar %...%)
+            if (limpio.StartsWith("%") && limpio.EndsWith("%"))
             {
                 return new Token
                 {
@@ -137,7 +140,7 @@ namespace VisualCommander.Models
                     Descripcion = "Variable de entorno"
                 };
             }
-            // 4.5) ¿Es un comodín? (*, ?, [abc], [a-z])
+            // 6) ¿Es un comodín? (*, ?, [abc], [a-z])
             if (EsComodin(limpio))
             {
                 return new Token
@@ -150,7 +153,7 @@ namespace VisualCommander.Models
                 };
             }
 
-            // 5) Patrones de archivo
+            // 7) Patrones de archivo
             if (EsPatronArchivo(limpio))
             {
                 return new Token
@@ -163,7 +166,7 @@ namespace VisualCommander.Models
                 };
             }
 
-            // 6) Rutas
+            // 8) Rutas
             var comoRuta = IntentarComoRuta(limpio, directorioTrabajo);
             if (comoRuta != null)
             {
@@ -180,7 +183,7 @@ namespace VisualCommander.Models
             }
            
 
-            // 7) Texto genérico
+            // 9) Texto genérico
             return new Token
             {
                 Tipo = TipoToken.Texto,

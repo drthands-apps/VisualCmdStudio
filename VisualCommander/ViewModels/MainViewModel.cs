@@ -33,7 +33,7 @@ namespace VisualCommander.ViewModels
         private readonly Models.Configuracion _configuracion;
         private bool _ignorarSalida;
 
-
+        public CatalogoTokens CatalogoTokens { get; }
         // ==== Catálogo ====
 
         public ObservableCollection<Comando> Comandos { get; } = new();
@@ -98,6 +98,8 @@ namespace VisualCommander.ViewModels
             }
         }
 
+        
+
         // ==== Contexto de ejecución (delegado a la línea activa) ====
 
         /// <summary>Directorio de trabajo de la línea activa.</summary>
@@ -139,8 +141,6 @@ namespace VisualCommander.ViewModels
                 SetStatus($"Ruta inválida: {ex.Message}");
             }
         }
-
-
 
 
 
@@ -306,9 +306,14 @@ namespace VisualCommander.ViewModels
             // Cargar configuración PRIMERO, antes que cualquier otra cosa.
             _configuracion = Services.ConfiguracionService.Cargar();
             _registroUso = UsoService.Cargar();
-
+            /// <summary>Catálogo de tokens pequeños (constantes, variables, comodines, operadores).</summary>
+       
 
             CargarComandos();
+            CatalogoTokens = Services.CatalogoTokensService.Cargar();
+
+            
+            ComandoParser.CatalogoTokens = CatalogoTokens;
 
             // Conectamos el proyector de tokens al parser.
             LineaComando.Proyector = (texto, dirTrabajo) =>
@@ -329,7 +334,6 @@ namespace VisualCommander.ViewModels
             _lineaActiva.EsActiva = true;
             Lineas.Add(_lineaActiva);
             RenumerarLineas();
-
         }
 
         private void RenumerarLineas()

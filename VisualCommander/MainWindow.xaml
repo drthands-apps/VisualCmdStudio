@@ -1382,216 +1382,121 @@ IsEnabled="{Binding EstaEjecutando, Converter={StaticResource InverseBoolConvert
 </TabItem>
 
                                     <TabItem Header="Operadores">
-                                        <WrapPanel Margin="6">
-                                            <Button Content="&amp;" Style="{StaticResource OpButton}"
-                                                    Tag="&amp;"
-                                                    Click="InsertarOperador_Click"
-                                                    MouseEnter="Operador_MouseEnter" 
-                                                    MouseLeave="Token_MouseLeave"
-                                                    PreviewMouseLeftButtonDown="BotonTexto_PreviewMouseLeftButtonDown"
-                                                    PreviewMouseMove="BotonTexto_PreviewMouseMove"/>
-                                            <Button Content="&amp;&amp;" Style="{StaticResource OpButton}"
-                                                    Tag="&amp;&amp;"
-                                                    Click="InsertarOperador_Click"
-                                                    MouseEnter="Operador_MouseEnter" 
-                                                    MouseLeave="Token_MouseLeave"
-                                                    PreviewMouseLeftButtonDown="BotonTexto_PreviewMouseLeftButtonDown"
-                                                    PreviewMouseMove="BotonTexto_PreviewMouseMove"/>
-                                            <Button Content="||"   Style="{StaticResource OpButton}"
-                                                    Tag="||" 
-                                                    Click="InsertarOperador_Click"
-                                                    MouseEnter="Operador_MouseEnter" 
-                                                    MouseLeave="Token_MouseLeave"
-                                                    PreviewMouseLeftButtonDown="BotonTexto_PreviewMouseLeftButtonDown"
-                                                    PreviewMouseMove="BotonTexto_PreviewMouseMove"/>
-                                            <Button Content="|"    Style="{StaticResource OpButton}"
-                                                    Tag="|" 
-                                                    Click="InsertarOperador_Click"
-                                                    MouseEnter="Operador_MouseEnter" 
-                                                    MouseLeave="Token_MouseLeave"
-                                                    PreviewMouseLeftButtonDown="BotonTexto_PreviewMouseLeftButtonDown"
-                                                    PreviewMouseMove="BotonTexto_PreviewMouseMove"/>
-                                            <Button Content="&gt;"    Style="{StaticResource OpButton}"
-                                                    Tag="&gt;" 
-                                                    Click="InsertarOperador_Click"
-                                                    MouseEnter="Operador_MouseEnter" 
-                                                    MouseLeave="Token_MouseLeave"
-                                                    PreviewMouseLeftButtonDown="BotonTexto_PreviewMouseLeftButtonDown"
-                                                    PreviewMouseMove="BotonTexto_PreviewMouseMove"/>
-                                            <Button Content="&gt;&gt;" Style="{StaticResource OpButton}"
-                                                    Tag="&gt;&gt;" 
-                                                    Click="InsertarOperador_Click"
-                                                    MouseEnter="Operador_MouseEnter" 
-                                                    MouseLeave="Token_MouseLeave"
-                                                    PreviewMouseLeftButtonDown="BotonTexto_PreviewMouseLeftButtonDown"
-                                                    PreviewMouseMove="BotonTexto_PreviewMouseMove"/>
-                                            <Button Content="&lt;"    Style="{StaticResource OpButton}"
-                                                    Tag="&lt;"
-                                                    Click="InsertarOperador_Click"
-                                                    MouseEnter="Operador_MouseEnter" 
-                                                    MouseLeave="Token_MouseLeave"
-                                                    PreviewMouseLeftButtonDown="BotonTexto_PreviewMouseLeftButtonDown"
-                                                    PreviewMouseMove="BotonTexto_PreviewMouseMove"/>
-                                            <Button Content="^"    Style="{StaticResource OpButton}"
-                                                    Tag="^" 
-                                                    Click="InsertarOperador_Click"
-                                                    MouseEnter="Operador_MouseEnter" 
-                                                    MouseLeave="Token_MouseLeave"
-                                                    PreviewMouseLeftButtonDown="BotonTexto_PreviewMouseLeftButtonDown"
-                                                    PreviewMouseMove="BotonTexto_PreviewMouseMove"/>
-                                            <Button Content="%"    Style="{StaticResource OpButton}"
-                                                    Tag="%" 
-                                                    Click="InsertarOperador_Click"
-                                                    MouseEnter="Operador_MouseEnter" 
-                                                    MouseLeave="Token_MouseLeave"
-                                                    PreviewMouseLeftButtonDown="BotonTexto_PreviewMouseLeftButtonDown"
-                                                    PreviewMouseMove="BotonTexto_PreviewMouseMove"/>
-                                            <Button Content="=="   Style="{StaticResource OpButton}"
-                                                    Tag="==" 
-                                                    Click="InsertarOperador_Click"
-                                                    MouseEnter="Operador_MouseEnter" 
-                                                    MouseLeave="Token_MouseLeave"
-                                                    PreviewMouseLeftButtonDown="BotonTexto_PreviewMouseLeftButtonDown"
-                                                    PreviewMouseMove="BotonTexto_PreviewMouseMove"/>
-                                            <Button Content="NEQ"  Style="{StaticResource OpButton}"
-                                                    Tag="NEQ" 
-                                                    Click="InsertarOperador_Click"
-                                                    MouseEnter="Operador_MouseEnter" 
-                                                    MouseLeave="Token_MouseLeave"
-                                                    PreviewMouseLeftButtonDown="BotonTexto_PreviewMouseLeftButtonDown"
-                                                    PreviewMouseMove="BotonTexto_PreviewMouseMove"/>
-                                            <Button Content="EQU"  Style="{StaticResource OpButton}"
-                                                    Tag="EQU" 
-                                                    Click="InsertarOperador_Click"
-                                                    MouseEnter="Operador_MouseEnter" 
-                                                    MouseLeave="Token_MouseLeave"
-                                                    PreviewMouseLeftButtonDown="BotonTexto_PreviewMouseLeftButtonDown"
-                                                    PreviewMouseMove="BotonTexto_PreviewMouseMove"/>
-                                        </WrapPanel>
+                                        <ListBox x:Name="ListaOperadores" Margin="4"
+             ItemsSource="{Binding CatalogoTokens.Operadores}">
+                                            <ListBox.ItemsPanel>
+                                                <ItemsPanelTemplate>
+                                                    <UniformGrid Columns="4"/>
+                                                </ItemsPanelTemplate>
+                                            </ListBox.ItemsPanel>
+                                            <ListBox.ItemContainerStyle>
+                                                <Style TargetType="ListBoxItem">
+                                                    <Setter Property="Padding" Value="2"/>
+                                                    <Setter Property="Margin" Value="2"/>
+                                                    <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+                                                    <Setter Property="VerticalContentAlignment" Value="Stretch"/>
+                                                </Style>
+                                            </ListBox.ItemContainerStyle>
+                                            <ListBox.ItemTemplate>
+                                                <DataTemplate>
+                                                    <Border Background="#FFF0F0F0"
+                        BorderBrush="#FFCCCCCC"
+                        BorderThickness="1"
+                        CornerRadius="3"
+                        Padding="8,4"
+                        MinWidth="40"
+                        Cursor="Hand"
+                        MouseEnter="TokenInfo_MouseEnter"
+                        MouseLeave="TokenInfo_MouseLeave"
+                        PreviewMouseLeftButtonDown="Operador_PreviewMouseLeftButtonDown"
+                        PreviewMouseMove="BotonTexto_PreviewMouseMove">
+                                                        <TextBlock Text="{Binding Nombre}"
+                               FontFamily="Consolas"
+                               FontSize="13"
+                               FontWeight="SemiBold"
+                               HorizontalAlignment="Center"
+                               VerticalAlignment="Center"/>
+                                                    </Border>
+                                                </DataTemplate>
+                                            </ListBox.ItemTemplate>
+                                        </ListBox>
                                     </TabItem>
-
                                     <TabItem Header="Variables">
-                                        <ListBox x:Name="ListaVariables" Margin="4">
-                                            <ListBoxItem Content="%USERPROFILE%"
-                                                         MouseEnter="Variable_MouseEnter" 
-                                                         MouseLeave="Token_MouseLeave"
-                                                         MouseLeftButtonUp="Variable_MouseLeftButtonUp"
-                                                         PreviewMouseLeftButtonDown="BotonTexto_PreviewMouseLeftButtonDown"
-                                                         PreviewMouseMove="BotonTexto_PreviewMouseMove"/>
-                                            <ListBoxItem Content="%TEMP%" 
-                                                         MouseEnter="Variable_MouseEnter" 
-                                                         MouseLeave="Token_MouseLeave"
-                                                         MouseLeftButtonUp="Variable_MouseLeftButtonUp"
-                                                         PreviewMouseLeftButtonDown="BotonTexto_PreviewMouseLeftButtonDown"
-                                                         PreviewMouseMove="BotonTexto_PreviewMouseMove"/>
-                                            <ListBoxItem Content="%PATH%" 
-                                                         MouseEnter="Variable_MouseEnter" 
-                                                         MouseLeave="Token_MouseLeave"
-                                                         MouseLeftButtonUp="Variable_MouseLeftButtonUp"
-                                                         PreviewMouseLeftButtonDown="BotonTexto_PreviewMouseLeftButtonDown"
-                                                         PreviewMouseMove="BotonTexto_PreviewMouseMove"/>
-                                            <ListBoxItem Content="%DATE%" 
-                                                         MouseEnter="Variable_MouseEnter" 
-                                                         MouseLeave="Token_MouseLeave"
-                                                         MouseLeftButtonUp="Variable_MouseLeftButtonUp"
-                                                         PreviewMouseLeftButtonDown="BotonTexto_PreviewMouseLeftButtonDown"
-                                                         PreviewMouseMove="BotonTexto_PreviewMouseMove"/>
-                                            <ListBoxItem Content="%TIME%" 
-                                                         MouseEnter="Variable_MouseEnter" 
-                                                         MouseLeave="Token_MouseLeave"
-                                                         MouseLeftButtonUp="Variable_MouseLeftButtonUp"
-                                                         PreviewMouseLeftButtonDown="BotonTexto_PreviewMouseLeftButtonDown"
-                                                         PreviewMouseMove="BotonTexto_PreviewMouseMove"/>
-                                            <ListBoxItem Content="%RANDOM%" 
-                                                         MouseEnter="Variable_MouseEnter" 
-                                                         MouseLeave="Token_MouseLeave"
-                                                         MouseLeftButtonUp="Variable_MouseLeftButtonUp"
-                                                         PreviewMouseLeftButtonDown="BotonTexto_PreviewMouseLeftButtonDown"
-                                                         PreviewMouseMove="BotonTexto_PreviewMouseMove"/>
-                                            <ListBoxItem Content="%ERRORLEVEL%" 
-                                                         MouseEnter="Variable_MouseEnter" 
-                                                         MouseLeave="Token_MouseLeave"  
-                                                         MouseLeftButtonUp="Variable_MouseLeftButtonUp"
-                                                         PreviewMouseLeftButtonDown="BotonTexto_PreviewMouseLeftButtonDown"
-                                                         PreviewMouseMove="BotonTexto_PreviewMouseMove"/>
-                                            <ListBoxItem Content="%CD%" 
-                                                         MouseEnter="Variable_MouseEnter" 
-                                                         MouseLeave="Token_MouseLeave"
-                                                         MouseLeftButtonUp="Variable_MouseLeftButtonUp"
-                                                         PreviewMouseLeftButtonDown="BotonTexto_PreviewMouseLeftButtonDown"
-                                                         PreviewMouseMove="BotonTexto_PreviewMouseMove"/>
+                                        <ListBox x:Name="ListaVariables"
+                                            Margin="4"
+                                            ItemsSource="{Binding CatalogoTokens.Variables}">
+                                            <ListBox.ItemTemplate>
+                                                <DataTemplate>
+                                                    <Border Background="Transparent"
+                                                        Padding="2,1"
+                                                        Cursor="Hand"
+                                                        
+                                                        MouseEnter="TokenInfo_MouseEnter"
+                                                        MouseLeave="TokenInfo_MouseLeave"
+                                                        PreviewMouseLeftButtonDown="Variable_PreviewMouseLeftButtonDown"
+                                                        PreviewMouseMove="BotonTexto_PreviewMouseMove" >
+                                                        <TextBlock Text="{Binding Nombre}"
+                                                        FontFamily="Consolas"
+                                                        FontSize="12"/>
+                                                    </Border>
+                                                </DataTemplate>
+                                            </ListBox.ItemTemplate>
                                         </ListBox>
                                     </TabItem>
 
                                     <TabItem Header="Constantes">
-                                        <ListBox x:Name="ListaConstantes" Margin="4">
-                                            <ListBoxItem Content="CON" 
-                                                         MouseEnter="Constante_MouseEnter" 
-                                                         MouseLeave="Token_MouseLeave"
-                                                         MouseLeftButtonUp="Variable_MouseLeftButtonUp"
-                                                         PreviewMouseLeftButtonDown="BotonTexto_PreviewMouseLeftButtonDown"
-                                                         PreviewMouseMove="BotonTexto_PreviewMouseMove"/>
-                                            <ListBoxItem Content="NUL" 
-                                                         MouseEnter="Constante_MouseEnter" 
-                                                         MouseLeave="Token_MouseLeave"
-                                                         MouseLeftButtonUp="Variable_MouseLeftButtonUp"
-                                                         PreviewMouseLeftButtonDown="BotonTexto_PreviewMouseLeftButtonDown"
-                                                         PreviewMouseMove="BotonTexto_PreviewMouseMove"/>
-                                            <ListBoxItem Content="PRN" 
-                                                         MouseEnter="Constante_MouseEnter" 
-                                                         MouseLeave="Token_MouseLeave"
-                                                         MouseLeftButtonUp="Variable_MouseLeftButtonUp"
-                                                         PreviewMouseLeftButtonDown="BotonTexto_PreviewMouseLeftButtonDown"
-                                                         PreviewMouseMove="BotonTexto_PreviewMouseMove"/>
-                                            <ListBoxItem Content="AUX" 
-                                                         MouseEnter="Constante_MouseEnter" 
-                                                         MouseLeave="Token_MouseLeave"
-                                                         MouseLeftButtonUp="Variable_MouseLeftButtonUp"
-                                                         PreviewMouseLeftButtonDown="BotonTexto_PreviewMouseLeftButtonDown"
-                                                         PreviewMouseMove="BotonTexto_PreviewMouseMove"/>
-                                            <ListBoxItem Content="COM1" 
-                                                         MouseEnter="Constante_MouseEnter" 
-                                                         MouseLeave="Token_MouseLeave"
-                                                         MouseLeftButtonUp="Variable_MouseLeftButtonUp"
-                                                         PreviewMouseLeftButtonDown="BotonTexto_PreviewMouseLeftButtonDown"
-                                                         PreviewMouseMove="BotonTexto_PreviewMouseMove"/>
-                                            <ListBoxItem Content="LPT1" 
-                                                         MouseEnter="Constante_MouseEnter" 
-                                                         MouseLeave="Token_MouseLeave"
-                                                         MouseLeftButtonUp="Variable_MouseLeftButtonUp"
-                                                         PreviewMouseLeftButtonDown="BotonTexto_PreviewMouseLeftButtonDown"
-                                                         PreviewMouseMove="BotonTexto_PreviewMouseMove"/>
+                                        <ListBox x:Name="ListaConstantes"
+                                            Margin="4"
+                                            ItemsSource="{Binding CatalogoTokens.Constantes}">
+                                            <ListBox.ItemTemplate>
+                                                <DataTemplate>
+                                                    <Border Background="Transparent"
+                                                        Padding="2,1"
+                                                        Cursor="Hand"
+                                                        MouseEnter="TokenInfo_MouseEnter"
+                                                        MouseLeave="TokenInfo_MouseLeave"
+                                                        PreviewMouseLeftButtonDown="Variable_PreviewMouseLeftButtonDown"
+                                                        PreviewMouseMove="BotonTexto_PreviewMouseMove" >
+                                                        <TextBlock Text="{Binding Nombre}"
+                                                            FontFamily="Consolas"
+                                                            FontSize="12"/>
+                                                    </Border>
+                                                </DataTemplate>
+                                            </ListBox.ItemTemplate>
                                         </ListBox>
                                     </TabItem>
 
                                     <TabItem Header="Comodines">
-                                        <ListBox x:Name="ListaComodines" Margin="4">
-                                            <ListBoxItem Content="*" Tag="*" 
-                                                         MouseEnter="Comodin_MouseEnter" 
-                                                         MouseLeave="Token_MouseLeave"
-                                                         MouseLeftButtonUp="Comodin_MouseLeftButtonUp"
-                                                         PreviewMouseLeftButtonDown="BotonTexto_PreviewMouseLeftButtonDown"
-                                                         PreviewMouseMove="BotonTexto_PreviewMouseMove"/>
-                                            <ListBoxItem Content="?" Tag="?" 
-                                                         MouseEnter="Comodin_MouseEnter" 
-                                                         MouseLeave="Token_MouseLeave"
-                                                         MouseLeftButtonUp="Comodin_MouseLeftButtonUp"
-                                                         PreviewMouseLeftButtonDown="BotonTexto_PreviewMouseLeftButtonDown"
-                                                         PreviewMouseMove="BotonTexto_PreviewMouseMove"/>
-                                            <ListBoxItem Content="[abc]" Tag="[abc]" 
-                                                         MouseEnter="Comodin_MouseEnter" 
-                                                         MouseLeave="Token_MouseLeave"
-                                                         MouseLeftButtonUp="Comodin_MouseLeftButtonUp"
-                                                         PreviewMouseLeftButtonDown="BotonTexto_PreviewMouseLeftButtonDown"
-                                                         PreviewMouseMove="BotonTexto_PreviewMouseMove"/>
-                                            <ListBoxItem Content="[a-z]" Tag="[a-z]" 
-                                                         MouseEnter="Comodin_MouseEnter" 
-                                                         MouseLeave="Token_MouseLeave"
-                                                         MouseLeftButtonUp="Comodin_MouseLeftButtonUp"
-                                                         PreviewMouseLeftButtonDown="BotonTexto_PreviewMouseLeftButtonDown"
-                                                         PreviewMouseMove="BotonTexto_PreviewMouseMove"/>
+                                        <ListBox x:Name="ListaComodines"
+                                            Margin="4"
+                                            ItemsSource="{Binding CatalogoTokens.Comodines}">
+                                            <ListBox.ItemTemplate>
+                                                <DataTemplate>
+                                                    <Border Background="Transparent"
+                                                        Padding="2,1"
+                                                        Cursor="Hand"
+                                                        MouseEnter="TokenInfo_MouseEnter"
+                                                        MouseLeave="TokenInfo_MouseLeave"
+                                                        PreviewMouseLeftButtonDown="Variable_PreviewMouseLeftButtonDown"
+                                                        PreviewMouseMove="BotonTexto_PreviewMouseMove">
+                                                        <StackPanel Orientation="Horizontal">
+                                                            <TextBlock Text="{Binding Nombre}"
+                                                                FontFamily="Consolas"
+                                                                FontSize="12"
+                                                                FontWeight="SemiBold"
+                                                                MinWidth="60"/>
+                                                            <TextBlock Text="{Binding Descripcion}"
+                                                                FontSize="11"
+                                                                Foreground="#FF666666"
+                                                                TextTrimming="CharacterEllipsis"
+                                                                Margin="8,0,0,0"/>
+                                                        </StackPanel>
+                                                    </Border>
+                                                </DataTemplate>
+                                            </ListBox.ItemTemplate>
                                         </ListBox>
                                     </TabItem>
+                                   
                                 </TabControl>
                             </DockPanel>
                         </Border>

@@ -7,6 +7,7 @@ using System.Windows.Shapes;
 using VisualCommander.Models;
 using VisualCommander.ViewModels;
 using static System.Net.Mime.MediaTypeNames;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 
 namespace VisualCommander
@@ -1887,27 +1888,7 @@ namespace VisualCommander
                 _ => $"Operador: {operador}"
             };
         }
-        private void Variable_MouseEnter(object sender, MouseEventArgs e)
-        {
-            if (sender is ListBoxItem item && item.Content is string variable)
-            {
-                MostrarInfoVariable(variable);
-            }
-        }
-
-        private void MostrarInfoVariable(string variable)
-        {
-            TituloDetalle.Text = "DETALLE DE LA VARIABLE";
-
-            InfoModificadorNombre.Text = variable;
-            InfoModificadorNombre.Visibility = Visibility.Visible;
-
-            InfoModificadorDescripcion.Text = ObtenerDescripcionVariable(variable);
-            InfoModificadorDescripcion.Visibility = Visibility.Visible;
-
-            PanelValoresPosibles.Visibility = Visibility.Collapsed;
-            InfoSinModificador.Visibility = Visibility.Collapsed;
-        }
+       
 
         private string ObtenerDescripcionVariable(string variable)
         {
@@ -1924,27 +1905,9 @@ namespace VisualCommander
                 _ => $"Variable de entorno: {variable}"
             };
         }
-        private void Constante_MouseEnter(object sender, MouseEventArgs e)
-        {
-            if (sender is ListBoxItem item && item.Content is string constante)
-            {
-                MostrarInfoConstante(constante);
-            }
-        }
+      
 
-        private void MostrarInfoConstante(string constante)
-        {
-            TituloDetalle.Text = "DETALLE DE LA CONSTANTE";
-
-            InfoModificadorNombre.Text = constante;
-            InfoModificadorNombre.Visibility = Visibility.Visible;
-
-            InfoModificadorDescripcion.Text = ObtenerDescripcionConstante(constante);
-            InfoModificadorDescripcion.Visibility = Visibility.Visible;
-
-            PanelValoresPosibles.Visibility = Visibility.Collapsed;
-            InfoSinModificador.Visibility = Visibility.Collapsed;
-        }
+      
 
         private string ObtenerDescripcionConstante(string constante)
         {
@@ -1959,27 +1922,9 @@ namespace VisualCommander
                 _ => $"Dispositivo del sistema: {constante}"
             };
         }
-        private void Comodin_MouseEnter(object sender, MouseEventArgs e)
-        {
-            if (sender is ListBoxItem item && item.Tag is string comodin)
-            {
-                MostrarInfoComodin(comodin);
-            }
-        }
+     
 
-        private void MostrarInfoComodin(string comodin)
-        {
-            TituloDetalle.Text = "DETALLE DEL COMODÍN";
-
-            InfoModificadorNombre.Text = comodin;
-            InfoModificadorNombre.Visibility = Visibility.Visible;
-
-            InfoModificadorDescripcion.Text = ObtenerDescripcionComodin(comodin);
-            InfoModificadorDescripcion.Visibility = Visibility.Visible;
-
-            PanelValoresPosibles.Visibility = Visibility.Collapsed;
-            InfoSinModificador.Visibility = Visibility.Collapsed;
-        }
+       
 
         private string ObtenerDescripcionComodin(string comodin)
         {
@@ -2140,12 +2085,20 @@ namespace VisualCommander
                 return;
 
             string? texto = null;
+
             if (sender is Button btn && btn.Tag is string tagTexto)
+            {
                 texto = tagTexto;
+            }
             else if (sender is ListBoxItem item)
             {
                 if (item.Tag is string tag) texto = tag;
                 else if (item.Content is string content) texto = content;
+            }
+            else if (sender is FrameworkElement fe && fe.DataContext is TokenInfo info)
+            {
+                // ← NUEVO: tokens del catálogo (variables, constantes, comodines).
+                texto = info.Nombre;
             }
 
             if (string.IsNullOrEmpty(texto)) return;
@@ -2168,39 +2121,78 @@ namespace VisualCommander
                 }), System.Windows.Threading.DispatcherPriority.Background);
             }
         }
-        private void InsertarOperador_Click(object sender, RoutedEventArgs e)
-        {
-            // Si hay un drag en curso o acabamos de soltar, no insertar.
-            if (_dragEnCurso) return;
+    
+        
 
-            if (sender is Button btn && btn.Tag is string operador)
+        // ==== Hover de tokens pequeños (panel derecho) ====
+
+        private void TokenInfo_MouseEnter(object sender, MouseEventArgs e)
+        {
+            if (sender is FrameworkElement fe && fe.DataContext is TokenInfo info)
             {
-                EmpujarEditorActivoAlModelo();
-                ViewModel.InsertarTextoEnPosicion(operador, ViewModel.LineaActiva.Tokens.Count);
+                MostrarInfoTokenInfo(info);
             }
         }
-        private void Variable_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
+
+        private void Variable_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
             if (_dragEnCurso) return;
 
-            if (sender is ListBoxItem item && item.Content is string texto)
+            _posInicialDragTexto = e.GetPosition(null);
+
+            if (e.ClickCount == 2)
             {
-                EmpujarEditorActivoAlModelo();
-                ViewModel.InsertarTextoEnPosicion(texto, ViewModel.LineaActiva.Tokens.Count);
+                if (sender is FrameworkElement fe && fe.DataContext is TokenInfo info)
+                {
+                    EmpujarEditorActivoAlModelo();
+                    ViewModel.InsertarTextoEnPosicion(info.Nombre, ViewModel.LineaActiva.Tokens.Count);
+                    EnfocarEditorActivo();
+                    e.Handled = true;
+                }
             }
         }
-        private void Comodin_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
+        private void Operador_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
             if (_dragEnCurso) return;
 
-            if (sender is ListBoxItem item)
-            {
-                var texto = item.Tag as string ?? item.Content as string;
-                if (string.IsNullOrEmpty(texto)) return;
+            _posInicialDragTexto = e.GetPosition(null);
 
-                EmpujarEditorActivoAlModelo();
-                ViewModel.InsertarTextoEnPosicion(texto, ViewModel.LineaActiva.Tokens.Count);
+            if (e.ClickCount == 2)
+            {
+                if (sender is FrameworkElement fe && fe.DataContext is TokenInfo info)
+                {
+                    EmpujarEditorActivoAlModelo();
+                    ViewModel.InsertarTextoEnPosicion(info.Nombre, ViewModel.LineaActiva.Tokens.Count);
+                    EnfocarEditorActivo();
+                    e.Handled = true;
+                }
             }
+        }
+
+        private void TokenInfo_MouseLeave(object sender, MouseEventArgs e)
+        {
+            OcultarInfoModificador();
+        }
+
+        private void MostrarInfoTokenInfo(TokenInfo info)
+        {
+            InfoModificadorNombre.Text = info.Nombre;
+            InfoModificadorNombre.Visibility = Visibility.Visible;
+
+            InfoModificadorDescripcion.Text = info.Descripcion;
+            InfoModificadorDescripcion.Visibility = Visibility.Visible;
+
+            if (!string.IsNullOrEmpty(info.Ejemplo))
+            {
+                InfoModificadorValores.Text = "Ejemplo: " + info.Ejemplo;
+                PanelValoresPosibles.Visibility = Visibility.Visible;
+            }
+            else
+            {
+                PanelValoresPosibles.Visibility = Visibility.Collapsed;
+            }
+
+            InfoSinModificador.Visibility = Visibility.Collapsed;
         }
     }
 }

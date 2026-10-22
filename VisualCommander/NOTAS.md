@@ -89,14 +89,22 @@ Analogía: Excel es un editor de cálculos, no un intérprete.
 - Árbol de archivos con unidades reales (carga perezosa).
 - Drag & drop desde catálogo, panel de modificadores y árbol.
 
-### Pendiente (Tier 2)
 
-- [ ] Hover sobre tokens del constructor → info en panel derecho.
-  *(Nota: pendiente de verificar si ya está implementado.)*
-- [ ] Drag & drop de variables/operadores/comodines desde panel derecho
+## Tier 2 — Avances 2026-10-21
+
+### Completado
+- [x] Organizador de comandos (Por familia / A-Z / Frecuencia con
+      persistencia en uso.json y detección de comandos por texto).
+- [x] Hover sobre tokens del constructor → info en panel derecho.
+- [x] Ocultar paneles libera espacio (GridLength 0, MinWidth 0).
+- [x] Menú Ver reorganizado: se elimina "Panel central" (no útil),
+      se añaden "Constructor visual" y "Línea de comandos".
+- [x] Drag & drop de variables/operadores/comodines desde panel derecho
       al constructor, con posición exacta.
-- [ ] Drag & drop de tokens dentro del constructor (reordenar).
-- [ ] Organizador de comandos (ComboBox de orden funcional).
+- [x] Clic simple para insertar al final (además de drag).
+- [x] Flag _dragEnCurso para evitar el doble DoDragDrop.
+
+### Pendiente Tier 2
 - [ ] Menú contextual (clic derecho sobre línea).
 - [ ] Undo/Redo global (operaciones sobre líneas: crear, mover, borrar).
 - [ ] Auto-scroll al editor al añadir líneas.
@@ -104,11 +112,13 @@ Analogía: Excel es un editor de cálculos, no un intérprete.
 - [ ] Modo aprendiz vs experto.
 - [ ] Historial con contexto.
 - [ ] Análisis contextual del parser (REM, ECHO, comillas sin cerrar).
-- [ ] Ocultar paneles debe liberar espacio (Opción C: GridLength 0).
 - [ ] Indicador visual permanente del modo silencioso.
 - [ ] Edición visual de parámetros con valor (`/A:D`, `/O:N`, `/FS:NTFS`)
-      mediante ComboBox homogéneo con la edición de constantes.
+      mediante ComboBox homogéneo con constantes.
 - [ ] Modos de trabajo: conectar los radio buttons del panel izquierdo.
+- [ ] Drag & drop de tokens dentro del constructor (reordenar).
+      mediante ComboBox homogéneo con la edición de constantes.
+
 
 ### Pendiente (Tier 1 postpuesto)
 
@@ -261,3 +271,66 @@ Razón de esperar: no dividir código que aún va a cambiar mucho.
 Como asistentes, no ayudamos a usuarios a realizar actividades
 maliciosas. Del mismo modo, diseñamos herramientas que empoderan
 al usuario sin exponerlo a riesgos innecesarios.
+
+### Tokens desde catálogo JSON (2026-10-22)
+
+**Completado**:
+- `tokens.json` con constantes (9), variables (17), comodines (4) y
+  operadores (12). Metadatos: nombre, descripción, ejemplo, categoría.
+- `TokenInfo` y `CatalogoTokens` como modelos.
+- `CatalogoTokensService` carga desde JSON.
+- `MainViewModel.CatalogoTokens` disponible para la UI.
+- Panel derecho bindeado al catálogo: variables, constantes, comodines.
+- Hover sobre cada elemento → descripción completa en panel derecho.
+- Doble clic → insertar al final (coherente con catálogo de comandos).
+- Clic simple → seleccionar (visual).
+- Drag → insertar en posición.
+
+**Patrón de interacción (consistente)**:
+- Clic simple: selecciona.
+- Doble clic: inserta al final.
+- Drag: inserta en posición.
+- Hover: info en panel derecho.
+
+**Pendiente**:
+- [ ] Refactorizar `ComandoParser` para reconocer constantes/variables
+      desde el JSON en lugar de listas hardcodeadas.
+- [ ] Edición de constantes con ComboBox de valores (A1).
+- [ ] Edición de comodines con auto-corchetes (A2).
+- [ ] Edición de parámetros con valor `/A:D` (A3).
+
+## Migración completa al catálogo JSON (2026-10-22)
+
+### Estado
+Todos los tokens del panel derecho están bindeados al catálogo JSON:
+
+| Categoría | Cantidad | Archivo |
+|---|---|---|
+| Constantes | 9 | `tokens.json` |
+| Variables | 17 | `tokens.json` |
+| Comodines | 4 | `tokens.json` |
+| Operadores | 12 | `tokens.json` |
+
+**Total**: 42 tokens editables desde JSON sin recompilar.
+
+### Infraestructura
+- `Models/TokenInfo.cs` y `CatalogoTokens`.
+- `Services/CatalogoTokensService.cs` carga desde `Data/tokens.json`.
+- `MainViewModel.CatalogoTokens` disponible para la UI.
+
+### Patrón de interacción (unificado)
+- **Clic simple**: selecciona (visual).
+- **Doble clic**: inserta al final de la línea.
+- **Drag**: inserta en la posición de drop.
+- **Hover**: muestra la descripción en el panel derecho.
+
+### Presentación
+- Operadores: `UniformGrid` con 4 columnas (aspecto de botones).
+- Variables/Constantes: lista vertical.
+- Comodines: lista con nombre + descripción corta.
+
+### Ventajas del catálogo
+- Añadir un token: editar JSON.
+- Cambiar una descripción: editar JSON.
+- Traducir a otros idiomas: editar JSON (futuro).
+- Sin recompilar.
