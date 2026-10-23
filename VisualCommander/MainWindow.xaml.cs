@@ -163,7 +163,10 @@ namespace VisualCommander
 
         private void PanelBloques_Drop(object sender, DragEventArgs e)
         {
-            
+            bool sustituir = Keyboard.Modifiers.HasFlag(ModifierKeys.Control);
+
+            var puntoCursor = e.GetPosition(PanelBloques);
+            var tokenBajoCursor = sustituir ? ObtenerTokenBajoPunto(puntoCursor) : null;
 
             PanelBloques.Background = Brushes.Transparent;
             // Calculamos la posición del cursor y el índice donde va a insertarse.
@@ -1655,9 +1658,32 @@ namespace VisualCommander
                 "explicando cómo componer, guardar y ejecutar planes.");
 
         private void AtajosTeclado_Click(object sender, RoutedEventArgs e)
-            => MostrarProximamente("Atajos de teclado",
-                "Mostrará una ventana con todos los atajos disponibles " +
-                "en la aplicación.");
+        {
+            MessageBox.Show(
+                "ATAJOS DE TECLADO\n\n" +
+                "=== Edición ===\n" +
+                "Ctrl+Z           Deshacer\n" +
+                "Ctrl+Y           Rehacer\n" +
+                "Ctrl+C/X/V       Copiar / Cortar / Pegar\n" +
+                "Ctrl+D           Duplicar línea\n" +
+                "Ctrl+Enter       Cerrar línea y crear nueva\n" +
+                "Escape           Descartar cambios en edición\n\n" +
+                "=== Navegación ===\n" +
+                "Ctrl+Shift+↑/↓   Mover línea arriba/abajo\n" +
+                "Ctrl+N           Nueva sesión\n" +
+                "Ctrl+O           Abrir sesión\n" +
+                "Ctrl+S           Guardar sesión\n" +
+                "Ctrl+Shift+S     Guardar como\n\n" +
+                "=== Drag & Drop ===\n" +
+                "Drop normal      Insertar token en la posición\n" +
+                "Ctrl + Drop      Sustituir el token bajo el cursor\n\n" +
+                "=== Ejecución ===\n" +
+                "F5               Ejecutar plan completo\n" +
+                "Escape (durante ejecución)  Detener",
+                "Atajos de teclado",
+                MessageBoxButton.OK,
+                MessageBoxImage.Information);
+        }
 
         private void AcercaDe_Click(object sender, RoutedEventArgs e)
         {
@@ -2254,6 +2280,138 @@ namespace VisualCommander
             token.TextoAntesDeEditar = null;
             ViewModel.LineaActiva.OlvidarSnapshotTexto();
             ViewModel.SetStatus($"Token actualizado: {token.Texto}");
+        }
+        /// <summary>
+        /// Devuelve el Token que está bajo la posición indicada en el panel
+        /// de bloques. Si no hay ninguno, devuelve null.
+        /// Ignora los dummies (que no son tokens reales).
+        /// </summary>
+        private Token? ObtenerTokenBajoPunto(Point punto)
+        {
+            var resultado = System.Windows.Media.VisualTreeHelper.HitTest(PanelBloques, punto);
+            if (resultado == null) return null;
+
+            var elemento = resultado.VisualHit;
+            while (elemento != null && elemento != PanelBloques)
+            {
+                if (elemento is FrameworkElement fe && fe.DataContext is Token token)
+                {
+                    // Ignorar dummies.
+                    if (!token.EsDummy)
+                        return token;
+                    return null;
+                }
+                elemento = System.Windows.Media.VisualTreeHelper.GetParent(elemento);
+            }
+            return null;
+        }
+        /// <summary>
+        /// Sustituye un token existente por otro en la línea activa.
+        /// Reconstruye el texto y confirma el estado.
+        /// </summary>
+        private void SustituirToken(Token tokenViejo, Token tokenNuevo)
+        {
+            var linea = ViewModel.LineaActiva;
+            var tokens = linea.Tokens.ToList();
+            var indice = tokens.IndexOf(tokenViejo);
+            if (indice < 0) return;
+
+            // Sustituir el token en la lista.
+            tokens[indice] = tokenNuevo;
+
+            // Reconstruir el texto de la línea.
+            var nuevoTexto = string.Join(" ", tokens.Select(t => t.Texto));
+            linea.ActualizarDesdeTexto(nuevoTexto);
+            linea.ConfirmarEstado();
+
+            ViewModel.SetStatus($"Token sustituido: {tokenViejo.Texto} → {tokenNuevo.Texto}");
+        }
+        private void PanelBloques_PreviewDrop(object sender, DragEventArgs e)
+        {
+            // Solo actuar si Ctrl está pulsado.
+            if (!Keyboard.Modifiers.HasFlag(ModifierKeys.Control))
+                return;   // Dejamos que Drop normal funcione.
+
+            // Buscar el token bajo el cursor.
+            var puntoCursor = e.GetPosition(PanelBloques);
+            var tokenBajoCursor = ObtenerTokenBajoPunto(puntoCursor);
+
+            // Si no hay token bajo el cursor, dejar que Drop normal funcione.
+            if (tokenBajoCursor == null)
+                return;
+
+            // ==== Sustituir según el tipo de dato arrastrado ====
+
+            // --- Comando ---
+            if (e.Data.GetDataPresent(FormatoComando) &&
+                e.Data.GetData(FormatoComando) is Comando cmd)
+            {
+                var nuevoToken = new Token
+                {
+                    Tipo = TipoToken.Comando,
+                    Texto = cmd.Nombre,
+                    Descripcion = $"{cmd.Resumen}\n{cmd.Descripcion}",
+                    Color = cmd.ColorFamilia,
+                    Icono = cmd.Icono,
+                    Origen = cmd,
+                    RequiereAdmin = cmd.RequiereAdmin
+                };
+
+                SustituirToken(tokenBajoCursor, nuevoToken);
+                e.Handled = true;   // Impide que Drop normal se ejecute.
+                return;
+            }
+
+            // --- Texto (operadores, variables, constantes, comodines) ---
+            if (e.Data.GetDataPresent(FormatoTexto) &&
+                e.Data.GetData(FormatoTexto) is string textoArrastrado)
+            {
+                // Creamos un token "genérico" a partir del texto.
+                // El parser lo reclasificará al reconstruir la línea.
+                var nuevoToken = new Token
+                {
+                    Tipo = TipoToken.Texto,
+                    Texto = textoArrastrado,
+                    Descripcion = "Texto",
+                    Color = "EDEDED",
+                    Icono = "📝"
+                };
+
+                SustituirToken(tokenBajoCursor, nuevoToken);
+                e.Handled = true;
+                return;
+            }
+
+            // --- Ruta ---
+            if (e.Data.GetDataPresent(FormatoRuta) &&
+                e.Data.GetData(FormatoRuta) is string ruta)
+            {
+                var textoRuta = ruta.Contains(' ') ? $"\"{ruta}\"" : ruta;
+                var esCarpeta = System.IO.Directory.Exists(ruta);
+
+                var nuevoToken = new Token
+                {
+                    Tipo = TipoToken.Ruta,
+                    Texto = textoRuta,
+                    Descripcion = (esCarpeta ? "Carpeta: " : "Archivo: ") + ruta,
+                    Color = "DEEBF7",
+                    Icono = esCarpeta ? "📁" : "📄",
+                    Origen = ruta
+                };
+
+                SustituirToken(tokenBajoCursor, nuevoToken);
+                e.Handled = true;
+                return;
+            }
+
+            // --- Parámetro (no se sustituye, se marca el checkbox) ---
+            if (e.Data.GetDataPresent(FormatoParametro) &&
+                e.Data.GetData(FormatoParametro) is ParametroVista pv)
+            {
+                // Los parámetros no se sustituyen: se marcan/desmarcan.
+                // Si Ctrl está pulsado sobre un token, ignoramos (no tiene sentido).
+                return;
+            }
         }
     }
 }

@@ -429,3 +429,45 @@ que binding TwoWay. El binding interfiere con la edición.
 - El ComboBox se cerró de golpe al editar la primera vez.
 - No reproducible. Posible timing del IsDropDownOpen.
 - Pendiente: si vuelve a ocurrir, añadir delay.
+- ### Ctrl+Drop para sustituir tokens (2026-10-23)
+
+**Concepto**:
+- Drop normal → insertar token en la posición del cursor.
+- Ctrl+Drop → sustituir el token existente bajo el cursor.
+
+**Decisiones de diseño**:
+- Coherente con otros editores (Photoshop, VS Code).
+- Sin estado previo (no hace falta "token seleccionado").
+- Predecible y descubrible.
+- Aplicable a cualquier tipo de token.
+
+**Implementación (no invasiva)**:
+- Se usa `PreviewDrop` (antes del `Drop`).
+- Si Ctrl NO está pulsado → no hace nada, el `Drop` original funciona.
+- Si Ctrl SÍ está pulsado:
+  - Busca el token bajo el cursor con `ObtenerTokenBajoPunto`.
+  - Si hay token → sustituye con `SustituirToken` y marca `e.Handled = true`.
+  - Si no hay token (espacio vacío o dummie) → no hace nada, el `Drop` original inserta.
+- **No se modifica `PanelBloques_Drop`** (que funcionaba bien).
+
+**Helpers añadidos**:
+- `ObtenerTokenBajoPunto(Point)`: hit-test sobre `PanelBloques`, ignorando dummies.
+- `SustituirToken(Token, Token)`: reemplaza el token en `Tokens` y reconstruye.
+
+**Comportamiento**:
+- Los dummies NO se sustituyen (se rellenan como siempre).
+- Los parámetros NO se sustituyen (se marcan/desmarcan).
+- El token sustituido se reclasifica automáticamente (el parser hace su trabajo).
+
+**Resultado**: la Tarea 5 (drag de constantes sobre tokens existentes)
+queda cubierta por esta funcionalidad. Solo queda pendiente la Tarea 6
+(reordenar tokens dentro del constructor).
+
+**Tooltips pendientes**:
+- Añadir "Ctrl+Drag para sustituir" en los tooltips de los elementos
+  arrastrables.
+- Documentar en Ayuda → Atajos de teclado.
+
+**Pendiente de hoy (si no se ha hecho)**:
+- [ ] Tooltips con Ctrl+Drag.
+- [ ] Ayuda → Atajos: añadir Ctrl+Drag.

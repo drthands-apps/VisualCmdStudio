@@ -479,6 +479,7 @@ IsEnabled="{Binding EstaEjecutando, Converter={StaticResource InverseBoolConvert
                                         BorderBrush="#FFB0B0B0"
                                         Margin="0,8,0,4">
                                                         <TextBlock Text="{Binding Name}"
+                                                                   
                                                FontWeight="Bold"
                                                FontSize="12"
                                                Foreground="#FF1F4E79"
@@ -491,12 +492,15 @@ IsEnabled="{Binding EstaEjecutando, Converter={StaticResource InverseBoolConvert
                                     <ListBox.ItemTemplate>
                                         <DataTemplate>
                                             <Border x:Name="ContenedorItem"
-                                BorderThickness="2"
-                                BorderBrush="Transparent"
-                                CornerRadius="3"
-                                Margin="0,1"
-                                MouseEnter="ComandoCatalogo_MouseEnter"
-                                MouseLeave="Token_MouseLeave">
+                                                    Background="Transparent"
+                                                    
+                                                    ToolTip= "Arrastra al constructor. Ctrl+Drag para sustituir."
+                                                    BorderThickness="2"
+                                                    BorderBrush="Transparent"
+                                                    CornerRadius="3"
+                                                    Margin="0,1"
+                                                    MouseEnter="ComandoCatalogo_MouseEnter"
+                                                    MouseLeave="Token_MouseLeave">
                                                 <Grid>
                                                     <Grid.ColumnDefinitions>
                                                         <ColumnDefinition Width="10"/>
@@ -525,6 +529,7 @@ IsEnabled="{Binding EstaEjecutando, Converter={StaticResource InverseBoolConvert
                                             <DataTemplate.Triggers>
                                                 <DataTrigger Binding="{Binding Peligroso}" Value="True">
                                                     <Setter TargetName="ContenedorItem"
+                                                            
                                         Property="BorderBrush" Value="#FFC0392B"/>
                                                 </DataTrigger>
                                             </DataTemplate.Triggers>
@@ -697,6 +702,7 @@ IsEnabled="{Binding EstaEjecutando, Converter={StaticResource InverseBoolConvert
                               DragEnter="PanelBloques_DragEnter"
                               DragOver="PanelBloques_DragOver"
                               DragLeave="PanelBloques_DragLeave"
+                              PreviewDrop="PanelBloques_PreviewDrop"
                               Drop="PanelBloques_Drop">
                                         <ItemsControl.ItemContainerStyle>
                                             <Style TargetType="ContentPresenter">
@@ -1431,10 +1437,12 @@ IsEnabled="{Binding EstaEjecutando, Converter={StaticResource InverseBoolConvert
                                             </ListBox.ItemsPanel>
                                             <ListBox.ItemContainerStyle>
                                                 <Style TargetType="ListBoxItem">
+                                                    <Setter Property="ToolTip" Value="Insertar en la línea. Ctrl+Drag para sustituir."/>
                                                     <Setter Property="Padding" Value="2"/>
                                                     <Setter Property="Margin" Value="2"/>
                                                     <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
                                                     <Setter Property="VerticalContentAlignment" Value="Stretch"/>
+                                                    <Setter Property="ToolTip" Value="Insertar en la línea. Ctrl+Drag para sustituir."/>
                                                 </Style>
                                             </ListBox.ItemContainerStyle>
                                             <ListBox.ItemTemplate>
@@ -1470,7 +1478,7 @@ IsEnabled="{Binding EstaEjecutando, Converter={StaticResource InverseBoolConvert
                                                     <Border Background="Transparent"
                                                         Padding="2,1"
                                                         Cursor="Hand"
-                                                        
+                                                        ToolTip="Insertar en la línea. Ctrl+Drag para sustituir."
                                                         MouseEnter="TokenInfo_MouseEnter"
                                                         MouseLeave="TokenInfo_MouseLeave"
                                                         PreviewMouseLeftButtonDown="Variable_PreviewMouseLeftButtonDown"
@@ -1493,6 +1501,7 @@ IsEnabled="{Binding EstaEjecutando, Converter={StaticResource InverseBoolConvert
                                                     <Border Background="Transparent"
                                                         Padding="2,1"
                                                         Cursor="Hand"
+                                                        ToolTip="Insertar en la línea. Ctrl+Drag para sustituir."    
                                                         MouseEnter="TokenInfo_MouseEnter"
                                                         MouseLeave="TokenInfo_MouseLeave"
                                                         PreviewMouseLeftButtonDown="Variable_PreviewMouseLeftButtonDown"
@@ -1515,6 +1524,7 @@ IsEnabled="{Binding EstaEjecutando, Converter={StaticResource InverseBoolConvert
                                                     <Border Background="Transparent"
                                                         Padding="2,1"
                                                         Cursor="Hand"
+                                                        ToolTip="Insertar en la línea. Ctrl+Drag para sustituir."   
                                                         MouseEnter="TokenInfo_MouseEnter"
                                                         MouseLeave="TokenInfo_MouseLeave"
                                                         PreviewMouseLeftButtonDown="Variable_PreviewMouseLeftButtonDown"
