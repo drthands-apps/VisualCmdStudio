@@ -24,6 +24,7 @@
         <!-- Converters -->
         <conv:HexToBrushConverter x:Key="HexToBrush"/>
         <conv:InverseBoolConverter x:Key="InverseBoolConverter"/>
+        <conv:NullToBoolConverter x:Key="NullToBool"/>
 
         <!-- ==== Estilos para la apariencia CMD ==== -->
 
@@ -808,6 +809,29 @@ IsEnabled="{Binding EstaEjecutando, Converter={StaticResource InverseBoolConvert
          LostFocus="EditorInPlace_LostFocus"
          IsVisibleChanged="EditorInPlace_IsVisibleChanged"/>
                                                     </Border>
+                                                    <!-- ==== MODO EDICIÓN COMBOBOX (Constante/Comodín/Variable) ==== -->
+                                                    <Border x:Name="BlockEdicionCombo"
+        Style="{StaticResource BlockBase}"
+        Background="{Binding Color, Converter={StaticResource HexToBrush}}"
+        BorderBrush="#FF4A90D9"
+        BorderThickness="2"
+        CornerRadius="0,0,6,6"
+        Visibility="Collapsed">
+                                                        <ComboBox x:Name="ComboBoxEdicion"
+              ItemsSource="{Binding ValoresDesplegable}"
+              
+              FontFamily="Consolas"
+              FontSize="13"
+              MinWidth="100"
+              MaxDropDownHeight="240"
+              Background="White"
+              BorderThickness="0"
+              IsEditable="True"
+              PreviewKeyDown="ComboBoxEdicion_PreviewKeyDown"                                                 
+              SelectionChanged="ComboBoxEdicion_SelectionChanged"
+              DropDownClosed="ComboBoxEdicion_DropDownClosed"
+              IsVisibleChanged="ComboBoxEdicion_IsVisibleChanged"/>
+                                                    </Border>
                                                 </Grid>
 
                                                 <!-- ============ TRIGGERS ============ -->
@@ -832,11 +856,27 @@ IsEnabled="{Binding EstaEjecutando, Converter={StaticResource InverseBoolConvert
                                                     <DataTrigger Binding="{Binding RequiereAdmin}" Value="True">
                                                         <Setter TargetName="IconoAdmin" Property="Visibility" Value="Visible"/>
                                                     </DataTrigger>
-                                                    <!-- Modo edición: mostrar BlockEdicion, ocultar BlockRoot -->
-                                                    <DataTrigger Binding="{Binding EstoyEditando}" Value="True">
+                                                    <!-- Modo edición SIN desplegable → TextBox -->
+                                                    <MultiDataTrigger>
+                                                        <MultiDataTrigger.Conditions>
+                                                            <Condition Binding="{Binding EstoyEditando}" Value="True"/>
+                                                            <Condition Binding="{Binding ValoresDesplegable, Converter={StaticResource NullToBool}}" Value="False"/>
+                                                        </MultiDataTrigger.Conditions>
                                                         <Setter TargetName="BlockRoot" Property="Visibility" Value="Collapsed"/>
                                                         <Setter TargetName="BlockEdicion" Property="Visibility" Value="Visible"/>
-                                                    </DataTrigger>
+                                                        <Setter TargetName="BlockEdicionCombo" Property="Visibility" Value="Collapsed"/>
+                                                    </MultiDataTrigger>
+
+                                                    <!-- Modo edición CON desplegable → ComboBox -->
+                                                    <MultiDataTrigger>
+                                                        <MultiDataTrigger.Conditions>
+                                                            <Condition Binding="{Binding EstoyEditando}" Value="True"/>
+                                                            <Condition Binding="{Binding ValoresDesplegable, Converter={StaticResource NullToBool}}" Value="True"/>
+                                                        </MultiDataTrigger.Conditions>
+                                                        <Setter TargetName="BlockRoot" Property="Visibility" Value="Collapsed"/>
+                                                        <Setter TargetName="BlockEdicion" Property="Visibility" Value="Collapsed"/>
+                                                        <Setter TargetName="BlockEdicionCombo" Property="Visibility" Value="Visible"/>
+                                                    </MultiDataTrigger>
                                                     <!-- Dummies: borde punteado, texto apagado, cursiva, sin botón eliminar -->
                                                     <DataTrigger Binding="{Binding Estado}" Value="Dummy">
                                                         <Setter TargetName="TextoNormal" Property="Visibility" Value="Collapsed"/>

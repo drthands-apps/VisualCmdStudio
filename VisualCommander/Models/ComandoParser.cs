@@ -103,7 +103,7 @@ namespace VisualCommander.Models
             }
 
             // 3) Operadores
-            if (limpio is "|" or "&" or "&&" or "||" or ">" or ">>" or "<" or"^" or "==" or "NEQ" or "EQU")
+            if (limpio is "|" or "&" or "&&" or "||" or ">" or ">>" or "<" or "^" or "%" or "==" or "NEQ" or "EQU")
             {
                 return new Token
                 {
@@ -118,18 +118,22 @@ namespace VisualCommander.Models
             if (CatalogoTokens?.Constantes.Any(c =>
                 string.Equals(c.Nombre, limpio, StringComparison.OrdinalIgnoreCase)) == true)
             {
-            return new Token
+                return new Token
                 {
                     Tipo = TipoToken.Constante,
                     Texto = trozo,
                     Color = "CCDE86",
                     Icono = "▣",
-                    Descripcion = $"Constante: {limpio}"
+                    Descripcion = $"Constante: {limpio}",
+                    ValoresDesplegable = CatalogoTokens.Constantes.Select(c => c.Nombre).ToList()
                 };
             }
 
-            // 5) Variables (buscar %...%)
-            if (limpio.StartsWith("%") && limpio.EndsWith("%"))
+            // 5) Variables (%...%)
+            if (limpio.Length > 2 &&
+                limpio.StartsWith("%") &&
+                limpio.EndsWith("%") &&
+                limpio[1] != '%')
             {
                 return new Token
                 {
@@ -137,7 +141,8 @@ namespace VisualCommander.Models
                     Texto = trozo,
                     Color = "E4D7F5",
                     Icono = "📌",
-                    Descripcion = "Variable de entorno"
+                    Descripcion = "Variable de entorno",
+                    ValoresDesplegable = CatalogoTokens?.Variables.Select(v => v.Nombre).ToList()
                 };
             }
             // 6) ¿Es un comodín? (*, ?, [abc], [a-z])
@@ -147,9 +152,10 @@ namespace VisualCommander.Models
                 {
                     Tipo = TipoToken.Comodin,
                     Texto = trozo,
-                    Color = "FFF2CC",         // amarillo pálido
-                    Icono = "◆",              // rombo relleno, distintivo
-                    Descripcion = "Comodín de búsqueda"
+                    Color = "FFF2CC",
+                    Icono = "◆",
+                    Descripcion = "Comodín de búsqueda",
+                    ValoresDesplegable = CatalogoTokens?.Comodines.Select(c => c.Nombre).ToList()
                 };
             }
 

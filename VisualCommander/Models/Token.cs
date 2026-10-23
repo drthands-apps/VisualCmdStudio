@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel;
 using System.Runtime.CompilerServices;
+using System.Collections.Generic;
 
 namespace VisualCommander.Models
 {
@@ -94,6 +95,12 @@ namespace VisualCommander.Models
                 OnPropertyChanged();
             }
         }
+        /// <summary>
+        /// Valores posibles para un token de tipo Constante o Comodín.
+        /// Si no es nulo y tiene elementos, el token se edita con un ComboBox
+        /// en lugar de un TextBox.
+        /// </summary>
+        public List<string>? ValoresDesplegable { get; set; }
 
         /// <summary>Descripción corta, para tooltips y ayuda.</summary>
         public string? Descripcion { get; set; }
@@ -127,11 +134,12 @@ namespace VisualCommander.Models
 
 
         public bool EsEditable =>
-     Estado == EstadoToken.Normal &&
-     (Tipo == TipoToken.Texto ||
-      Tipo == TipoToken.Ruta ||
-      Tipo == TipoToken.Constante ||
-      Tipo == TipoToken.Comodin);
+    Estado == EstadoToken.Normal &&
+    (Tipo == TipoToken.Texto ||
+     Tipo == TipoToken.Ruta ||
+     Tipo == TipoToken.Constante ||
+     Tipo == TipoToken.Variable ||
+     Tipo == TipoToken.Comodin);
 
 
         /// <summary>

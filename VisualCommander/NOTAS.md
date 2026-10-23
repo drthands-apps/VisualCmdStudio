@@ -352,7 +352,80 @@ Todos los tokens del panel derecho están bindeados al catálogo JSON:
 - [ ] Renombrar MostrarInfoTokenInfo a algo más claro (opcional).
 
 ### Pendiente próxima sesión
-- Tarea 3: desplegable para constantes/comodines.
+
 - Tarea 5: drag de constantes sobre tokens existentes.
 - Tarea 6: drag & drop de tokens (reordenar).
 - Tarea 7: edición in-place de más tipos.
+- ### Tarea 3 — Comodines parametrizados (2026-10-23)
+
+**Problema**: los comodines `[abc]` y `[a-z]` tienen contenido editable.
+Con el ComboBox normal, no se puede cambiar.
+
+**Solución**: `ComboBox` con `IsEditable="True"`.
+- El usuario puede seleccionar de la lista o escribir su propio texto.
+- Con `Text` binding en lugar de `SelectedItem`.
+- Handler `PreviewKeyDown` para Enter/Escape.
+
+**Alternativa futura**: dos editores según el tipo de comodín
+(simple → ComboBox, parametrizado → TextBox).
+
+### Tarea 3 completada (2026-10-23)
+
+**Completado**:
+- Campo `ValoresDesplegable` en Token.
+- Poblado desde `CatalogoTokens` en `Clasificar` (constantes, variables, comodines).
+- ComboBox in-place al doble clic sobre Constante/Variable/Comodín.
+- `ComboBox` con `IsEditable="True"`: seleccionar de la lista o escribir.
+- Binding por `Text` (no `SelectedItem`) para permitir escritura libre.
+- Handlers `PreviewKeyDown` (Enter/Escape), `SelectionChanged`, `DropDownClosed`.
+
+**Comportamiento**:
+- Si el texto editado mantiene el formato → se queda como Comodín/Constante.
+- Si cambia a otro formato → el parser lo reclasifica (puede pasar a Texto).
+- **Filosofía**: el parser clasifica, no corrige. El usuario es responsable.
+- Validación semántica (informar de errores) → Tier 2/3.
+
+**Bug transitorio observado (1 de 12 veces)**:
+- El ComboBox se cerró de golpe al editar la primera vez.
+- No reproducible sistemáticamente.
+- Posible causa: timing del IsDropDownOpen en IsVisibleChanged.
+- **Pendiente**: si vuelve a ocurrir, añadir delay o cambiar a Loaded.
+
+### Comodines parametrizados
+- `[abc]` y `[a-z]` son editables como texto.
+- `*` y `?` seleccionables de la lista.
+- Un solo editor (ComboBox editable) para todos.
+- ### Tarea 3 completada (2026-10-23)
+
+**Completado**:
+- ComboBox in-place al doble clic sobre Constante, Variable o Comodín.
+- El ComboBox permite seleccionar de la lista o escribir (IsEditable=True).
+- **Sin binding Text**: el texto se gestiona manualmente desde los handlers.
+  Razón: el binding TwoWay con PropertyChanged interfería con la edición
+  y provocaba que Escape no restaurara.
+- `IsVisibleChanged` asigna el texto inicial.
+- `SelectionChanged` actualiza `cb.Text` al seleccionar de la lista.
+- `PreviewKeyDown`: Enter confirma (`token.Texto = cb.Text`), Escape descarta.
+- `DropDownClosed`: descarta o confirma según el caso.
+- Snapshot de la línea para restaurar en Escape.
+- `OlvidarSnapshotTexto()` al confirmar.
+
+**Comportamiento**:
+- Seleccionar de la lista → confirma.
+- Escribir + Enter → confirma.
+- Escribir + Escape → descarta.
+- Escribir + clic fuera → descarta (según `DropDownClosed`).
+- Texto que no cumple el formato → se reclasifica (esperado).
+
+**Lección**: con `ComboBox` editable, mejor **control manual** del texto
+que binding TwoWay. El binding interfiere con la edición.
+
+### Comodines parametrizados
+- `[abc]` y `[a-z]` editables como texto.
+- `*` y `?` seleccionables de la lista.
+- Un solo editor (ComboBox editable) para todos.
+
+### Bug transitorio (1 de 12 veces)
+- El ComboBox se cerró de golpe al editar la primera vez.
+- No reproducible. Posible timing del IsDropDownOpen.
+- Pendiente: si vuelve a ocurrir, añadir delay.

@@ -1030,25 +1030,19 @@ namespace VisualCommander
 
         private void Token_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
-
-            // Solo doble clic.
             if (e.ClickCount != 2) return;
-
             if (sender is not FrameworkElement fe) return;
             if (fe.DataContext is not Token token) return;
-
-            // Solo tokens editables.
             if (!token.EsEditable) return;
 
-            // Guardamos el texto original para poder restaurar con Escape.
             token.TextoAntesDeEditar = token.Texto;
 
-            // Activamos el modo edición.
+            // Guardar también el texto completo de la línea.
+            ViewModel.LineaActiva.GuardarSnapshotTexto();
+
             token.EstoyEditando = true;
-
+            EnfocarEditorInPlace();
             e.Handled = true;
-
-            //EnfocarEditorActivo();
         }
 
         private void EditorInPlace_IsVisibleChanged(object sender, DependencyPropertyChangedEventArgs e)
@@ -1140,6 +1134,7 @@ namespace VisualCommander
                 {
                     token.EstoyEditando = false;
                     ViewModel.EliminarToken(token);
+                    ViewModel.LineaActiva.OlvidarSnapshotTexto();
                     return;
                 }
                 else if (token.Tipo == TipoToken.Constante)
@@ -2183,6 +2178,82 @@ namespace VisualCommander
             }
 
             InfoSinModificador.Visibility = Visibility.Collapsed;
+        }
+        // ==== Edición con ComboBox (constantes, variables, comodines) ====
+
+        private void ComboBoxEdicion_IsVisibleChanged(object sender, DependencyPropertyChangedEventArgs e)
+        {
+            if (sender is not ComboBox cb) return;
+            if (e.NewValue is not true) return;
+
+            Dispatcher.BeginInvoke(new Action(() =>
+            {
+                Keyboard.Focus(cb);
+                cb.IsDropDownOpen = true;
+            }), System.Windows.Threading.DispatcherPriority.ApplicationIdle);
+        }
+
+        private void ComboBoxEdicion_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (sender is not ComboBox cb) return;
+            if (cb.DataContext is not Token token) return;
+            if (!token.EstoyEditando) return;
+
+            // Si el usuario selecciona de la lista, cerrar y confirmar.
+            if (cb.SelectedItem != null)
+            {
+                ConfirmarEdicionCombo(token);
+                cb.IsDropDownOpen = false;
+            }
+        }
+
+        private void ComboBoxEdicion_DropDownClosed(object sender, EventArgs e)
+        {
+            if (sender is not ComboBox cb) return;
+            if (cb.DataContext is not Token token) return;
+
+            if (token.EstoyEditando)
+            {
+                token.EstoyEditando = false;
+                token.TextoAntesDeEditar = null;
+            }
+        }
+        private void ComboBoxEdicion_PreviewKeyDown(object sender, KeyEventArgs e)
+        {
+            if (sender is not ComboBox cb) return;
+            if (cb.DataContext is not Token token) return;
+            if (!token.EstoyEditando) return;
+
+            if (e.Key == Key.Enter)
+            {
+                // Confirmar el texto actual.
+                token.Texto = cb.Text;
+                cb.IsDropDownOpen = false;
+                ConfirmarEdicionCombo(token);
+                e.Handled = true;
+            }
+            else if (e.Key == Key.Escape)
+            {
+                ViewModel.LineaActiva.RestaurarSnapshotTexto();
+                token.EstoyEditando = false;
+                token.TextoAntesDeEditar = null;
+                cb.IsDropDownOpen = false;
+                e.Handled = true;
+                ViewModel.LineaActiva.OlvidarSnapshotTexto();
+            }
+        }
+
+        private void ConfirmarEdicionCombo(Token token)
+        {
+            var linea = ViewModel.LineaActiva;
+            var textos = linea.Tokens.Select(t => t.Texto).ToList();
+            linea.ActualizarDesdeTexto(string.Join(" ", textos));
+            linea.ConfirmarEstado();
+
+            token.EstoyEditando = false;
+            token.TextoAntesDeEditar = null;
+            ViewModel.LineaActiva.OlvidarSnapshotTexto();
+            ViewModel.SetStatus($"Token actualizado: {token.Texto}");
         }
     }
 }

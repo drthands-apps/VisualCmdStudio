@@ -771,6 +771,24 @@ namespace VisualCommander.Models
 
             OnPropertyChanged(nameof(HayDummies));
         }
-       
+        private string? _snapshotTexto;
+
+        public void GuardarSnapshotTexto()
+        {
+            _snapshotTexto = Texto;
+        }
+
+        public void RestaurarSnapshotTexto()
+        {
+            if (_snapshotTexto != null)
+            {
+                ActualizarDesdeTexto(_snapshotTexto);
+                _snapshotTexto = null;
+            }
+        }
+        public void OlvidarSnapshotTexto()
+        {
+            _snapshotTexto = null;
+        }
     }
 }
