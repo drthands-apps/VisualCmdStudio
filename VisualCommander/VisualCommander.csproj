@@ -8,12 +8,23 @@
     <UseWPF>true</UseWPF>
     <AssemblyName>VisualCmdStudio</AssemblyName>
     <StartupObject>VisualCommander.App</StartupObject>
+	<ApplicationIcon>visualcmdstudio.ico</ApplicationIcon>
   </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="visualcmdstudio.ico" />
+  </ItemGroup>
 
   <ItemGroup>
     <Content Include="Data\comandos.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="visualcmdstudio.ico">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </Resource>
   </ItemGroup>
 
   <ItemGroup>

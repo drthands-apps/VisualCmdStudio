@@ -463,11 +463,70 @@ que binding TwoWay. El binding interfiere con la edición.
 queda cubierta por esta funcionalidad. Solo queda pendiente la Tarea 6
 (reordenar tokens dentro del constructor).
 
-**Tooltips pendientes**:
-- Añadir "Ctrl+Drag para sustituir" en los tooltips de los elementos
-  arrastrables.
-- Documentar en Ayuda → Atajos de teclado.
+### Icono del programa (2026-10-24)
 
-**Pendiente de hoy (si no se ha hecho)**:
-- [ ] Tooltips con Ctrl+Drag.
-- [ ] Ayuda → Atajos: añadir Ctrl+Drag.
+- Icono: pavo real con plumas de terminal (`>_`) y código (`{}`).
+- Estética cyberpunk/futurista, encaja con la filosofía del proyecto.
+- Archivo: `icono.ico` (multi-resolución: 16, 32, 48, 256).
+- Build Action: `Resource`.
+- Configurado en `.csproj` (`<ApplicationIcon>`) y `MainWindow.xaml` (`Icon=`).
+- Los diálogos heredan el icono del ejecutable.
+- ### Tarea 6 — Reordenar tokens con drag interno (2026-10-24)
+
+**Completado**:
+- Drag interno de tokens dentro del constructor.
+- Sin Ctrl → mover (reordenar).
+- Ctrl+Drag → eliminar el token destino + mover el origen a su posición.
+- Método unificado `MoverToken(tokenOrigen, indiceDestino, tokenAEliminar)`.
+- Reajuste de índices tras eliminar y quitar el origen.
+- Ignora dummies (no son arrastrables).
+
+**Comportamiento**:
+- Arrastrar token → mover a nueva posición.
+- Ctrl+Arrastrar token sobre otro → el origen ocupa el lugar del destino,
+  el destino se elimina.
+- Sin Ctrl → no se elimina nada, solo se reordena.
+- Mover al mismo sitio → no hace nada.
+
+**Interacción completa (lenguaje de gestos del editor)**:
+| Gesture | Resultado |
+|---------|-----------|
+| Arrastrar comando del catálogo | Insertar en posición |
+| Ctrl+Arrastrar comando del catálogo | Sustituir token bajo cursor |
+| Arrastrar token del constructor | Reordenar |
+| Ctrl+Arrastrar token del constructor | Eliminar destino, mover origen a su sitio |
+
+**Pendiente (opcional)**:
+- [ ] Feedback visual durante el drag (línea de inserción, cursor).
+- [ ] Tooltip al arrastrar: "Ctrl para sustituir".
+
+### Icono del programa (2026-10-24)
+
+- Icono: pavo real con plumas de terminal (`>_`) y código (`{}`).
+- Estética cyberpunk/futurista, coherente con la filosofía del proyecto.
+- Archivo: `icono.ico` con resoluciones 16, 32, 48, 64, 128 y 256.
+- Build Action: `Resource`.
+- Configurado en `.csproj` (`<ApplicationIcon>`) y `MainWindow.xaml` (`Icon=`).
+- Los diálogos heredan el icono del ejecutable.
+- PNG original convertido a ICO online en convertico.com.
+- GIMP usado para retoques previos.
+
+### Web del proyecto (preparada, no publicada)
+
+**Ubicación prevista**: `drthands.com` (temporalmente; futuro dominio propio).
+**Estado**: primera versión preparada, pendiente de:
+- Eliminar telemetría de Google (auto-hospedar fuentes, Tailwind, imágenes).
+- Actualizar datos ficticios (stars, versión, tamaños) por placeholders honestos.
+- Añadir `<link rel="icon">` para favicon.
+- Añadir meta tags SEO (`description`, `og:image`, `twitter:card`).
+- Añadir página de privacidad / términos.
+- Compilar Tailwind localmente (requiere Node.js).
+- Reemplazar imágenes de `lh3.googleusercontent.com` por locales.
+
+**Estética**: cyberpunk/futurista, coherente con el icono.
+**Nodos a favor**: narrativa técnica, elementos de confianza (SHA-256,
+sandbox, zero telemetry, MIT license), detalles de producto (winget,
+múltiples formatos de descarga, icono descargable).
+
+**Nota**: la web declara "Zero Telemetry" pero carga CDNs de Google.
+Incoherencia a resolver antes de publicar.

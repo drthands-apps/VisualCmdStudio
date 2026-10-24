@@ -85,6 +85,7 @@ namespace VisualCommander
         private bool _scrollPendiente;
         
         private Point _posInicialDrag;
+        private const string FormatoTokenInterno = "VisualCommander.TokenInterno";
 
         private void ListaComandos_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
@@ -144,7 +145,12 @@ namespace VisualCommander
 
         private void PanelBloques_DragOver(object sender, DragEventArgs e)
         {
-           
+            if (e.Data.GetDataPresent(FormatoTokenInterno))
+            {
+                e.Effects = DragDropEffects.Move;
+                e.Handled = true;
+                return;
+            }
 
             e.Effects = DeterminarEfecto(e);
 
@@ -2328,13 +2334,46 @@ namespace VisualCommander
         }
         private void PanelBloques_PreviewDrop(object sender, DragEventArgs e)
         {
-            // Solo actuar si Ctrl está pulsado.
-            if (!Keyboard.Modifiers.HasFlag(ModifierKeys.Control))
-                return;   // Dejamos que Drop normal funcione.
-
             // Buscar el token bajo el cursor.
             var puntoCursor = e.GetPosition(PanelBloques);
             var tokenBajoCursor = ObtenerTokenBajoPunto(puntoCursor);
+
+            // ==== Drag interno (token del constructor) ====
+            if (e.Data.GetDataPresent(FormatoTokenInterno) &&
+                e.Data.GetData(FormatoTokenInterno) is Token tokenOrigen)
+            {
+                // ¿Ctrl pulsado en el momento del drop?
+                bool sustituir = Keyboard.Modifiers.HasFlag(ModifierKeys.Control);
+
+                Token? tokenAEliminar = null;
+                if (sustituir)
+                {
+                    var tokenDestino = ObtenerTokenBajoPunto(puntoCursor);
+                    if (tokenDestino != null && !ReferenceEquals(tokenDestino, tokenOrigen))
+                        tokenAEliminar = tokenDestino;
+                }
+
+                // Calcular índice de destino (posición entre tokens).
+                int indiceDestino = CalcularIndiceInsercion(puntoCursor);
+
+                // Mover el token (con o sin eliminación del destino).
+                ViewModel.LineaActiva.MoverToken(tokenOrigen, indiceDestino, tokenAEliminar);
+
+                e.Handled = true;
+                return;
+            }
+
+            // ==== Ctrl+Drop externo (comandos, rutas, etc.) ====
+            if (!Keyboard.Modifiers.HasFlag(ModifierKeys.Control))
+                return;
+
+           
+
+            // ==== Ctrl+Drop (sustituir token, ya existe) ====
+            if (!Keyboard.Modifiers.HasFlag(ModifierKeys.Control))
+                return;   // Dejamos que Drop normal funcione.
+
+           
 
             // Si no hay token bajo el cursor, dejar que Drop normal funcione.
             if (tokenBajoCursor == null)
@@ -2411,6 +2450,44 @@ namespace VisualCommander
                 // Los parámetros no se sustituyen: se marcan/desmarcan.
                 // Si Ctrl está pulsado sobre un token, ignoramos (no tiene sentido).
                 return;
+            }
+        }
+        private Point _posInicialDragToken;
+        private bool _dragEnCursoToken;
+
+        private void Token_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            _posInicialDragToken = e.GetPosition(null);
+            _dragEnCursoToken = false;
+        }
+
+        private void Token_PreviewMouseMove(object sender, MouseEventArgs e)
+        {
+            if (e.LeftButton != MouseButtonState.Pressed) return;
+            if (_dragEnCursoToken) return;
+
+            if (sender is not FrameworkElement fe) return;
+            if (fe.DataContext is not Token token) return;
+            if (token.EsDummy) return;
+
+            // NOTA: quitamos la comprobación de Ctrl. El drag se inicia siempre.
+            // La intención (mover o sustituir) se decide en el Drop.
+
+            var delta = e.GetPosition(null) - _posInicialDragToken;
+            if (Math.Abs(delta.X) < SystemParameters.MinimumHorizontalDragDistance &&
+                Math.Abs(delta.Y) < SystemParameters.MinimumVerticalDragDistance)
+                return;
+
+            _dragEnCursoToken = true;
+
+            try
+            {
+                var datos = new DataObject(FormatoTokenInterno, token);
+                DragDrop.DoDragDrop(fe, datos, DragDropEffects.Move);
+            }
+            finally
+            {
+                _dragEnCursoToken = false;
             }
         }
     }

@@ -790,5 +790,86 @@ namespace VisualCommander.Models
         {
             _snapshotTexto = null;
         }
+        /// <summary>
+        /// Mueve un token de su posición actual a una nueva posición dentro de la línea.
+        /// Reconstruye el texto y confirma el estado.
+        /// </summary>
+        /// <summary>
+        /// Mueve un token a una nueva posición. Si se indica un token destino,
+        /// se elimina antes de mover (modo sustituir).
+        /// </summary>
+        public void MoverToken(Token tokenOrigen, int indiceDestino, Token? tokenAEliminar = null)
+        {
+            var tokens = Tokens.ToList();
+            var indiceOrigen = tokens.IndexOf(tokenOrigen);
+            if (indiceOrigen < 0) return;
+
+            // Si hay un token a eliminar (Ctrl+Drop), quitarlo primero.
+            if (tokenAEliminar != null)
+            {
+                var indiceEliminar = tokens.IndexOf(tokenAEliminar);
+                if (indiceEliminar >= 0 && indiceEliminar != indiceOrigen)
+                {
+                    tokens.RemoveAt(indiceEliminar);
+
+                    // Reajustar índices si el eliminado estaba antes del origen.
+                    if (indiceEliminar < indiceOrigen)
+                        indiceOrigen--;
+                }
+            }
+
+            // Quitar el token origen de su posición actual.
+            tokens.RemoveAt(indiceOrigen);
+
+            // Ajustar el índice destino si el origen estaba antes.
+            // (Ahora el origen ya no está en la lista, así que hay que ver
+            // si el índice calculado sigue siendo válido.)
+            if (indiceDestino > indiceOrigen)
+                indiceDestino--;
+
+            // Asegurar que el índice está en rango.
+            if (indiceDestino < 0) indiceDestino = 0;
+            if (indiceDestino > tokens.Count) indiceDestino = tokens.Count;
+
+            // Insertar el origen en la posición final.
+            tokens.Insert(indiceDestino, tokenOrigen);
+
+            // Reconstruir la línea.
+            var nuevoTexto = string.Join(" ", tokens.Select(t => t.Texto));
+            ActualizarDesdeTexto(nuevoTexto);
+            ConfirmarEstado();
+        }
+        /// <summary>
+        /// Sustituye un token por otro dentro de la línea.
+        /// El token destino se elimina; el token origen ocupa su posición.
+        /// </summary>
+        public void SustituirTokenPorToken(Token tokenOrigen, Token tokenDestino)
+        {
+            var tokens = Tokens.ToList();
+            var indiceOrigen = tokens.IndexOf(tokenOrigen);
+            var indiceDestino = tokens.IndexOf(tokenDestino);
+
+            if (indiceOrigen < 0 || indiceDestino < 0) return;
+            if (indiceOrigen == indiceDestino) return;
+
+            // Quitar el token destino.
+            tokens.RemoveAt(indiceDestino);
+
+            // Reajustar el índice del origen si el destino estaba antes.
+            if (indiceDestino < indiceOrigen)
+                indiceOrigen--;
+
+            // Quitar el token origen.
+            tokens.RemoveAt(indiceOrigen);
+
+            // Insertar el token origen en la posición del destino.
+            int indiceFinal = indiceDestino <= tokens.Count ? indiceDestino : tokens.Count;
+            tokens.Insert(indiceFinal, tokenOrigen);
+
+            // Reconstruir la línea.
+            var nuevoTexto = string.Join(" ", tokens.Select(t => t.Texto));
+            ActualizarDesdeTexto(nuevoTexto);
+            ConfirmarEstado();
+        }
     }
 }

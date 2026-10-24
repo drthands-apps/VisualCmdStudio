@@ -10,6 +10,7 @@
         ResizeMode="CanResize"
         WindowState="Maximized"
         Title="Visual CMD Studio — Constructor visual de línea de comandos"
+        Icon="visualcmdstudio.ico"
         Height="880" Width="1560"
         MinHeight="600" MinWidth="1100"
         WindowStartupLocation="CenterScreen"
@@ -720,17 +721,19 @@ IsEnabled="{Binding EstaEjecutando, Converter={StaticResource InverseBoolConvert
                                                 <Grid>
                                                     
                                                     <!-- ============ MODO DISPLAY ============ -->
-                                                    
+
                                                     <Border x:Name="BlockRoot"
-                    Style="{StaticResource BlockBase}"
-                    Background="{Binding Color, Converter={StaticResource HexToBrush}}"
-                    CornerRadius="3"
-                    BorderBrush="#FF666666"
-                    ToolTip="{Binding Descripcion}"
-                    Cursor="Hand"
-                    MouseEnter="Token_MouseEnter"
-                    MouseLeave="Token_MouseLeave"                                    
-                    MouseLeftButtonDown="Token_MouseLeftButtonDown">
+        Style="{StaticResource BlockBase}"
+        Background="{Binding Color, Converter={StaticResource HexToBrush}}"
+        CornerRadius="3"
+        BorderBrush="#FF666666"
+        ToolTip="{Binding Descripcion}"
+        Cursor="Hand"
+        MouseEnter="Token_MouseEnter"
+        MouseLeave="Token_MouseLeave"
+        MouseLeftButtonDown="Token_MouseLeftButtonDown"
+        PreviewMouseLeftButtonDown="Token_PreviewMouseLeftButtonDown"
+        PreviewMouseMove="Token_PreviewMouseMove">
                                                         <StackPanel Orientation="Horizontal">
                                                             
                                                             <TextBlock Text="{Binding Icono}"

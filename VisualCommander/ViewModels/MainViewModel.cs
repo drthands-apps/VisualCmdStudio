@@ -1933,5 +1933,15 @@ namespace VisualCommander.ViewModels
         {
             linea.ComandoReconocido += cmd => RegistrarUso(cmd);
         }
+        /// <summary>
+        /// Sustituye un token por otro dentro de la línea activa.
+        /// El token destino se elimina; el token origen ocupa su posición.
+        /// </summary>
+        public void SustituirTokenPorToken(Token tokenOrigen, Token tokenDestino)
+        {
+            LineaActiva.SustituirTokenPorToken(tokenOrigen, tokenDestino);
+            SetStatus($"Token sustituido: {tokenDestino.Texto} → {tokenOrigen.Texto}");
+        }
+       
     }
 }
