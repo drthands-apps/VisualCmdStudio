@@ -2490,5 +2490,165 @@ namespace VisualCommander
                 _dragEnCursoToken = false;
             }
         }
+        // ============================================================
+        // Menú contextual de líneas (cuerpo CMD)
+        // ============================================================
+
+        private LineaComando? ObtenerLineaDelMenu(object sender)
+        {
+            if (sender is not MenuItem mi) return null;
+            if (mi.Parent is not ContextMenu cm) return null;
+            if (cm.PlacementTarget is not FrameworkElement fe) return null;
+            if (fe.DataContext is not LineaComando linea) return null;
+            return linea;
+        }
+
+        private void LineaContext_Activar(object sender, RoutedEventArgs e)
+        {
+            var linea = ObtenerLineaDelMenu(sender);
+            if (linea == null) return;
+            ViewModel.LineaActiva = linea;
+            EnfocarEditorActivo();
+        }
+
+        private void LineaContext_Cerrar(object sender, RoutedEventArgs e)
+        {
+            var linea = ObtenerLineaDelMenu(sender);
+            if (linea == null) return;
+
+            if (!ReferenceEquals(ViewModel.LineaActiva, linea))
+                ViewModel.LineaActiva = linea;
+
+            ViewModel.CerrarLineaActiva();
+            EnfocarEditorActivo();
+        }
+
+        private void LineaContext_Cortar(object sender, RoutedEventArgs e)
+        {
+            var linea = ObtenerLineaDelMenu(sender);
+            if (linea == null) return;
+
+            if (!ReferenceEquals(ViewModel.LineaActiva, linea))
+                ViewModel.LineaActiva = linea;
+
+            ViewModel.CortarLineaActiva();
+            EnfocarEditorActivo();
+        }
+
+        private void LineaContext_Copiar(object sender, RoutedEventArgs e)
+        {
+            var linea = ObtenerLineaDelMenu(sender);
+            if (linea == null) return;
+
+            if (!ReferenceEquals(ViewModel.LineaActiva, linea))
+                ViewModel.LineaActiva = linea;
+
+            ViewModel.CopiarLineaActiva();
+        }
+
+        private void LineaContext_Pegar(object sender, RoutedEventArgs e)
+        {
+            var linea = ObtenerLineaDelMenu(sender);
+            if (linea == null) return;
+
+            if (!ReferenceEquals(ViewModel.LineaActiva, linea))
+                ViewModel.LineaActiva = linea;
+
+            ViewModel.PegarLinea();
+            EnfocarEditorActivo();
+        }
+
+        private void LineaContext_Duplicar(object sender, RoutedEventArgs e)
+        {
+            var linea = ObtenerLineaDelMenu(sender);
+            if (linea == null) return;
+
+            if (!ReferenceEquals(ViewModel.LineaActiva, linea))
+                ViewModel.LineaActiva = linea;
+
+            ViewModel.DuplicarLineaActiva();
+            EnfocarEditorActivo();
+        }
+
+        private void LineaContext_MoverArriba(object sender, RoutedEventArgs e)
+        {
+            var linea = ObtenerLineaDelMenu(sender);
+            if (linea == null) return;
+
+            if (!ReferenceEquals(ViewModel.LineaActiva, linea))
+                ViewModel.LineaActiva = linea;
+
+            ViewModel.MoverActivaArriba();
+            EnfocarEditorActivo();
+        }
+
+        private void LineaContext_MoverAbajo(object sender, RoutedEventArgs e)
+        {
+            var linea = ObtenerLineaDelMenu(sender);
+            if (linea == null) return;
+
+            if (!ReferenceEquals(ViewModel.LineaActiva, linea))
+                ViewModel.LineaActiva = linea;
+
+            ViewModel.MoverActivaAbajo();
+            EnfocarEditorActivo();
+        }
+
+        private async void LineaContext_Ejecutar(object sender, RoutedEventArgs e)
+        {
+            var linea = ObtenerLineaDelMenu(sender);
+            if (linea == null) return;
+
+            ViewModel.LineaActiva = linea;
+            await ViewModel.EjecutarAsync();
+            EnfocarEditorActivo();
+        }
+
+        private void LineaContext_Eliminar(object sender, RoutedEventArgs e)
+        {
+            var linea = ObtenerLineaDelMenu(sender);
+            if (linea == null) return;
+
+            if (!ReferenceEquals(ViewModel.LineaActiva, linea))
+                ViewModel.LineaActiva = linea;
+
+            ViewModel.EliminarLineaActiva();
+            EnfocarEditorActivo();
+        }
+
+        private void LineaContextMenu_Opened(object sender, RoutedEventArgs e)
+        {
+            if (sender is not ContextMenu cm) return;
+            if (cm.PlacementTarget is not FrameworkElement fe) return;
+            if (fe.DataContext is not LineaComando linea) return;
+
+            foreach (var item in cm.Items)
+            {
+                if (item is MenuItem mi && mi.Tag is string tag)
+                {
+                    if (tag == "MostrarSiNoActiva")
+                        mi.Visibility = linea.EsActiva ? Visibility.Collapsed : Visibility.Visible;
+                    else if (tag == "MostrarSiActiva")
+                        mi.Visibility = linea.EsActiva ? Visibility.Visible : Visibility.Collapsed;
+                }
+            }
+        }
+        private void Prompt_ContextMenuOpening(object sender, ContextMenuEventArgs e)
+        {
+            if (sender is not FrameworkElement fe) return;
+            if (fe.DataContext is not LineaComando linea) return;
+            if (fe.ContextMenu is not ContextMenu cm) return;
+
+            foreach (var item in cm.Items)
+            {
+                if (item is MenuItem mi && mi.Tag is string tag)
+                {
+                    if (tag == "MostrarSiNoActiva")
+                        mi.Visibility = linea.EsActiva ? Visibility.Collapsed : Visibility.Visible;
+                    else if (tag == "MostrarSiActiva")
+                        mi.Visibility = Visibility.Collapsed;  // Nunca en prompt
+                }
+            }
+        }
     }
 }

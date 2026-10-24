@@ -530,3 +530,32 @@ múltiples formatos de descarga, icono descargable).
 
 **Nota**: la web declara "Zero Telemetry" pero carga CDNs de Google.
 Incoherencia a resolver antes de publicar.
+
+
+### Visión: constructor con todas las líneas (Tier 3)
+
+**Idea**: que el constructor visual muestre **todas las líneas** del plan,
+apiladas verticalmente, igual que el cuerpo CMD. Cada línea con sus tokens.
+
+**Ventajas**:
+- Vista global del plan.
+- Coherencia visual: constructor = CMD, uno en bloques, otro en texto.
+- Menús contextuales unificados.
+- Edición in-place sobre cualquier línea (no solo la activa).
+**Detalles de diseño discutidos**:
+- **Colores alternos** entre líneas (blanco / azul claro) para marcar límites.
+  Razón: una línea lógica puede ocupar 2-3 líneas visuales si es muy larga.
+  Los colores alternos ayudan a distinguir dónde empieza/termina cada línea lógica.
+- **Línea activa resaltada** con el mismo sistema de colores (por ejemplo,
+  color más intenso o borde de acento).
+- **Dummies visibles en TODAS las líneas**, no solo en la activa.
+  Razón: ayudan a recordar qué líneas están incompletas.
+- **Menús contextuales** unificados entre constructor y CMD.
+
+**Cuándo**: al refactorizar la interfaz en UserControls (Tier 3).
+Razón: tener el código dividido permite implementar el sistema con control.
+
+**Implicación para menús contextuales de hoy**:
+Los menús deben diseñarse pensando en que mañana estarán disponibles
+TANTO en el CMD COMO en el constructor. Los handlers deben ser
+reutilizables y no depender del "lugar" donde se invocan.

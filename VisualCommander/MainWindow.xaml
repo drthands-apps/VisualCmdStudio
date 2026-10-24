@@ -1050,84 +1050,134 @@ IsEnabled="{Binding EstaEjecutando, Converter={StaticResource InverseBoolConvert
 
                                                             <!-- Borde superior animado -->
                                                             <Border x:Name="BordeSuperior"
-                        Grid.Row="0"
-                        Height="2"
-                        Background="{StaticResource CmdAcento}"
-                        HorizontalAlignment="Center"
-                        Width="0"/>
+                Grid.Row="0"
+                Height="2"
+                Background="{StaticResource CmdAcento}"
+                HorizontalAlignment="Center"
+                Width="0"/>
 
                                                             <!-- Contenido de la línea -->
                                                             <Border x:Name="LineaContenedor"
-                        Grid.Row="1"
-                        Padding="12,3,12,3"
-                        BorderThickness="4,0,0,0"
-                        BorderBrush="Transparent"
-                        Background="Transparent"
-                        Cursor="Hand"
-                        MouseLeftButtonDown="LineaClic_MouseLeftButtonDown">
+                Grid.Row="1"
+                Padding="12,3,12,3"
+                BorderThickness="4,0,0,0"
+                BorderBrush="Transparent"
+                Background="Transparent"
+                Cursor="Hand"
+                MouseLeftButtonDown="LineaClic_MouseLeftButtonDown">
+
+                                                                <!-- ========== MENÚ CONTEXTUAL ========== -->
+                                                                <Border.ContextMenu>
+                                                                    <ContextMenu Opened="LineaContextMenu_Opened">
+                                                                        <MenuItem Header="Activar esta línea" Tag="MostrarSiNoActiva" Click="LineaContext_Activar"/>
+                                                                        <MenuItem Header="✓ Cerrar línea" Tag="MostrarSiActiva" Click="LineaContext_Cerrar"/>
+
+                                                                        <Separator/>
+
+                                                                        <MenuItem Header="✂ Cortar línea" InputGestureText="Ctrl+X" Click="LineaContext_Cortar"/>
+                                                                        <MenuItem Header="📋 Copiar línea" InputGestureText="Ctrl+C" Click="LineaContext_Copiar"/>
+                                                                        <MenuItem Header="📌 Pegar línea" InputGestureText="Ctrl+V" Click="LineaContext_Pegar"/>
+                                                                        <MenuItem Header="🔁 Duplicar línea" InputGestureText="Ctrl+D" Click="LineaContext_Duplicar"/>
+
+                                                                        <Separator/>
+
+                                                                        <MenuItem Header="▲ Mover arriba" InputGestureText="Ctrl+Shift+↑" Click="LineaContext_MoverArriba"/>
+                                                                        <MenuItem Header="▼ Mover abajo" InputGestureText="Ctrl+Shift+↓" Click="LineaContext_MoverAbajo"/>
+
+                                                                        <Separator/>
+
+                                                                        <MenuItem Header="▶ Ejecutar esta línea" Click="LineaContext_Ejecutar"/>
+
+                                                                        <Separator/>
+
+                                                                        <MenuItem Header="🗑 Eliminar línea" Click="LineaContext_Eliminar"/>
+                                                                    </ContextMenu>
+                                                                </Border.ContextMenu>
+
+                                                                <!-- ========== CONTENIDO ========== -->
                                                                 <Grid>
                                                                     <Grid.ColumnDefinitions>
                                                                         <ColumnDefinition Width="Auto"/>
                                                                         <ColumnDefinition Width="*"/>
                                                                     </Grid.ColumnDefinitions>
 
-                                                                    <!-- Indicador de estado (si lo tienes) -->
+                                                                    <!-- Indicador de estado -->
                                                                     <TextBlock Grid.Column="0"
-               Text="{Binding EstadoSimbolo}"
-               FontFamily="Consolas"
-               FontSize="14"
-               VerticalAlignment="Top"
-               Margin="0,2,8,0"
-               Foreground="{Binding EstadoColor, Converter={StaticResource HexToBrush}}"/>
+                           Text="{Binding EstadoSimbolo}"
+                           FontFamily="Consolas"
+                           FontSize="14"
+                           VerticalAlignment="Top"
+                           Margin="0,2,8,0"
+                           Foreground="{Binding EstadoColor, Converter={StaticResource HexToBrush}}"/>
 
-                                                                    <!-- Prompt (columna 1 de 2 → en realidad lo movemos a la columna 1) -->
+                                                                    <!-- Prompt -->
                                                                     <TextBlock Grid.Column="0"
-               Text="{Binding PromptCmdCorto}"
-               ToolTip="{Binding DirectorioTrabajo}"
-               Style="{StaticResource CmdPromptTexto}"
-               VerticalAlignment="Top"
-               Margin="24,2,8,2"/>
+           Text="{Binding PromptCmdCorto}"
+           ToolTip="{Binding DirectorioTrabajo}"
+           Style="{StaticResource CmdPromptTexto}"
+           VerticalAlignment="Top"
+           Margin="24,2,8,2"
+           ContextMenuOpening="Prompt_ContextMenuOpening">
+                                                                        <TextBlock.ContextMenu>
+                                                                            <ContextMenu>
+                                                                                <MenuItem Header="Activar esta línea" Tag="MostrarSiNoActiva" Click="LineaContext_Activar"/>
+                                                                                <Separator/>
+                                                                                <MenuItem Header="✂ Cortar línea" InputGestureText="Ctrl+X" Click="LineaContext_Cortar"/>
+                                                                                <MenuItem Header="📋 Copiar línea" InputGestureText="Ctrl+C" Click="LineaContext_Copiar"/>
+                                                                                <MenuItem Header="📌 Pegar línea" InputGestureText="Ctrl+V" Click="LineaContext_Pegar"/>
+                                                                                <MenuItem Header="🔁 Duplicar línea" InputGestureText="Ctrl+D" Click="LineaContext_Duplicar"/>
+                                                                                <Separator/>
+                                                                                <MenuItem Header="▲ Mover arriba" InputGestureText="Ctrl+Shift+↑" Click="LineaContext_MoverArriba"/>
+                                                                                <MenuItem Header="▼ Mover abajo" InputGestureText="Ctrl+Shift+↓" Click="LineaContext_MoverAbajo"/>
+                                                                                <Separator/>
+                                                                                <MenuItem Header="▶ Ejecutar esta línea" Click="LineaContext_Ejecutar"/>
+                                                                                <Separator/>
+                                                                                <MenuItem Header="🗑 Eliminar línea" Click="LineaContext_Eliminar"/>
+                                                                            </ContextMenu>
+                                                                        </TextBlock.ContextMenu>
+                                                                    </TextBlock>
 
                                                                     <!-- Comando: TextBox que envuelve -->
                                                                     <TextBox Grid.Column="1"
-             x:Name="TextoEdicion"
-             FontFamily="Consolas"
-             FontSize="14"
-             Foreground="{StaticResource CmdTexto}"
-             Background="Transparent"
-             BorderThickness="0"
-             Padding="0"
-             Margin="0,2,0,2"
-             TextWrapping="Wrap"
-             AcceptsReturn="False"
-             VerticalScrollBarVisibility="Disabled"
-             CaretBrush="{StaticResource CmdTexto}"
-             Text="{Binding Texto, Mode=OneWay}"
-             IsUndoEnabled="False"                                                         
-             Visibility="Collapsed"
-             PreviewKeyDown="EditorComando_PreviewKeyDown"
-             LostFocus="EditorComando_LostFocus"
-             IsVisibleChanged="EditorComando_IsVisibleChanged"/>
+                         x:Name="TextoEdicion"
+                         FontFamily="Consolas"
+                         FontSize="14"
+                         Foreground="{StaticResource CmdTexto}"
+                         Background="Transparent"
+                         BorderThickness="0"
+                         Padding="0"
+                         Margin="0,2,0,2"
+                         TextWrapping="Wrap"
+                         AcceptsReturn="False"
+                         VerticalScrollBarVisibility="Disabled"
+                         CaretBrush="{StaticResource CmdTexto}"
+                         Text="{Binding Texto, Mode=OneWay}"
+                         IsUndoEnabled="False"
+                         Visibility="Collapsed"
+                         PreviewKeyDown="EditorComando_PreviewKeyDown"
+                         LostFocus="EditorComando_LostFocus"
+                         IsVisibleChanged="EditorComando_IsVisibleChanged"
+                         ContextMenu="{Binding ContextMenu, ElementName=LineaContenedor}"/>
 
                                                                     <!-- Texto de lectura (modo no activo) -->
                                                                     <TextBlock Grid.Column="1"
-               x:Name="TextoLectura"
-               Text="{Binding Texto}"
-               FontFamily="Consolas"
-               FontSize="14"
-               Foreground="{StaticResource CmdTexto}"
-               TextWrapping="Wrap"
-               Margin="0,2,0,2"/>
+                           x:Name="TextoLectura"
+                           Text="{Binding Texto}"
+                           FontFamily="Consolas"
+                           FontSize="14"
+                           Foreground="{StaticResource CmdTexto}"
+                           TextWrapping="Wrap"
+                           Margin="0,2,0,2"/>
                                                                 </Grid>
                                                             </Border>
 
                                                             <!-- Borde inferior animado -->
                                                             <Border x:Name="BordeInferior"
-                        Grid.Row="2"
-                        Height="2"
-                        Background="{StaticResource CmdAcento}"
-                        HorizontalAlignment="Center"
-                        Width="0"/>
+                Grid.Row="2"
+                Height="2"
+                Background="{StaticResource CmdAcento}"
+                HorizontalAlignment="Center"
+                Width="0"/>
                                                         </Grid>
 
                                                         <DataTemplate.Triggers>
@@ -1135,8 +1185,6 @@ IsEnabled="{Binding EstaEjecutando, Converter={StaticResource InverseBoolConvert
                                                                 <!-- Contenedor -->
                                                                 <Setter TargetName="LineaContenedor" Property="Background" Value="#FF181818"/>
                                                                 <Setter TargetName="LineaContenedor" Property="BorderBrush" Value="{StaticResource CmdAcento}"/>
-
-                                                         
 
                                                                 <!-- Intercambio lectura/edición -->
                                                                 <Setter TargetName="TextoLectura" Property="Visibility" Value="Collapsed"/>
