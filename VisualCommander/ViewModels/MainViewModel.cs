@@ -98,7 +98,7 @@ namespace VisualCommander.ViewModels
             }
         }
 
-        
+
 
         // ==== Contexto de ejecución (delegado a la línea activa) ====
 
@@ -307,12 +307,12 @@ namespace VisualCommander.ViewModels
             _configuracion = Services.ConfiguracionService.Cargar();
             _registroUso = UsoService.Cargar();
             /// <summary>Catálogo de tokens pequeños (constantes, variables, comodines, operadores).</summary>
-       
+
 
             CargarComandos();
             CatalogoTokens = Services.CatalogoTokensService.Cargar();
 
-            
+
             ComandoParser.CatalogoTokens = CatalogoTokens;
 
             // Conectamos el proyector de tokens al parser.
@@ -537,7 +537,7 @@ namespace VisualCommander.ViewModels
                 Origen = cmd,
                 RequiereAdmin = cmd.RequiereAdmin
             });
-            RegistrarUso(cmd);  
+            RegistrarUso(cmd);
             SetStatus($"Añadido: {cmd.Nombre}");
         }
         /// <summary>
@@ -775,9 +775,9 @@ namespace VisualCommander.ViewModels
                 if (dialogo.NoPreguntarMas && esPeligrosa)
                 {
                     _lineasNoPreguntar.Add(LineaActiva);
-     
+
                     SetStatus("No se volverá a preguntar para esta línea");
-                    
+
                 }
             }
 
@@ -816,7 +816,7 @@ namespace VisualCommander.ViewModels
         /// </summary>
         public async Task EjecutarPlanAsync()
         {
-            
+
             if (EstaEjecutando) return;
 
             _detenerSolicitado = false;
@@ -831,8 +831,8 @@ namespace VisualCommander.ViewModels
             foreach (var l in Lineas)
                 l.ResetearEstado();
 
-            
-            
+
+
 
             // Recoger líneas incompletas (con dummies requeridos)
             // Recoger líneas peligrosas
@@ -1041,7 +1041,7 @@ namespace VisualCommander.ViewModels
         private async Task EjecutarElevadoAsync(string comando)
         {
             _detenerSolicitado = false;
-            
+
             // Usar carpeta propia para temporales (más limpio que %TEMP%).
             var carpetaTemp = System.IO.Path.Combine(
                 Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
@@ -1284,7 +1284,7 @@ namespace VisualCommander.ViewModels
                 return -2;
             }
         }
-        
+
 
         private async Task<int> EjecutarLineaElevadaAsync(LineaComando linea)
         {
@@ -1789,7 +1789,7 @@ namespace VisualCommander.ViewModels
                     System.Windows.MessageBoxImage.Error);
             }
         }
-        
+
 
         /// <summary>
         /// Exporta el plan actual como archivo .sh (Bash) para revisión.
@@ -1820,12 +1820,12 @@ namespace VisualCommander.ViewModels
         /// </summary>
         public string NombreSugeridoBat =>
             $"plan_{DateTime.Now:yyyyMMdd_HHmmss}.bat";
-      
+
         /// <summary>Nombre sugerido para el archivo de exportación .ps1.</summary>
         public string NombreSugeridoPs1 =>
             $"plan_{DateTime.Now:yyyyMMdd_HHmmss}.ps1";
 
-          /// <summary>Nombre sugerido para el archivo de exportación .cmd.</summary>
+        /// <summary>Nombre sugerido para el archivo de exportación .cmd.</summary>
         public string NombreSugeridoCmd =>
             $"plan_{DateTime.Now:yyyyMMdd_HHmmss}.cmd";
 
@@ -1892,7 +1892,7 @@ namespace VisualCommander.ViewModels
                         new SortDescription(nameof(Comando.Usos), ListSortDirection.Descending));
                     ComandosView.SortDescriptions.Add(
                         new SortDescription(nameof(Comando.Nombre), ListSortDirection.Ascending));
-                   
+
                     break;
 
                 default:  // 0 = Por familia
@@ -1927,7 +1927,7 @@ namespace VisualCommander.ViewModels
             // Si estamos en modo frecuencia, refrescar.
             if (_ordenSeleccionado == 2)
                 ComandosView.Refresh();
-            
+
         }
         private void ConfigurarNuevaLinea(LineaComando linea)
         {
@@ -1942,6 +1942,87 @@ namespace VisualCommander.ViewModels
             LineaActiva.SustituirTokenPorToken(tokenOrigen, tokenDestino);
             SetStatus($"Token sustituido: {tokenDestino.Texto} → {tokenOrigen.Texto}");
         }
-       
+                // ==== Portapapeles de tokens ====
+
+        /// <summary>
+        /// Token copiado o cortado, pendiente de pegar.
+        /// Se guarda una copia con todos sus metadatos.
+        /// </summary>
+        private Token? _tokenCopiado;
+
+        /// <summary>¿Hay un token en el portapapeles interno?</summary>
+        public bool PuedePegarToken => _tokenCopiado != null;
+
+        /// <summary>Copia un token al portapapeles interno.</summary>
+        public void CopiarToken(Token token)
+        {
+            _tokenCopiado = ClonarToken(token);
+            OnPropertyChanged(nameof(PuedePegarToken));
+            SetStatus($"Token copiado: {token.Texto}");
+        }
+
+        /// <summary>Corta un token: copia + elimina de la línea.</summary>
+        public void CortarToken(Token token)
+        {
+            _tokenCopiado = ClonarToken(token);
+            OnPropertyChanged(nameof(PuedePegarToken));
+
+            LineaActiva.QuitarToken(token);
+            SetStatus($"Token cortado: {token.Texto}");
+        }
+
+        /// <summary>
+        /// Pega el token copiado en la posición indicada (o al final si no se indica).
+        /// </summary>
+        public void PegarToken(int? indice = null)
+        {
+            if (_tokenCopiado == null)
+            {
+                SetStatus("No hay token en el portapapeles");
+                return;
+            }
+
+            var nuevo = ClonarToken(_tokenCopiado);
+
+            if (indice.HasValue)
+            {
+                // Insertar en la posición indicada.
+                var tokens = LineaActiva.Tokens.ToList();
+                if (indice.Value < 0) indice = 0;
+                if (indice.Value > tokens.Count) indice = tokens.Count;
+                tokens.Insert(indice.Value, nuevo);
+                var nuevoTexto = string.Join(" ", tokens.Select(t => t.Texto));
+                LineaActiva.ActualizarDesdeTexto(nuevoTexto);
+                LineaActiva.ConfirmarEstado();
+            }
+            else
+            {
+                // Al final.
+                LineaActiva.AgregarToken(nuevo);
+            }
+
+            SetStatus($"Token pegado: {nuevo.Texto}");
+        }
+
+        /// <summary>
+        /// Clona un token (nueva instancia con los mismos valores).
+        /// </summary>
+        private static Token ClonarToken(Token original)
+        {
+            return new Token
+            {
+                Tipo = original.Tipo,
+                Texto = original.Texto,
+                Descripcion = original.Descripcion,
+                Color = original.Color,
+                Icono = original.Icono,
+                Origen = original.Origen,
+                RequiereAdmin = original.RequiereAdmin,
+                ValoresDesplegable = original.ValoresDesplegable != null
+                    ? new List<string>(original.ValoresDesplegable)
+                    : null
+            };
+        }
+
     }
 }

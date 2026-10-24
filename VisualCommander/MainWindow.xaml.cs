@@ -2650,5 +2650,84 @@ namespace VisualCommander
                 }
             }
         }
+        // ============================================================
+        // Menú contextual de tokens (constructor)
+        // ============================================================
+
+        private Token? ObtenerTokenDelMenu(object sender)
+        {
+            if (sender is not MenuItem mi) return null;
+            if (mi.Parent is not ContextMenu cm) return null;
+            if (cm.PlacementTarget is not FrameworkElement fe) return null;
+            if (fe.DataContext is not Token token) return null;
+            return token;
+        }
+
+        private void Token_ContextMenuOpening(object sender, ContextMenuEventArgs e)
+        {
+            if (sender is not FrameworkElement fe) return;
+            if (fe.DataContext is not Token token) return;
+            if (fe.ContextMenu is not ContextMenu cm) return;
+
+            foreach (var item in cm.Items)
+            {
+                if (item is MenuItem mi && mi.Tag is string tag)
+                {
+                    if (tag == "MostrarSiEditable")
+                        mi.Visibility = token.EsEditable ? Visibility.Visible : Visibility.Collapsed;
+                }
+            }
+        }
+
+        private void TokenContext_Editar(object sender, RoutedEventArgs e)
+        {
+            var token = ObtenerTokenDelMenu(sender);
+            if (token == null || !token.EsEditable) return;
+
+            // Simular doble clic: iniciar edición in-place.
+            token.TextoAntesDeEditar = token.Texto;
+            ViewModel.LineaActiva.GuardarSnapshotTexto();
+            token.EstoyEditando = true;
+            EnfocarEditorInPlace();
+        }
+
+        private void TokenContext_Copiar(object sender, RoutedEventArgs e)
+        {
+            var token = ObtenerTokenDelMenu(sender);
+            if (token == null) return;
+
+            ViewModel.CopiarToken(token);
+        }
+
+        private void TokenContext_Cortar(object sender, RoutedEventArgs e)
+        {
+            var token = ObtenerTokenDelMenu(sender);
+            if (token == null) return;
+
+            ViewModel.CortarToken(token);
+            ViewModel.LineaActiva.ConfirmarEstado();
+        }
+
+        private void TokenContext_Eliminar(object sender, RoutedEventArgs e)
+        {
+            var token = ObtenerTokenDelMenu(sender);
+            if (token == null) return;
+
+            ViewModel.LineaActiva.QuitarToken(token);
+            ViewModel.LineaActiva.ConfirmarEstado();
+            ViewModel.SetStatus($"Token eliminado: {token.Texto}");
+        }
+        private void TokenContext_Pegar(object sender, RoutedEventArgs e)
+        {
+            var token = ObtenerTokenDelMenu(sender);
+            if (token == null) return;
+
+            // Pegar después del token actual.
+            var tokens = ViewModel.LineaActiva.Tokens.ToList();
+            var indice = tokens.IndexOf(token);
+            if (indice < 0) return;
+
+            ViewModel.PegarToken(indice + 1);
+        }
     }
 }

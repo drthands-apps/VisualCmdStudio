@@ -660,6 +660,7 @@ IsEnabled="{Binding EstaEjecutando, Converter={StaticResource InverseBoolConvert
                                                 <ContextMenu>
                                                     <MenuItem Header="📋 Copiar" Command="{x:Null}" Click="CopiarLinea_Click"/>
                                                     <MenuItem Header="✂ Cortar" Click="CortarLinea_Click"/>
+                                                    
                                                     <MenuItem Header="📌 Pegar" Click="PegarLinea_Click"
                       IsEnabled="{Binding PuedePegar}"/>
                                                     <Separator/>
@@ -733,7 +734,21 @@ IsEnabled="{Binding EstaEjecutando, Converter={StaticResource InverseBoolConvert
         MouseLeave="Token_MouseLeave"
         MouseLeftButtonDown="Token_MouseLeftButtonDown"
         PreviewMouseLeftButtonDown="Token_PreviewMouseLeftButtonDown"
-        PreviewMouseMove="Token_PreviewMouseMove">
+        PreviewMouseMove="Token_PreviewMouseMove"
+        ContextMenuOpening="Token_ContextMenuOpening">
+                                                        <Border.ContextMenu>
+                                                            <ContextMenu>
+                                                                <MenuItem Header="✏ Editar token"
+                      Tag="MostrarSiEditable"
+                      Click="TokenContext_Editar"/>
+                                                                <Separator/>
+                                                                <MenuItem Header="📋 Copiar token" Click="TokenContext_Copiar"/>
+                                                                <MenuItem Header="✂ Cortar token" Click="TokenContext_Cortar"/>
+                                                                <MenuItem Header="📌 Pegar token" Click="TokenContext_Pegar"/>
+                                                                <Separator/>
+                                                                <MenuItem Header="🗑 Eliminar token" Click="TokenContext_Eliminar"/>
+                                                            </ContextMenu>
+                                                        </Border.ContextMenu>
                                                         <StackPanel Orientation="Horizontal">
                                                             
                                                             <TextBlock Text="{Binding Icono}"
@@ -816,7 +831,8 @@ IsEnabled="{Binding EstaEjecutando, Converter={StaticResource InverseBoolConvert
          GotFocus="EditorInPlace_GotFocus"                                                 
          PreviewKeyDown="EditorInPlace_PreviewKeyDown"
          LostFocus="EditorInPlace_LostFocus"
-         IsVisibleChanged="EditorInPlace_IsVisibleChanged"/>
+         IsVisibleChanged="EditorInPlace_IsVisibleChanged"
+         ContextMenu="{x:Null}"/>
                                                     </Border>
                                                     <!-- ==== MODO EDICIÓN COMBOBOX (Constante/Comodín/Variable) ==== -->
                                                     <Border x:Name="BlockEdicionCombo"
