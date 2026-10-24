@@ -559,3 +559,17 @@ Razón: tener el código dividido permite implementar el sistema con control.
 Los menús deben diseñarse pensando en que mañana estarán disponibles
 TANTO en el CMD COMO en el constructor. Los handlers deben ser
 reutilizables y no depender del "lugar" donde se invocan.
+### Mejora pendiente: "Insertar comando" desde el constructor (Tier 2/3)
+
+**Problema**: al pulsar "Insertar comando" en el menú contextual del
+constructor, el foco va al buscador del panel izquierdo. Puede no ser
+visible si el usuario ha colapsado ese panel.
+
+**Opciones**:
+- A) Popup con buscador en el propio constructor (contextual).
+- B) Panel de búsqueda desplegable en el PanelBloques (inline).
+- C) Feedback visual al enfocar el buscador izquierdo (parpadeo).
+- D) Command Palette estilo VS Code (Ctrl+Shift+P).
+
+**Recomendación**: Opción A o D. Contextual y visual.
+**Prioridad**: Media. El caso actual es funcional pero no óptimo.

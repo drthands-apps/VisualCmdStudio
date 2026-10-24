@@ -2729,5 +2729,57 @@ namespace VisualCommander
 
             ViewModel.PegarToken(indice + 1);
         }
+        // ============================================================
+        // Menú contextual del área vacía del constructor
+        // ============================================================
+
+        private void ConstructorContext_NuevaLinea(object sender, RoutedEventArgs e)
+        {
+            EmpujarEditorActivoAlModelo();
+            ViewModel.LineaActiva.ConfirmarEstado();
+            ViewModel.CerrarYCrearSiguiente();
+            EnfocarEditorActivo();
+        }
+
+        private void ConstructorContext_PegarToken(object sender, RoutedEventArgs e)
+        {
+            EmpujarEditorActivoAlModelo();
+            ViewModel.PegarToken();
+            EnfocarEditorActivo();
+        }
+
+        private void ConstructorContext_InsertarComando(object sender, RoutedEventArgs e)
+        {
+            // Enfocar el buscador de comandos del panel izquierdo.
+            CuadroBusqueda.Focus();
+            ViewModel.SetStatus("Selecciona un comando del catálogo y pulsa Enter");
+        }
+
+        private void ConstructorContext_InsertarTexto(object sender, RoutedEventArgs e)
+        {
+            EmpujarEditorActivoAlModelo();
+            ViewModel.AgregarTextoVacio();
+            EnfocarEditorInPlace();
+        }
+
+        private void ConstructorContext_InsertarRuta(object sender, RoutedEventArgs e)
+        {
+            var dlg = new Microsoft.Win32.OpenFolderDialog
+            {
+                Title = "Seleccionar carpeta para insertar"
+            };
+
+            if (dlg.ShowDialog() == true)
+            {
+                EmpujarEditorActivoAlModelo();
+                ViewModel.AgregarRuta(dlg.FolderName);
+            }
+        }
+        private void PanelBloques_ContextMenuOpening(object sender, ContextMenuEventArgs e)
+        {
+            // Verificar que el clic NO fue sobre un token.
+            // (Si fue sobre un token, el ContextMenu del token se dispara antes
+            // y este evento no llega aquí.)
+        }
     }
 }

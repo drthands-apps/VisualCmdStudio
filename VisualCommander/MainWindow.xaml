@@ -697,16 +697,31 @@ IsEnabled="{Binding EstaEjecutando, Converter={StaticResource InverseBoolConvert
                                 <ScrollViewer HorizontalScrollBarVisibility="Auto"
                           VerticalScrollBarVisibility="Auto">
                                     <ItemsControl x:Name="PanelBloques"
-                              ItemsSource="{Binding LineaActiva.BloquesVisibles}"
-                              Margin="8"
-                              AllowDrop="True"
-                              Background="Transparent"
-                              DragEnter="PanelBloques_DragEnter"
-                              DragOver="PanelBloques_DragOver"
-                              DragLeave="PanelBloques_DragLeave"
-                              PreviewDrop="PanelBloques_PreviewDrop"
-                              Drop="PanelBloques_Drop">
-                                        <ItemsControl.ItemContainerStyle>
+              ItemsSource="{Binding LineaActiva.BloquesVisibles}"
+              Margin="8"
+              AllowDrop="True"
+              Background="Transparent"
+              DragEnter="PanelBloques_DragEnter"
+              DragOver="PanelBloques_DragOver"
+              DragLeave="PanelBloques_DragLeave"
+              Drop="PanelBloques_Drop"
+              PreviewDrop="PanelBloques_PreviewDrop"
+              ContextMenuOpening="PanelBloques_ContextMenuOpening">
+                                        <ItemsControl.ContextMenu>
+                                            <ContextMenu>
+                                                <MenuItem Header="➕ Nueva línea" Click="ConstructorContext_NuevaLinea"/>
+                                                <Separator/>
+                                                <MenuItem Header="📌 Pegar token" 
+                      Click="ConstructorContext_PegarToken"
+                      IsEnabled="{Binding PuedePegarToken}"/>
+                                                <Separator/>
+                                                <MenuItem Header="➕ Insertar comando..." Click="ConstructorContext_InsertarComando"/>
+                                                <MenuItem Header="➕ Insertar texto..." Click="ConstructorContext_InsertarTexto"/>
+                                                <MenuItem Header="➕ Insertar ruta..." Click="ConstructorContext_InsertarRuta"/>
+                                            </ContextMenu>
+                                        </ItemsControl.ContextMenu>
+                                
+                                    <ItemsControl.ItemContainerStyle>
                                             <Style TargetType="ContentPresenter">
                                                 <Setter Property="HorizontalAlignment" Value="Left"/>
                                             </Style>
