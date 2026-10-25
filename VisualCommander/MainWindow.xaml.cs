@@ -28,10 +28,16 @@ namespace VisualCommander
 
             ViewModel = new MainViewModel();
             DataContext = ViewModel;
+            // Auto-scroll cuando cambia la línea activa.
+            ViewModel.PropertyChanged += (_, e) =>
+            {
+                if (e.PropertyName == nameof(MainViewModel.LineaActiva))
+                    ScrollALineaActiva();
+            };
 
 
-        // Cada vez que cambia la línea activa, forzamos el foco al editor.
-        ViewModel.PropertyChanged += (_, e) =>
+            // Cada vez que cambia la línea activa, forzamos el foco al editor.
+            ViewModel.PropertyChanged += (_, e) =>
             {
                 if (e.PropertyName == nameof(MainViewModel.LineaActiva))
                 {
@@ -2780,6 +2786,34 @@ namespace VisualCommander
             // Verificar que el clic NO fue sobre un token.
             // (Si fue sobre un token, el ContextMenu del token se dispara antes
             // y este evento no llega aquí.)
+        }
+        private void ScrollALineaActiva()
+        {
+            if (ViewModel.LineaActiva is null) return;
+
+            var itemsControl = PanelLineas;
+            if (itemsControl is null) return;
+
+            Dispatcher.BeginInvoke(new Action(() =>
+            {
+                var container = itemsControl.ItemContainerGenerator
+                    .ContainerFromItem(ViewModel.LineaActiva) as FrameworkElement;
+
+                container?.BringIntoView();
+            }), System.Windows.Threading.DispatcherPriority.Background);
+        }
+        private void EliminarLinea_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+        {
+            if (sender is not FrameworkElement fe) return;
+            if (fe.DataContext is not LineaComando linea) return;
+
+            if (!ReferenceEquals(ViewModel.LineaActiva, linea))
+                ViewModel.LineaActiva = linea;
+
+            ViewModel.EliminarLineaActiva();
+            EnfocarEditorActivo();
+
+            e.Handled = true;
         }
     }
 }

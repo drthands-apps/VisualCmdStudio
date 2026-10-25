@@ -1631,9 +1631,12 @@ namespace VisualCommander.ViewModels
                 SetStatus(value
                     ? "Modo silencioso activado"
                     : "Modo silencioso desactivado");
+                
             }
-
+            
         }
+       
+
         /// <summary>
         /// Guarda la sesión actual en el archivo indicado.
         /// Devuelve true si se guardó correctamente.

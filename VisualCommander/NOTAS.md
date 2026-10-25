@@ -573,3 +573,57 @@ visible si el usuario ha colapsado ese panel.
 
 **Recomendación**: Opción A o D. Contextual y visual.
 **Prioridad**: Media. El caso actual es funcional pero no óptimo.
+### Tarea E — Indicador visual del modo silencioso (2026-10-25)
+
+**Implementado**:
+- StatusBarItem con "🔇 Silencioso" en naranja.
+- Visible solo si `ModoSilencioso == true` (DataTrigger).
+- ToolTip explicativo.
+- Persiste entre sesiones.
+
+**Cambio de título**: DESCARTADO.
+Motivo: la barra de estado es suficiente. El título ya se usa para
+mostrar el nombre del archivo abierto. Añadir un sufijo puede
+saturar el título y duplicar la señal.
+
+### Tarea D — Auto-scroll al editor (2026-10-25)
+
+**Implementado**:
+- Suscripción a `PropertyChanged` de `LineaActiva` en `MainWindow`.
+- Método `ScrollALineaActiva` que:
+  - Busca el contenedor del `ItemsControl` (`PanelLineas`).
+  - Llama a `BringIntoView()` con `DispatcherPriority.Background`.
+- Se dispara al cambiar `LineaActiva`.
+
+**Comportamiento verificado**:
+- Al crear una nueva línea (fuera de la vista) → scroll automático.
+- Al cambiar de línea activa (con scroll manual) → scroll automático.
+- Al ejecutar el plan (la activa cambia en cada iteración) → scroll sigue.
+- Al escribir en la línea activa fuera de la vista → scroll la trae.
+
+**Requisito**: el `ItemsControl` de líneas debe tener `x:Name="PanelLineas"`
+y estar dentro de un `ScrollViewer` con `VerticalScrollBarVisibility="Auto"`.
+
+**Estado**: completada.
+
+### Tarea C — Botón ✕ por línea cerrada (2026-10-25)
+
+**Implementado**:
+- Botón ✕ en cada línea cerrada (visible al hover).
+- Handler `EliminarLinea_PreviewMouseLeftButtonDown` (sin parpadeo).
+- `EliminarLinea_Click` se mantiene para la botonera superior.
+
+**Sobre el ContextMenu del TextBox**:
+- `TextoEdicion` (editor de líneas): **mantiene el binding**
+  `ContextMenu="{Binding ContextMenu, ElementName=LineaContenedor}"`.
+  Esto permite que el clic derecho sobre el comando muestre el menú
+  del `Border` (9 opciones en activa, 8 en prompt).
+- `EditorInPlace` (editor de tokens): **`ContextMenu="{x:Null}"`**
+  (ya estaba así desde ayer).
+
+**Lección**: en WPF, el `ContextMenu` en un `TextBox` puede bindearse al
+del padre con `ElementName`, y funciona si el nombre está en el mismo
+`DataTemplate`. **NO poner `{x:Null}`** si quieres que el clic derecho
+muestre el menú del padre.
+
+**Estado**: completada.

@@ -314,8 +314,9 @@ IsEnabled="{Binding EstaEjecutando, Converter={StaticResource InverseBoolConvert
         <!-- Barra de estado -->
         <StatusBar DockPanel.Dock="Bottom">
            
-            
-           
+
+
+
             <StatusBarItem>
                 <TextBlock x:Name="AvisoAdmin"
                Text="🛡 La línea activa requiere administrador"
@@ -341,12 +342,33 @@ IsEnabled="{Binding EstaEjecutando, Converter={StaticResource InverseBoolConvert
             <StatusBarItem>
                 <TextBlock x:Name="StatusModo" Text="Modo: Comando a comando"/>
             </StatusBarItem>
-            <StatusBarItem HorizontalAlignment="Right">
-                <TextBlock Text="Visual CMD Studio · C# · WPF · .NET 10"/>
-            </StatusBarItem>
-        </StatusBar>
+            <Separator/>
 
-        <!-- Contenedor: contenido principal (arriba) + panel inferior (abajo) -->
+                <!-- NUEVO: indicador de modo silencioso -->
+                <StatusBarItem>
+                    <TextBlock Text="🔇 Silencioso"
+                   Foreground="#FFE67E22"
+                   FontWeight="Bold"
+                   ToolTip="Modo silencioso activo (silencia avisos de edición)">
+                        <TextBlock.Style>
+                            <Style TargetType="TextBlock">
+                                <Setter Property="Visibility" Value="Collapsed"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding ModoSilencioso}" Value="True">
+                                        <Setter Property="Visibility" Value="Visible"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </TextBlock.Style>
+                    </TextBlock>
+                </StatusBarItem>
+
+                <StatusBarItem HorizontalAlignment="Right">
+                    <TextBlock Text="Visual CMD Studio · C# · WPF · .NET 10"/>
+                </StatusBarItem>
+            </StatusBar>
+
+            <!-- Contenedor: contenido principal (arriba) + panel inferior (abajo) -->
         <Grid>
             <Grid.RowDefinitions>
                 <RowDefinition Height="*"   MinHeight="200"/>
@@ -1130,6 +1152,7 @@ IsEnabled="{Binding EstaEjecutando, Converter={StaticResource InverseBoolConvert
                                                                     <Grid.ColumnDefinitions>
                                                                         <ColumnDefinition Width="Auto"/>
                                                                         <ColumnDefinition Width="*"/>
+                                                                        <ColumnDefinition Width="Auto"/>
                                                                     </Grid.ColumnDefinitions>
 
                                                                     <!-- Indicador de estado -->
@@ -1199,6 +1222,26 @@ IsEnabled="{Binding EstaEjecutando, Converter={StaticResource InverseBoolConvert
                            Foreground="{StaticResource CmdTexto}"
                            TextWrapping="Wrap"
                            Margin="0,2,0,2"/>
+                                                                    
+                                                                    <!-- X para elimiar la linea -->
+
+                                                                    <Button x:Name="BtnEliminarLinea"
+            Grid.Column="2"
+            Content="✕"
+            FontSize="11"
+            Width="20" Height="20"
+            Margin="6,0,0,0"
+            Padding="0"
+            VerticalAlignment="Center"
+            Visibility="Collapsed"
+            ToolTip="Eliminar esta línea"
+            Background="Transparent"
+            BorderThickness="0"
+            Foreground="#FF888888"
+            Cursor="Hand"
+           
+            PreviewMouseLeftButtonDown="EliminarLinea_PreviewMouseLeftButtonDown"/>
+
                                                                 </Grid>
                                                             </Border>
 
@@ -1225,6 +1268,13 @@ IsEnabled="{Binding EstaEjecutando, Converter={StaticResource InverseBoolConvert
                                                                 <Setter TargetName="BordeSuperior" Property="Visibility" Value="Visible"/>
                                                                 <Setter TargetName="BordeInferior" Property="Visibility" Value="Visible"/>
                                                             </DataTrigger>
+                                                            <MultiDataTrigger>
+                                                                <MultiDataTrigger.Conditions>
+                                                                    <Condition Binding="{Binding IsMouseOver, ElementName=LineaContenedor}" Value="True"/>
+                                                                    <Condition Binding="{Binding EsActiva}" Value="False"/>
+                                                                </MultiDataTrigger.Conditions>
+                                                                <Setter TargetName="BtnEliminarLinea" Property="Visibility" Value="Visible"/>
+                                                            </MultiDataTrigger>
                                                         </DataTemplate.Triggers>
                                                     </DataTemplate>
                                                 </ItemsControl.ItemTemplate>
