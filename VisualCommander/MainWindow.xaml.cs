@@ -772,7 +772,7 @@ namespace VisualCommander
             // Ctrl+Enter → cerrar y crear nueva línea
             if (Keyboard.Modifiers == ModifierKeys.Control && e.Key == Key.Enter)
             {
-                ViewModel.CerrarYCrearSiguiente();
+                EmpujarYCrearNuevaLinea();
                 e.Handled = true;
                 return;
             }
@@ -830,6 +830,13 @@ namespace VisualCommander
                 e.Handled = true;
                 return;
             }
+        }
+        private void EmpujarYCrearNuevaLinea()
+        {
+            EmpujarEditorActivoAlModelo();
+            ViewModel.LineaActiva.ConfirmarEstado();
+            ViewModel.CerrarYCrearSiguiente();
+            EnfocarEditorActivo();
         }
         private void MoverArriba_Click(object sender, RoutedEventArgs e)
         {

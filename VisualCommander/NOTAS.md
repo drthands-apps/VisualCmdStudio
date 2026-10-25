@@ -627,3 +627,48 @@ del padre con `ElementName`, y funciona si el nombre está en el mismo
 muestre el menú del padre.
 
 **Estado**: completada.
+### Tarea B — Modo aprendiz vs experto (Nivel 1, 2026-10-25)
+
+**Implementado**:
+- Enum `ModoTrabajo` (Aprendiz / Experto) en `Configuracion.cs`.
+- `MainViewModel.ModoTrabajo` persistente.
+- Radio buttons en el panel izquierdo (reemplazan los 4 placeholders).
+- Check "Modo silencioso" en el panel izquierdo.
+- El check se deshabilita automáticamente en modo aprendiz.
+- Bloqueo defensivo: si alguien intenta activar el silencioso en
+  aprendiz, se rechaza.
+- Al cambiar a aprendiz con silencioso activo, se desactiva.
+- Sincronización completa: panel ↔ DialogoOpciones ↔ menú Herramientas.
+
+**Comportamiento**:
+- **Aprendiz**: modo silencioso no disponible, siempre avisa al cerrar
+  con dummies requeridos, más mensajes descriptivos (pendiente Nivel 2).
+- **Experto**: modo silencioso disponible, avisos solo si no está
+  silencioso.
+
+**Diseño**:
+- Modo por defecto: Aprendiz (usuario nuevo empieza con ayuda).
+- Cambio de modo persistente entre sesiones.
+
+### Nivel 2 (futuro)
+- [ ] Mensajes de estado adaptados en todos los sitios.
+- [ ] Avisos "¿Sabías que...?" en modo aprendiz.
+- [ ] Tutorial de primer arranque.
+- [ ] Modo "tour" guiado.
+- [ ] Ocultar opciones avanzadas en aprendiz.
+
+### Fix: Ctrl+Enter no creaba nueva línea con texto pendiente (2026-10-25)
+
+**Síntoma**: al pulsar Ctrl+Enter con texto en el TextBox (sin
+espacio/Enter previo), la nueva línea no se creaba o se creaba sin
+la última palabra.
+
+**Causa**: se llamaba directamente a `ViewModel.CerrarYCrearSiguiente()`
+sin empujar primero el texto del TextBox al modelo.
+
+**Fix**: usar `NuevaLinea_Click` (que ya hace el empujón) o crear un
+método auxiliar `EmpujarYCrearNuevaLinea()` sin parámetros.
+
+**Lección**: cualquier acción sobre la línea activa debe empujar el
+texto del TextBox al modelo primero. Es el patrón establecido en el
+proyecto.
