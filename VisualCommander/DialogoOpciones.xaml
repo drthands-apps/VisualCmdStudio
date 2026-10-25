@@ -36,9 +36,21 @@
                     <TextBlock Text="Opciones generales de la aplicación."
                                Foreground="#FF666666"
                                Margin="0,0,0,16"/>
+                    
+
+                    <TextBlock Text="Modo de trabajo:" FontWeight="SemiBold" Margin="0,16,0,6"/>
+                    <RadioButton x:Name="RbAprendiz" Content="Aprendiz (más ayuda)"
+             GroupName="ModoTrabajoDialogo" Margin="0,2"
+             Checked="RbAprendiz_Checked"/>
+                    <RadioButton x:Name="RbExperto" Content="Experto (menos avisos)"
+             GroupName="ModoTrabajoDialogo" Margin="0,2"
+             Checked="RbExperto_Checked"/>
+
                     <CheckBox x:Name="ChkModoSilencioso"
-                              Content="Modo silencioso (silencia avisos durante la edición)"
-                              Margin="0,4"/>
+          Content="Modo silencioso (silencia avisos durante la edición)"
+          Margin="0,8,0,4"
+          IsEnabled="{Binding EsModoExperto}"/>
+
                     <CheckBox x:Name="ChkGuardarConfig"
                               Content="Guardar configuración al cerrar"
                               IsChecked="True"

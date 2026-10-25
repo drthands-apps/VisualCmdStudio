@@ -28,12 +28,22 @@ namespace VisualCommander
 
             ViewModel = new MainViewModel();
             DataContext = ViewModel;
-            // Auto-scroll cuando cambia la línea activa.
+            SincronizarRadioButtonsModo();
+
             ViewModel.PropertyChanged += (_, e) =>
             {
+                if (e.PropertyName == nameof(MainViewModel.ModoTrabajo) ||
+                    e.PropertyName == nameof(MainViewModel.EsModoAprendiz) ||
+                    e.PropertyName == nameof(MainViewModel.EsModoExperto))
+                {
+                    SincronizarRadioButtonsModo();
+                }
+                // Auto-scroll cuando cambia la línea activa.
                 if (e.PropertyName == nameof(MainViewModel.LineaActiva))
                     ScrollALineaActiva();
             };
+           
+            
 
 
             // Cada vez que cambia la línea activa, forzamos el foco al editor.
@@ -2815,5 +2825,26 @@ namespace VisualCommander
 
             e.Handled = true;
         }
+        private void SincronizarRadioButtonsModo()
+        {
+            if (ViewModel == null) return;
+
+            if (ViewModel.EsModoAprendiz)
+                RbModoAprendiz.IsChecked = true;
+            else
+                RbModoExperto.IsChecked = true;
+        }
+        private void RbModoAprendiz_Checked(object sender, RoutedEventArgs e)
+        {
+            if (ViewModel != null && ViewModel.EsModoExperto)
+                ViewModel.ModoTrabajo = ModoTrabajo.Aprendiz;
+        }
+
+        private void RbModoExperto_Checked(object sender, RoutedEventArgs e)
+        {
+            if (ViewModel != null && ViewModel.EsModoAprendiz)
+                ViewModel.ModoTrabajo = ModoTrabajo.Experto;
+        }
+
     }
 }

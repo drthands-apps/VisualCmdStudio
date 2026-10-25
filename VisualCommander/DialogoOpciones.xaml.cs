@@ -1,4 +1,5 @@
 ﻿using System.Windows;
+using VisualCommander.Models;
 using VisualCommander.ViewModels;
 
 namespace VisualCommander
@@ -11,18 +12,32 @@ namespace VisualCommander
         {
             InitializeComponent();
             _viewModel = viewModel;
+            DataContext = viewModel;
 
-            // Cargar estado actual.
+            // Cargar estado.
             ChkModoSilencioso.IsChecked = _viewModel.ModoSilencioso;
+
+            if (_viewModel.EsModoAprendiz)
+                RbAprendiz.IsChecked = true;
+            else
+                RbExperto.IsChecked = true;
+        }
+
+        private void RbAprendiz_Checked(object sender, RoutedEventArgs e)
+        {
+            if (_viewModel != null && _viewModel.EsModoExperto)
+                _viewModel.ModoTrabajo = ModoTrabajo.Aprendiz;
+        }
+
+        private void RbExperto_Checked(object sender, RoutedEventArgs e)
+        {
+            if (_viewModel != null && _viewModel.EsModoAprendiz)
+                _viewModel.ModoTrabajo = ModoTrabajo.Experto;
         }
 
         private void Aceptar_Click(object sender, RoutedEventArgs e)
         {
-            // Aplicar cambios.
             _viewModel.ModoSilencioso = ChkModoSilencioso.IsChecked == true;
-
-            // TODO futuro: aplicar codificación por defecto, idioma, etc.
-
             DialogResult = true;
             Close();
         }

@@ -1599,11 +1599,12 @@ namespace VisualCommander.ViewModels
             if (!linea.TieneDummiesRequeridos)
                 return true;
 
-            // Modo silencioso: no preguntamos, cerramos directamente.
-            if (ModoSilencioso)
+            // En modo aprendiz, siempre avisa.
+            // En modo experto, solo si no está el modo silencioso.
+            if (EsModoExperto && ModoSilencioso)
                 return true;
 
-            // Modo normal: diálogo de confirmación.
+            // Mostrar diálogo.
             var dialogo = new ConfirmarCierreDialog(linea.DummiesRequeridos)
             {
                 Owner = System.Windows.Application.Current?.MainWindow
@@ -1612,29 +1613,7 @@ namespace VisualCommander.ViewModels
             var resultado = dialogo.ShowDialog();
             return resultado == true && dialogo.CerrarIgualmente;
         }
-        /// <summary>
-        /// Modo silencioso: silencia avisos durante la construcción/edición.
-        /// No afecta a los avisos antes de ejecutar.
-        /// </summary>
-        public bool ModoSilencioso
-        {
-            get => _configuracion.ModoSilencioso;
-            set
-            {
-                if (_configuracion.ModoSilencioso == value) return;
-                _configuracion.ModoSilencioso = value;
-                OnPropertyChanged();
-
-                // Guardar en disco inmediatamente.
-                Services.ConfiguracionService.Guardar(_configuracion);
-
-                SetStatus(value
-                    ? "Modo silencioso activado"
-                    : "Modo silencioso desactivado");
-                
-            }
-            
-        }
+        
        
 
         /// <summary>
@@ -2025,6 +2004,60 @@ namespace VisualCommander.ViewModels
                     ? new List<string>(original.ValoresDesplegable)
                     : null
             };
+        }
+        public ModoTrabajo ModoTrabajo
+        {
+            get => _configuracion.ModoTrabajo;
+            set
+            {
+                if (_configuracion.ModoTrabajo == value) return;
+                _configuracion.ModoTrabajo = value;
+                OnPropertyChanged();
+                OnPropertyChanged(nameof(EsModoAprendiz));
+                OnPropertyChanged(nameof(EsModoExperto));
+
+                // Si cambiamos a aprendiz y el modo silencioso estaba activo, desactivarlo.
+                if (value == ModoTrabajo.Aprendiz && ModoSilencioso)
+                {
+                    _configuracion.ModoSilencioso = false;
+                    OnPropertyChanged(nameof(ModoSilencioso));
+                }
+
+                ConfiguracionService.Guardar(_configuracion);
+
+                SetStatus(value == ModoTrabajo.Aprendiz
+                    ? "Modo aprendiz activado"
+                    : "Modo experto activado");
+            }
+        }
+
+        public bool EsModoAprendiz => ModoTrabajo == ModoTrabajo.Aprendiz;
+        public bool EsModoExperto => ModoTrabajo == ModoTrabajo.Experto;
+
+        public bool ModoSilencioso
+        {
+            get => _configuracion.ModoSilencioso;
+            set
+            {
+                if (_configuracion.ModoSilencioso == value) return;
+
+                // En modo aprendiz, no permitir activar el modo silencioso.
+                if (value && EsModoAprendiz)
+                {
+                    SetStatus("El modo silencioso no está disponible en modo aprendiz");
+                    OnPropertyChanged();  // Para que el binding vuelva a false
+                    return;
+                }
+
+                _configuracion.ModoSilencioso = value;
+                OnPropertyChanged();
+
+                ConfiguracionService.Guardar(_configuracion);
+
+                SetStatus(value
+                    ? "Modo silencioso activado"
+                    : "Modo silencioso desactivado");
+            }
         }
 
     }

@@ -254,9 +254,10 @@
                 <MenuItem Header="Recargar catálogo" Click="RecargarCatalogo_Click"/>
                 <Separator/>
                 <MenuItem Header="Modo silencioso"
-              IsCheckable="True"
-              IsChecked="{Binding ModoSilencioso, Mode=TwoWay}"
-              ToolTip="Silencia los avisos durante la construcción y edición. No afecta a los avisos antes de ejecutar."/>
+          IsCheckable="True"
+          IsChecked="{Binding ModoSilencioso, Mode=TwoWay}"
+          IsEnabled="{Binding EsModoExperto}"
+          ToolTip="Silencia los avisos durante la construcción y edición. Disponible solo en modo experto."/>
                 <Separator/>
                 <MenuItem Header="Validar línea actual" InputGestureText="F6" Click="ValidarLinea_Click"/>
                 <MenuItem Header="Ejecutar línea" InputGestureText="F5" Click="Ejecutar_Click"/>
@@ -416,19 +417,27 @@ IsEnabled="{Binding EstaEjecutando, Converter={StaticResource InverseBoolConvert
                         <Border Grid.Row="0" Style="{StaticResource Pane}" Margin="0,0,0,3">
                             <StackPanel>
                                 <TextBlock Text="MODO DE TRABAJO" Style="{StaticResource SectionHeader}"/>
-                                <RadioButton x:Name="ModoComandoUnico"
-                         Content="Comando a comando"
-                         IsChecked="True"
-                         Margin="10,4,8,2"/>
-                                <RadioButton x:Name="ModoBatch"
-                         Content="Generar archivo batch"
-                         Margin="10,2,8,2"/>
-                                <RadioButton x:Name="ModoPowerShell"
-                         Content="Script PowerShell"
-                         Margin="10,2,8,2"/>
-                                <RadioButton x:Name="ModoAprendizaje"
-                         Content="Modo aprendizaje"
-                         Margin="10,2,8,6"/>
+
+                                <RadioButton x:Name="RbModoAprendiz"
+                     Content="Aprendiz (más ayuda)"
+                     GroupName="ModoTrabajoGlobal"
+                     Margin="10,4,8,2"
+                     Checked="RbModoAprendiz_Checked"/>
+
+                                <RadioButton x:Name="RbModoExperto"
+                     Content="Experto (menos avisos)"
+                     GroupName="ModoTrabajoGlobal"
+                     Margin="10,2,8,6"
+                     Checked="RbModoExperto_Checked"/>
+
+                                <Separator Margin="10,2"/>
+
+                                <CheckBox x:Name="ChkModoSilenciosoPanel"
+                  Content="Modo silencioso"
+                  Margin="10,2,8,6"
+                  IsEnabled="{Binding EsModoExperto}"
+                  IsChecked="{Binding ModoSilencioso, Mode=TwoWay}"
+                  ToolTip="Silencia los avisos durante la edición. Solo en modo experto."/>
                             </StackPanel>
                         </Border>
 
