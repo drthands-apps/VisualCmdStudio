@@ -672,3 +672,22 @@ método auxiliar `EmpujarYCrearNuevaLinea()` sin parámetros.
 **Lección**: cualquier acción sobre la línea activa debe empujar el
 texto del TextBox al modelo primero. Es el patrón establecido en el
 proyecto.
+### Tarea 13 — Modo aprendiz Nivel 2 (2026-10-26)
+
+**Implementado**:
+- `SetStatusSegunModo(aprendiz, experto)` en MainViewModel.
+- Mensajes adaptados en los 10+ sitios clave:
+  · Agregar comando, ejecutar línea/plan, guardar, exportar,
+    limpiar, eliminar token, crear/copiar/cortar/pegar/duplicar línea.
+- Modo aprendiz: mensajes descriptivos con instrucciones.
+- Modo experto: mensajes concisos.
+
+**Fix**: plan vacío
+- `EjecutarPlanAsync` detecta si todas las líneas están en blanco.
+- Mensaje claro en vez de "0 OK, 0 errores".
+
+**Pendiente (13.3 y 13.4)**:
+- [ ] Avisos "¿Sabías que...?" en modo aprendiz.
+- [ ] Tutorial de primer arranque.
+
+**Estado**: Nivel 2 básico completado.

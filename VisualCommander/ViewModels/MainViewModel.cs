@@ -347,8 +347,6 @@ namespace VisualCommander.ViewModels
 
         // ==== Gestión de líneas ====
 
-        // ==== Gestión de líneas ====
-
         /// <summary>
         /// Cierra la línea activa y crea una nueva justo después.
         /// Si la activa estaba vacía, simplemente se reutiliza.
@@ -391,7 +389,9 @@ namespace VisualCommander.ViewModels
             if (nuevoDir != null)
                 SetStatus($"Nueva línea en {nuevoDir}");
             else
-                SetStatus($"Nueva línea en {nueva.DirectorioTrabajo}");
+                SetStatusSegunModo(
+    $"Nueva línea creada en {nueva.DirectorioTrabajo}. Puedes empezar a escribir o arrastrar comandos del catálogo.",
+    $"Nueva línea en {nueva.DirectorioTrabajo}");
             ConfigurarNuevaLinea(nueva);
         }
 
@@ -538,7 +538,9 @@ namespace VisualCommander.ViewModels
                 RequiereAdmin = cmd.RequiereAdmin
             });
             RegistrarUso(cmd);
-            SetStatus($"Añadido: {cmd.Nombre}");
+            SetStatusSegunModo(
+        $"Añadido: {cmd.Nombre}. Arrástralo si quieres insertarlo en otra posición, o haz doble clic para editarlo.",
+        $"Añadido: {cmd.Nombre}");
         }
         /// <summary>
         /// Inserta un texto (palabra, ruta, comando) en la posición indicada
@@ -573,13 +575,17 @@ namespace VisualCommander.ViewModels
         public void EliminarToken(Token token)
         {
             LineaActiva.QuitarToken(token);
-            SetStatus($"Eliminado: {token.Texto}");
+            SetStatusSegunModo(
+    $"Eliminado: {token.Texto}. Puedes deshacer con Ctrl+Z.",
+    $"Eliminado: {token.Texto}");
         }
 
         public void LimpiarTokens()
         {
             LineaActiva.Limpiar();
-            SetStatus("Línea limpiada");
+            SetStatusSegunModo(
+    "Línea limpiada. Puedes empezar de nuevo arrastrando comandos del catálogo.",
+    "Línea limpiada");
         }
 
         // ==== Helpers ====
@@ -594,6 +600,15 @@ namespace VisualCommander.ViewModels
             return c.Nombre.Contains(q, System.StringComparison.OrdinalIgnoreCase)
                 || c.Resumen.Contains(q, System.StringComparison.OrdinalIgnoreCase)
                 || c.Familia.Contains(q, System.StringComparison.OrdinalIgnoreCase);
+        }
+        /// <summary>
+        /// Establece el estado según el modo de trabajo.
+        /// En modo aprendiz, muestra el mensaje más descriptivo.
+        /// En modo experto, muestra el mensaje más conciso.
+        /// </summary>
+        private void SetStatusSegunModo(string mensajeAprendiz, string mensajeExperto)
+        {
+            SetStatus(EsModoAprendiz ? mensajeAprendiz : mensajeExperto);
         }
 
         private void CargarComandos()
@@ -739,7 +754,9 @@ namespace VisualCommander.ViewModels
             var comando = LineaActiva.Texto;
             if (string.IsNullOrWhiteSpace(comando))
             {
-                SetStatus("Nada que ejecutar");
+                SetStatusSegunModo(
+    "Nada que ejecutar. La línea activa está vacía. Añade un comando del catálogo o escribe algo.",
+    "Nada que ejecutar");
                 return;
             }
 
@@ -768,7 +785,9 @@ namespace VisualCommander.ViewModels
 
                 if (dialogo.ShowDialog() != true)
                 {
-                    SetStatus("Ejecución cancelada por el usuario");
+                    SetStatusSegunModo(
+    "Ejecución cancelada. No se ha ejecutado nada.",
+    "Ejecución cancelada");
                     return;
                 }
 
@@ -776,7 +795,9 @@ namespace VisualCommander.ViewModels
                 {
                     _lineasNoPreguntar.Add(LineaActiva);
 
-                    SetStatus("No se volverá a preguntar para esta línea");
+                    SetStatusSegunModo(
+    "No se volverá a preguntar para esta línea en esta sesión. Si cierras y abres la app, volverá a preguntar.",
+    "No volver a preguntar (esta línea, esta sesión)");
 
                 }
             }
@@ -800,7 +821,9 @@ namespace VisualCommander.ViewModels
 
                 AgregarSalida($"ERROR: {ex.Message}");
                 MensajeCmd = "ERROR AL EJECUTAR";
-                SetStatus("Error");
+                SetStatusSegunModo(
+    $"Error al ejecutar. Revisa la pestaña 'Salida' para más detalles: {ex.Message}",
+    "Error al ejecutar");
             }
             finally
             {
@@ -818,21 +841,34 @@ namespace VisualCommander.ViewModels
         {
 
             if (EstaEjecutando) return;
-
             _detenerSolicitado = false;
             _ignorarSalida = false;
+
             if (Lineas.Count == 0)
             {
-                SetStatus("No hay líneas que ejecutar");
+                SetStatusSegunModo(
+    "No hay líneas que ejecutar. Inserte algunas lineas para ejecutar.",
+    "No hay líneas que ejecutar");
+                return;
+          
+            }
+
+            // NUEVO: comprobar si hay al menos una línea con contenido.
+            var lineasConContenido = Lineas
+                .Where(l => !string.IsNullOrWhiteSpace(l.Texto))
+                .ToList();
+
+            if (lineasConContenido.Count == 0)
+            {
+                SetStatusSegunModo(
+                    "El plan está vacío. Todas las líneas están en blanco. Añade comandos a alguna línea antes de ejecutar.",
+                    "Plan vacío: no hay comandos que ejecutar");
                 return;
             }
 
             // Resetear estados previos.
             foreach (var l in Lineas)
                 l.ResetearEstado();
-
-
-
 
             // Recoger líneas incompletas (con dummies requeridos)
             // Recoger líneas peligrosas
@@ -935,7 +971,9 @@ namespace VisualCommander.ViewModels
                         {
                             AgregarSalida("");
                             AgregarSalida("⛔ Ejecución detenida por error.");
-                            SetStatus($"Error en línea {i + 1}. Ejecución detenida.");
+                            SetStatusSegunModo(
+        $"Error en línea {i + 1}. Ejecución detenida. Verifique la pestaña de 'salida'",
+        $"Ejecución detenida por error en la linea {i + 1}");
                             break;
                         }
                     }
@@ -946,7 +984,10 @@ namespace VisualCommander.ViewModels
             catch (Exception ex)
             {
                 AgregarSalida($"ERROR: {ex.Message}");
-                SetStatus("Error al ejecutar el plan");
+                SetStatusSegunModo(
+   $"Error al ejecutar el plan. Revisa la pestaña 'Salida' para más detalles: {ex.Message}",
+   "Error al ejecutar el plan.");
+                
             }
             finally
             {
@@ -960,7 +1001,9 @@ namespace VisualCommander.ViewModels
                 AgregarSalida($"║  RESULTADO: {exitos} OK · {errores} error(es)");
                 AgregarSalida("╚══════════════════════════════════════════════════════╝");
 
-                SetStatus($"Plan terminado: {exitos} OK, {errores} con error");
+                SetStatusSegunModo(
+    $"Plan terminado: {exitos} línea(s) OK, {errores} con error. Revisa la pestaña 'Salida' para el detalle de cada línea.",
+    $"Plan terminado: {exitos} OK, {errores} con error");
             }
         }
 
@@ -1028,9 +1071,14 @@ namespace VisualCommander.ViewModels
                 ? "EJECUTADO (código 0)"
                 : $"EJECUTADO (código {proceso.ExitCode})";
 
-            SetStatus(proceso.ExitCode == 0
-                ? "Comando ejecutado correctamente"
-                : $"El comando devolvió código {proceso.ExitCode}");
+
+            SetStatusSegunModo(
+    proceso.ExitCode == 0
+        ? "Comando ejecutado correctamente. Revisa la pestaña 'Salida' para ver el resultado."
+        : $"El comando devolvió código {proceso.ExitCode}. Revisa la pestaña 'Salida' para más detalles.",
+    proceso.ExitCode == 0
+        ? "Comando ejecutado correctamente"
+        : $"El comando devolvió código {proceso.ExitCode}");
         }
 
         /// <summary>
@@ -1081,14 +1129,18 @@ namespace VisualCommander.ViewModels
                 {
                     AgregarSalida("⚠ Elevación cancelada por el usuario.");
                     MensajeCmd = "CANCELADO";
-                    SetStatus("Elevación cancelada");
+                    SetStatusSegunModo(
+        "Elevación cancelada por el usuario.",
+        "Elevación cancelada");
                     return;
                 }
                 catch (System.ComponentModel.Win32Exception ex)
                 {
                     AgregarSalida($"⚠ Error al elevar: código={ex.NativeErrorCode}, {ex.Message}");
                     MensajeCmd = "ERROR";
-                    SetStatus("Error al elevar");
+                    SetStatusSegunModo(
+        "Error al elevar.Por favor verificar la pestaña 'Salida' para mas información.",
+        "Error al elevar");
                     return;
                 }
 
@@ -1123,9 +1175,13 @@ namespace VisualCommander.ViewModels
                     ? "EJECUTADO CON ADMIN (código 0)"
                     : $"EJECUTADO CON ADMIN (código {proceso.ExitCode})";
 
-                SetStatus(proceso.ExitCode == 0
-                    ? "Comando ejecutado con admin correctamente"
-                    : $"El comando elevado devolvió código {proceso.ExitCode}");
+                SetStatusSegunModo(
+    proceso.ExitCode == 0
+        ? "Comando ejecutado correctamente. Revisa la pestaña 'Salida' para ver el resultado."
+        : $"El comando devolvió código {proceso.ExitCode}. Revisa la pestaña 'Salida' para más detalles.",
+    proceso.ExitCode == 0
+        ? "Comando ejecutado correctamente"
+        : $"El comando devolvió código {proceso.ExitCode}");
             }
             finally
             {
@@ -1409,7 +1465,9 @@ namespace VisualCommander.ViewModels
             try
             {
                 System.Windows.Clipboard.SetText(LineaActiva.Texto);
-                SetStatus($"Línea {LineaActiva.NumeroLinea} copiada");
+                SetStatusSegunModo(
+    $"Línea {LineaActiva.NumeroLinea} copiada. Puedes pegarla con Ctrl+V o 'Editar → Pegar'.",
+    $"Línea {LineaActiva.NumeroLinea} copiada");
             }
             catch
             {
@@ -1429,7 +1487,9 @@ namespace VisualCommander.ViewModels
             if (Lineas.Count == 1)
             {
                 LineaActiva.Limpiar();
-                SetStatus("Línea vaciada (no se puede eliminar la única línea)");
+                SetStatusSegunModo(
+    "Línea cortada. Puedes pegarla con Ctrl+V.",
+    "Línea cortada");
                 return;
             }
 
@@ -1498,7 +1558,9 @@ namespace VisualCommander.ViewModels
                 if (pegadaVacia)
                     SetStatus("Nada que pegar (contenido vacío)");
                 else
-                    SetStatus($"Pegado en línea {LineaActiva.NumeroLinea}");
+                    SetStatusSegunModo(
+    $"Pegado como línea {aPegar.NumeroLinea}. Puedes editarla o moverla con las flechas ▲▼.",
+    $"Pegado como línea {aPegar.NumeroLinea}");
                 return;
             }
 
@@ -1527,7 +1589,9 @@ namespace VisualCommander.ViewModels
             Lineas.Insert(idx + 1, copia);
             LineaActiva = copia;
             ConfigurarNuevaLinea(copia);
-            SetStatus($"Línea duplicada como {copia.NumeroLinea}");
+            SetStatusSegunModo(
+    $"Línea duplicada como {copia.NumeroLinea}. Puedes modificarla sin afectar a la original.",
+    $"Línea duplicada como {copia.NumeroLinea}");
         }
         // ==== Reordenación ====
 
@@ -1574,7 +1638,9 @@ namespace VisualCommander.ViewModels
                 var contenido = ExportadorBat.GenerarContenido(Lineas, opciones);
                 ExportadorBat.GuardarEnArchivo(ruta, contenido, opciones);
 
-                SetStatus($"Exportado a: {ruta}");
+                SetStatusSegunModo(
+    $"Exportado a: {ruta}. Puedes ejecutarlo con doble clic o añadirlo a una tarea programada.",
+    $"Exportado a: {ruta}");
             }
             catch (Exception ex)
             {
@@ -1659,7 +1725,9 @@ namespace VisualCommander.ViewModels
 
                 SesionService.Guardar(ruta, sesion);
 
-                SetStatus($"Sesión guardada: {ruta}");
+                SetStatusSegunModo(
+     $"Sesión guardada en: {ruta}. Puedes recuperarla con 'Archivo → Abrir sesión' (Ctrl+O).",
+     $"Sesión guardada: {ruta}");
                 return true;
             }
             catch (Exception ex)
@@ -1759,7 +1827,9 @@ namespace VisualCommander.ViewModels
                 var contenido = ExportadorPs1.GenerarContenido(Lineas, opciones);
                 ExportadorPs1.GuardarEnArchivo(ruta, contenido);
 
-                SetStatus($"Exportado a: {ruta}");
+                SetStatusSegunModo(
+    $"Exportado a: {ruta}. Para ejecutarlo, abre PowerShell y usa: Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass; .\\{System.IO.Path.GetFileName(ruta)}",
+    $"Exportado a: {ruta}");
             }
             catch (Exception ex)
             {
@@ -1783,7 +1853,9 @@ namespace VisualCommander.ViewModels
                 var contenido = ExportadorSh.GenerarContenido(Lineas, opciones);
                 ExportadorSh.GuardarEnArchivo(ruta, contenido);
 
-                SetStatus($"Exportado (para revisión): {ruta}");
+                SetStatusSegunModo(
+     $"Exportado (para revisión) a: {ruta}. No deberias ejecutarlo con doble clic ni añadirlo a una tarea programada.",
+     $"Exportado (para revsión) a: {ruta}");
             }
             catch (Exception ex)
             {
