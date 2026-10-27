@@ -724,3 +724,75 @@ tiene el movimiento), **no "escribir"**. El orden es incorrecto.
 global (Opción A). Requiere migrar el undo por línea a acciones globales.
 
 **Prioridad**: alta, pero requiere sesión completa.
+### Undo/Redo — Estado actual (Fase 9.A, 2026-10-27)
+
+**Dos sistemas conviven**:
+- Global (UndoRedoManager): operaciones sobre líneas.
+- Por línea (LineaComando): edición de texto.
+
+**Comportamiento**:
+- Ctrl+Z: intenta global, luego línea.
+- Ctrl+Y: intenta global, luego línea.
+
+**Limitación conocida (Opción C aceptada)**:
+- El orden no es cronológico global.
+- Escenario: mover → escribir → Ctrl+Z (deshace escribir) →
+  Ctrl+Y (rehace mover, no escribir). El usuario tiene que pulsar
+  Ctrl+Y dos veces.
+- No es intuitivo, pero es funcional.
+
+**Solución futura (Opción A, sesión dedicada)**:
+- Unificar en UndoRedoManager global.
+- Migrar undo por línea a EditarTextoAction.
+- Eliminar undo por línea.
+- Duración: 2-3 horas.
+- Prioridad: alta.
+
+**Fixes aplicados**:
+- LimpiarHistorial al cargar sesión (global y por línea).
+- Mensajes "Deshecho (edición de línea)" vs "Deshecho: [acción]".
+- Menú Editar con IsEnabled bindeado.
+
+### Limitación: parámetros con checkbox no son deshacibles (2026-10-27)
+
+Los parámetros que se marcan con checkbox (`/S`, `/B`...) no se apilan
+en `UndoRedo` global. Solo se modifica el texto, pero no se crea
+acción deshacible.
+
+**Consecuencia**: si el usuario marca `/S` y luego `Ctrl+Z`, deshace
+la última acción global (por ejemplo, añadir `dir`), y `/S` desaparece
+con él.
+
+**Solución futura**: migrar `AgregarTokenParametro` y
+`QuitarTokenParametro` a `UndoRedo`. Requiere coordinar con el
+checkbox.
+
+**Prioridad**: media.
+
+### Fase 9.B completada (2026-10-27)
+
+**Acciones migradas al UndoRedo global**:
+- Agregar/Eliminar línea.
+- Mover línea arriba/abajo.
+- Duplicar/Pegar línea.
+- Editar texto de línea (vía EditarTextoAction).
+- Agregar/eliminar comandos, rutas, textos.
+- Mover/sustituir tokens.
+
+**Helper `EjecutarCambioTexto`**:
+Patrón reutilizable para envolver cambios de texto en UndoRedo.
+Ahorra repetición y garantiza que siempre se guarda el texto anterior.
+
+**Limitación WPF descubierta**:
+Durante `DoDragDrop`, `Keyboard.Modifiers` NO se actualiza (bucle
+modal). Solución: capturar Ctrl en `PreviewMouseMove` ANTES de
+iniciar el drag. El usuario debe pulsar Ctrl ANTES de arrastrar.
+
+**Limitaciones aceptadas (Opción C)**:
+- Parámetros con checkbox (`/S`, `/B`...) no se apilan en undo global.
+- Orden entre undo global y por línea no es cronológico perfecto.
+- Solución futura: Opción A (unificar todo en UndoRedoManager).
+
+**Próximo paso (Tarea 9.C)**:
+- Migrar parámetros con checkbox a UndoRedo (si se quiere).
+- O unificar todo en UndoRedoManager (Opción A).

@@ -101,6 +101,7 @@ namespace VisualCommander
         private bool _scrollPendiente;
         
         private Point _posInicialDrag;
+        private bool _ctrlEnDrag;
         private const string FormatoTokenInterno = "VisualCommander.TokenInterno";
 
         private void ListaComandos_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
@@ -161,6 +162,11 @@ namespace VisualCommander
 
         private void PanelBloques_DragOver(object sender, DragEventArgs e)
         {
+            // Guardar el estado de Ctrl en cada DragOver.
+
+
+            _ctrlEnDrag = Keyboard.Modifiers.HasFlag(ModifierKeys.Control);
+
             if (e.Data.GetDataPresent(FormatoTokenInterno))
             {
                 e.Effects = DragDropEffects.Move;
@@ -179,7 +185,8 @@ namespace VisualCommander
 
         private void PanelBloques_DragLeave(object sender, DragEventArgs e)
         {
-            
+            _ctrlEnDrag = false;
+
             PanelBloques.Background = Brushes.Transparent;
         }
 
@@ -2344,6 +2351,7 @@ namespace VisualCommander
         }
         private void PanelBloques_PreviewDrop(object sender, DragEventArgs e)
         {
+
             // Buscar el token bajo el cursor.
             var puntoCursor = e.GetPosition(PanelBloques);
             var tokenBajoCursor = ObtenerTokenBajoPunto(puntoCursor);
@@ -2352,8 +2360,8 @@ namespace VisualCommander
             if (e.Data.GetDataPresent(FormatoTokenInterno) &&
                 e.Data.GetData(FormatoTokenInterno) is Token tokenOrigen)
             {
-                // ¿Ctrl pulsado en el momento del drop?
-                bool sustituir = Keyboard.Modifiers.HasFlag(ModifierKeys.Control);
+                // Usar el flag guardado en DragOver (más fiable).
+                bool sustituir = _ctrlEnDrag;
 
                 Token? tokenAEliminar = null;
                 if (sustituir)
@@ -2363,12 +2371,15 @@ namespace VisualCommander
                         tokenAEliminar = tokenDestino;
                 }
 
-                // Calcular índice de destino (posición entre tokens).
                 int indiceDestino = CalcularIndiceInsercion(puntoCursor);
 
-                // Mover el token (con o sin eliminación del destino).
-                ViewModel.LineaActiva.MoverToken(tokenOrigen, indiceDestino, tokenAEliminar);
+                System.Diagnostics.Debug.WriteLine(
+                    $"[DROP] sustituir={sustituir}, " +
+                    $"origen={tokenOrigen.Texto}, " +
+                    $"eliminar={tokenAEliminar?.Texto ?? "null"}, " +
+                    $"indiceDestino={indiceDestino}");
 
+                ViewModel.MoverTokenConUndo(tokenOrigen, indiceDestino, tokenAEliminar);
                 e.Handled = true;
                 return;
             }

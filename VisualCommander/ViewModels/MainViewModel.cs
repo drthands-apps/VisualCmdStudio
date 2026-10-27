@@ -387,7 +387,8 @@ namespace VisualCommander.ViewModels
             // Insertamos justo después de la activa.
             var idx = Lineas.IndexOf(actual);
             if (idx < 0) idx = Lineas.Count - 1;
-            Lineas.Insert(idx + 1, nueva);
+            var action = new AgregarLineaAction(Lineas, nueva, idx + 1);
+            UndoRedo.Ejecutar(action);
 
             LineaActiva = nueva;
 
@@ -486,8 +487,9 @@ namespace VisualCommander.ViewModels
             else
                 nuevaActiva = aBorrar; // no debería pasar
 
-            // Borramos.
-            Lineas.Remove(aBorrar);
+            // Envolver en UndoRedoManager.
+            var action = new EliminarLineaAction(Lineas, aBorrar, idx);
+            UndoRedo.Ejecutar(action);
 
             // Limpiamos vacías huérfanas (no la activa final).
             LimpiarVaciasIntermedias();
@@ -498,7 +500,9 @@ namespace VisualCommander.ViewModels
             else
                 LineaActiva = Lineas[^1];
 
-            SetStatus($"Línea eliminada ({Lineas.Count} restantes)");
+            SetStatusSegunModo(
+                $"Línea eliminada ({Lineas.Count} restantes). Puedes deshacer con Ctrl+Z.",
+                $"Línea eliminada ({Lineas.Count} restantes)");
         }
 
         /// <summary>
@@ -532,20 +536,25 @@ namespace VisualCommander.ViewModels
 
         public void AgregarComando(Comando cmd)
         {
-            LineaActiva.AgregarToken(new Token
-            {
-                Tipo = TipoToken.Comando,
-                Texto = cmd.Nombre,
-                Descripcion = $"{cmd.Resumen}\n{cmd.Descripcion}",
-                Color = cmd.ColorFamilia,
-                Icono = cmd.Icono,
-                Origen = cmd,
-                RequiereAdmin = cmd.RequiereAdmin
-            });
-            RegistrarUso(cmd);
+            var linea = LineaActiva;
+
+            EjecutarCambioTexto(
+                linea,
+                () => linea.AgregarToken(new Token
+                {
+                    Tipo = TipoToken.Comando,
+                    Texto = cmd.Nombre,
+                    Descripcion = $"{cmd.Resumen}\n{cmd.Descripcion}",
+                    Color = cmd.ColorFamilia,
+                    Icono = cmd.Icono,
+                    Origen = cmd,
+                    RequiereAdmin = cmd.RequiereAdmin
+                }),
+                $"Añadir comando: {cmd.Nombre}");
+
             SetStatusSegunModo(
-        $"Añadido: {cmd.Nombre}. Arrástralo si quieres insertarlo en otra posición, o haz doble clic para editarlo.",
-        $"Añadido: {cmd.Nombre}");
+                $"Añadido: {cmd.Nombre}. Arrástralo si quieres insertarlo en otra posición.",
+                $"Añadido: {cmd.Nombre}");
         }
         /// <summary>
         /// Inserta un texto (palabra, ruta, comando) en la posición indicada
@@ -553,18 +562,25 @@ namespace VisualCommander.ViewModels
         /// </summary>
         public void InsertarTextoEnPosicion(string texto, int indice)
         {
-            var tokens = LineaActiva.Tokens.ToList();
+            var linea = LineaActiva;
 
-            if (indice < 0) indice = 0;
-            if (indice > tokens.Count) indice = tokens.Count;
+            EjecutarCambioTexto(
+                linea,
+                () =>
+                {
+                    var tokens = linea.Tokens.ToList();
+                    if (indice < 0) indice = 0;
+                    if (indice > tokens.Count) indice = tokens.Count;
 
-            // Recolectamos los textos de los tokens actuales.
-            var textos = tokens.Select(t => t.Texto).ToList();
-            textos.Insert(indice, texto);
+                    var textos = tokens.Select(t => t.Texto).ToList();
+                    textos.Insert(indice, texto);
+                    linea.ActualizarDesdeTexto(string.Join(" ", textos));
+                },
+                $"Insertar texto: {texto}");
 
-            LineaActiva.ActualizarDesdeTexto(string.Join(" ", textos));
-            LineaActiva.ConfirmarEstado();
-            SetStatus($"Insertado en posición {indice}: {texto}");
+            SetStatusSegunModo(
+                $"Insertado en posición {indice}: {texto}. Puedes deshacer con Ctrl+Z.",
+                $"Insertado en posición {indice}: {texto}");
         }
 
         public void AgregarComandoSeleccionado()
@@ -579,11 +595,63 @@ namespace VisualCommander.ViewModels
 
         public void EliminarToken(Token token)
         {
-            LineaActiva.QuitarToken(token);
+            var linea = LineaActiva;
+
+            // Caso especial: parámetro con checkbox. El checkbox se encarga.
+            if (token.Tipo == TipoToken.Parametro && token.Origen is Parametro p)
+            {
+                var pv = linea.Modificadores.FirstOrDefault(m => m.Parametro == p);
+                if (pv is { EstaSeleccionado: true })
+                {
+                    pv.EstaSeleccionado = false;
+                    SetStatusSegunModo(
+                        $"Eliminado: {token.Texto}. Puedes deshacer con Ctrl+Z.",
+                        $"Eliminado: {token.Texto}");
+                    return;
+                }
+            }
+
+            // Caso normal.
+            EjecutarCambioTexto(
+                linea,
+                () => linea.QuitarToken(token),
+                $"Eliminar token: {token.Texto}");
+
             SetStatusSegunModo(
-    $"Eliminado: {token.Texto}. Puedes deshacer con Ctrl+Z.",
-    $"Eliminado: {token.Texto}");
+                $"Eliminado: {token.Texto}. Puedes deshacer con Ctrl+Z.",
+                $"Eliminado: {token.Texto}");
         }
+
+        /// <summary>
+        /// Ejecuta una acción que modifica el texto de una línea,
+        /// envolviéndola en UndoRedo para que sea deshacible.
+        /// </summary>
+        private void EjecutarCambioTexto(
+            LineaComando linea,
+            Action accion,
+            string descripcion)
+        {
+            var textoAnterior = linea.Texto;
+
+            // Ejecutar la acción (modifica linea.Texto).
+            accion();
+
+            var textoNuevo = linea.Texto;
+
+            // Si no hubo cambio real, no apilar.
+            if (textoAnterior == textoNuevo)
+                return;
+
+            // Crear y ejecutar la acción deshacible.
+            var undoAction = new CambiarTextoLineaAction(
+                linea,
+                textoAnterior,
+                textoNuevo,
+                descripcion);
+
+            UndoRedo.Ejecutar(undoAction);
+        }
+
 
         public void LimpiarTokens()
         {
@@ -649,23 +717,27 @@ namespace VisualCommander.ViewModels
         /// </summary>
         public void AgregarRuta(string ruta)
         {
-            var texto = ruta.Contains(' ') ? $"\"{ruta}\"" : ruta;
+            var linea = LineaActiva;
+
+            var textoRuta = ruta.Contains(' ') ? $"\"{ruta}\"" : ruta;
             var esCarpeta = System.IO.Directory.Exists(ruta);
 
-            var token = new Token
-            {
-                Tipo = TipoToken.Ruta,
-                Texto = texto,
-                Descripcion = esCarpeta
-                    ? $"Carpeta: {ruta}"
-                    : $"Archivo: {ruta}",
-                Color = "DEEBF7",             // azul claro, distingue de comandos y parámetros
-                Icono = esCarpeta ? "📁" : "📄",
-                Origen = ruta
-            };
+            EjecutarCambioTexto(
+                linea,
+                () => linea.AgregarToken(new Token
+                {
+                    Tipo = TipoToken.Ruta,
+                    Texto = textoRuta,
+                    Descripcion = (esCarpeta ? "Carpeta: " : "Archivo: ") + ruta,
+                    Color = "DEEBF7",
+                    Icono = esCarpeta ? "📁" : "📄",
+                    Origen = ruta
+                }),
+                $"Añadir ruta: {ruta}");
 
-            LineaActiva.AgregarToken(token);
-            SetStatus($"Añadida ruta: {ruta}");
+            SetStatusSegunModo(
+                $"Añadida ruta: {ruta}. Puedes deshacer con Ctrl+Z.",
+                $"Añadida ruta: {ruta}");
         }
 
         /// <summary>
@@ -674,30 +746,26 @@ namespace VisualCommander.ViewModels
         /// </summary>
         public void AgregarTextoVacio()
         {
+            var linea = LineaActiva;
+
             var token = new Token
             {
                 Tipo = TipoToken.Texto,
-                Texto = "Texto...",   // ← contenido placeholder
+                Texto = "Texto...",
                 Descripcion = "Texto libre (doble clic para editar)",
                 Color = "EDEDED",
                 Icono = "📝"
             };
 
-            LineaActiva.AgregarToken(token);
+            EjecutarCambioTexto(
+                linea,
+                () => linea.AgregarToken(token),
+                "Añadir texto");
 
-            // Ahora buscamos el token recreado por el parser y lo marcamos.
-            var tokenReal = LineaActiva.Tokens.LastOrDefault(t => t.Tipo == TipoToken.Texto);
-            if (tokenReal != null)
-            {
-                tokenReal.TextoAntesDeEditar = "Texto...";
-                tokenReal.EstoyEditando = true;
-            }
-
-
-            SetStatus("Token de texto añadido. Escribe el contenido y pulsa Enter.");
+            SetStatusSegunModo(
+                "Token de texto añadido. Escribe el contenido y pulsa Enter.",
+                "Texto añadido");
         }
-
-
 
         // ==== INotifyPropertyChanged ====
 
@@ -1579,7 +1647,9 @@ namespace VisualCommander.ViewModels
             // Caso 3: inserción después de la activa.
             var idx = Lineas.IndexOf(LineaActiva);
             if (idx < 0) idx = Lineas.Count - 1;
-            Lineas.Insert(idx + 1, aPegar);
+            var action = new PegarLineaAction(Lineas, aPegar, idx + 1);
+            UndoRedo.Ejecutar(action);
+
             LineaActiva = aPegar;
 
             SetStatus($"Pegado como línea {aPegar.NumeroLinea}");
@@ -1591,12 +1661,15 @@ namespace VisualCommander.ViewModels
             var copia = LineaActiva.Clonar();
             var idx = Lineas.IndexOf(LineaActiva);
             if (idx < 0) idx = Lineas.Count - 1;
-            Lineas.Insert(idx + 1, copia);
+
+            var action = new DuplicarLineaAction(Lineas, copia, idx + 1);
+            UndoRedo.Ejecutar(action);
+
             LineaActiva = copia;
-            ConfigurarNuevaLinea(copia);
+
             SetStatusSegunModo(
-    $"Línea duplicada como {copia.NumeroLinea}. Puedes modificarla sin afectar a la original.",
-    $"Línea duplicada como {copia.NumeroLinea}");
+                $"Línea duplicada como {copia.NumeroLinea}. Puedes deshacer con Ctrl+Z.",
+                $"Línea duplicada como {copia.NumeroLinea}");
         }
         // ==== Reordenación ====
 
@@ -2155,6 +2228,12 @@ namespace VisualCommander.ViewModels
         {
             if (UndoRedo.Deshacer())
             {
+                // Asegurar que la línea activa sigue siendo válida.
+                if (!Lineas.Contains(LineaActiva) && Lineas.Count > 0)
+                {
+                    LineaActiva = Lineas[^1];
+                }
+
                 SetStatusSegunModo(
                     $"Deshecho: {UndoRedo.DescripcionRehacer ?? "acción"}",
                     "Deshecho");
@@ -2179,6 +2258,11 @@ namespace VisualCommander.ViewModels
         {
             if (UndoRedo.Rehacer())
             {
+                if (!Lineas.Contains(LineaActiva) && Lineas.Count > 0)
+                {
+                    LineaActiva = Lineas[^1];
+                }
+
                 SetStatusSegunModo(
                     $"Rehecho: {UndoRedo.DescripcionDeshacer ?? "acción"}",
                     "Rehecho");
@@ -2193,6 +2277,26 @@ namespace VisualCommander.ViewModels
             }
 
             SetStatus("Nada que rehacer");
+        }
+        /// <summary>
+        /// Mueve un token dentro de la línea activa (con undo global).
+        /// </summary>
+        /// <summary>
+        /// Mueve un token dentro de la línea activa (con undo global).
+        /// Si tokenAEliminar no es null, lo elimina primero (Ctrl+Drop).
+        /// </summary>
+        public void MoverTokenConUndo(Token token, int indiceDestino, Token? tokenAEliminar = null)
+        {
+            var linea = LineaActiva;
+
+            var action = new MoverTokenAction(linea, token, indiceDestino, tokenAEliminar);
+            UndoRedo.Ejecutar(action);
+
+            SetStatusSegunModo(
+                tokenAEliminar != null
+                    ? "Token sustituido. Puedes deshacer con Ctrl+Z."
+                    : "Token movido. Puedes deshacer con Ctrl+Z.",
+                tokenAEliminar != null ? "Token sustituido" : "Token movido");
         }
     }
 }
