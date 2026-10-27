@@ -12,6 +12,8 @@ using System.Windows.Data;
 using VisualCommander.Collections;
 using VisualCommander.Models;
 using VisualCommander.Services;
+using VisualCommander.Services.UndoRedo;
+using VisualCommander.Services.UndoRedo.Actions;
 
 // Registrar el provider de codificaciones antiguas (ANSI 1252, etc.)
 System.Text.Encoding.RegisterProvider(
@@ -32,6 +34,9 @@ namespace VisualCommander.ViewModels
 
         private readonly Models.Configuracion _configuracion;
         private bool _ignorarSalida;
+
+        /// <summary>Gestor global de undo/redo.</summary>
+        public UndoRedoManager UndoRedo { get; } = new();
 
         public CatalogoTokens CatalogoTokens { get; }
         // ==== Catálogo ====
@@ -1609,9 +1614,13 @@ namespace VisualCommander.ViewModels
             var idx = Lineas.IndexOf(LineaActiva);
             if (idx <= 0) return;
 
-            // Intercambiamos posiciones.
-            Lineas.Move(idx, idx - 1);
-            SetStatus($"Línea movida a la posición {idx}");
+            var action = new MoverLineaAction(Lineas, LineaActiva, idx, idx - 1);
+            UndoRedo.Ejecutar(action);
+
+            SetStatusSegunModo(
+                $"Línea movida a la posición {idx}. Puedes deshacer con Ctrl+Z.",
+                $"Línea movida a la posición {idx}");
+
             OnPropertyChanged(nameof(PuedeSubirActiva));
             OnPropertyChanged(nameof(PuedeBajarActiva));
         }
@@ -1622,8 +1631,13 @@ namespace VisualCommander.ViewModels
             var idx = Lineas.IndexOf(LineaActiva);
             if (idx < 0 || idx >= Lineas.Count - 1) return;
 
-            Lineas.Move(idx, idx + 1);
-            SetStatus($"Línea movida a la posición {idx + 2}");
+            var action = new MoverLineaAction(Lineas, LineaActiva, idx, idx + 1);
+            UndoRedo.Ejecutar(action);
+
+            SetStatusSegunModo(
+                $"Línea movida a la posición {idx + 2}. Puedes deshacer con Ctrl+Z.",
+                $"Línea movida a la posición {idx + 2}");
+
             OnPropertyChanged(nameof(PuedeSubirActiva));
             OnPropertyChanged(nameof(PuedeBajarActiva));
         }
@@ -1755,6 +1769,8 @@ namespace VisualCommander.ViewModels
                 // Limpiar el estado actual.
                 Lineas.Clear();
 
+                UndoRedo.Limpiar();
+
                 // Reconstruir las líneas (si hay).
                 if (sesion.Lineas != null)
                 {
@@ -1768,7 +1784,7 @@ namespace VisualCommander.ViewModels
                         };
 
                         linea.ActualizarDesdeTexto(lineaSesion.Comando ?? "");
-                        linea.ConfirmarEstado();
+                        linea.LimpiarHistorial();
 
                         Lineas.Add(linea);
                         ConfigurarNuevaLinea(linea);
@@ -2131,6 +2147,52 @@ namespace VisualCommander.ViewModels
                     : "Modo silencioso desactivado");
             }
         }
+        /// <summary>
+        /// Deshace la última acción global.
+        /// Si no hay acción global, delega al undo por línea.
+        /// </summary>
+        public void DeshacerGlobal()
+        {
+            if (UndoRedo.Deshacer())
+            {
+                SetStatusSegunModo(
+                    $"Deshecho: {UndoRedo.DescripcionRehacer ?? "acción"}",
+                    "Deshecho");
+                return;
+            }
 
+            // Fallback: undo por línea.
+            if (LineaActiva.Deshacer())
+            {
+                SetStatus("Deshecho (edición de línea)");
+                return;
+            }
+
+            SetStatus("Nada que deshacer");
+        }
+
+        /// <summary>
+        /// Rehace la última acción global.
+        /// Si no hay acción global, delega al redo por línea.
+        /// </summary>
+        public void RehacerGlobal()
+        {
+            if (UndoRedo.Rehacer())
+            {
+                SetStatusSegunModo(
+                    $"Rehecho: {UndoRedo.DescripcionDeshacer ?? "acción"}",
+                    "Rehecho");
+                return;
+            }
+
+            // Fallback: redo por línea.
+            if (LineaActiva.Rehacer())
+            {
+                SetStatus("Rehecho (edición de línea)");
+                return;
+            }
+
+            SetStatus("Nada que rehacer");
+        }
     }
 }

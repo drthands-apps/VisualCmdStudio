@@ -691,3 +691,36 @@ proyecto.
 - [ ] Tutorial de primer arranque.
 
 **Estado**: Nivel 2 básico completado.
+
+
+### Undo/Redo — Comportamiento actual (Fase 9.A, 2026-10-27)
+
+**Dos sistemas conviven**:
+- **Global** (`UndoRedoManager`): operaciones sobre líneas
+  (mover, borrar, duplicar, crear).
+- **Por línea** (`LineaComando`): edición de texto dentro de una línea.
+
+**Ctrl+Z**:
+1. Intenta deshacer en el global.
+2. Si no hay, deshace en la línea activa.
+
+**Ctrl+Y**:
+1. Intenta rehacer en el global.
+2. Si no hay, rehace en la línea activa.
+
+**Limitación conocida**: el orden de undo/redo **no es cronológico
+global**. Si el usuario hace "mover línea" y luego "escribir texto",
+Ctrl+Z deshace primero el texto (porque está en el undo por línea),
+luego el movimiento (porque está en el global). Pero si el orden
+fuera "escribir texto" y luego "mover línea", Ctrl+Z deshace primero
+el movimiento (global), luego el texto (línea). **El orden es
+correcto en cada caso porque Ctrl+Z siempre deshace lo último**.
+
+**Problema con Ctrl+Y**: si el usuario hace "mover" y luego "escribir",
+Ctrl+Z deshace "escribir", y Ctrl+Y rehace "mover" (porque el global
+tiene el movimiento), **no "escribir"**. El orden es incorrecto.
+
+**Solución futura**: unificar ambos sistemas en un solo `UndoRedoManager`
+global (Opción A). Requiere migrar el undo por línea a acciones globales.
+
+**Prioridad**: alta, pero requiere sesión completa.

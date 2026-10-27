@@ -871,5 +871,17 @@ namespace VisualCommander.Models
             ActualizarDesdeTexto(nuevoTexto);
             ConfirmarEstado();
         }
+        /// <summary>
+        /// Limpia el historial de undo/redo por línea.
+        /// Apila el estado actual como estado inicial.
+        /// </summary>
+        public void LimpiarHistorial()
+        {
+            _historial.Clear();
+            _rehacer.Clear();
+            _indiceHistorial = -1;
+
+            ConfirmarEstado();
+        }
     }
 }

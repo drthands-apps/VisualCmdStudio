@@ -722,28 +722,23 @@ namespace VisualCommander
             var focoEnTextBox = Keyboard.FocusedElement is TextBox;
 
             // Ctrl+Z → deshacer
+
             if (Keyboard.Modifiers == ModifierKeys.Control && e.Key == Key.Z)
             {
-                if (ViewModel.LineaActiva.Deshacer())
-                    ViewModel.SetStatus("Deshecho");
-                else
-                    ViewModel.SetStatus("Nada que deshacer");
+                ViewModel.DeshacerGlobal();
                 e.Handled = true;
                 return;
             }
 
             // Ctrl+Y (o Ctrl+Shift+Z) → rehacer
             if ((Keyboard.Modifiers == ModifierKeys.Control && e.Key == Key.Y) ||
-                (Keyboard.Modifiers == (ModifierKeys.Control | ModifierKeys.Shift) && e.Key == Key.Z))
+    (Keyboard.Modifiers == (ModifierKeys.Control | ModifierKeys.Shift) && e.Key == Key.Z))
             {
-                if (ViewModel.LineaActiva.Rehacer())
-                    ViewModel.SetStatus("Rehecho");
-
-                else
-                    ViewModel.SetStatus("Nada que rehacer");
+                ViewModel.RehacerGlobal();
                 e.Handled = true;
                 return;
             }
+
             // Ctrl+D → duplicar línea
             if (Keyboard.Modifiers == ModifierKeys.Control && e.Key == Key.D)
             {
@@ -1415,20 +1410,12 @@ namespace VisualCommander
                 "Permitirá importar scripts de Bash. Los comandos que no tengan " +
                 "equivalente en Windows se mostrarán como texto con una advertencia.");
         private void Deshacer_Click(object sender, RoutedEventArgs e)
-        {
-            if (ViewModel.LineaActiva.Deshacer())
-                ViewModel.SetStatus("Deshecho");
-            else
-                ViewModel.SetStatus("Nada que deshacer");
-        }
+     => ViewModel.DeshacerGlobal();
 
         private void Rehacer_Click(object sender, RoutedEventArgs e)
-        {
-            if (ViewModel.LineaActiva.Rehacer())
-                ViewModel.SetStatus("Rehecho");
-            else
-                ViewModel.SetStatus("Nada que rehacer");
-        }
+            => ViewModel.RehacerGlobal();
+
+  
 
         private void Cortar_Click(object sender, RoutedEventArgs e)
         {

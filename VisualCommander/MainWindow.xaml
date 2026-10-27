@@ -205,8 +205,10 @@
 
 
             <MenuItem Header="_Editar">
-                <MenuItem Header="Deshacer" InputGestureText="Ctrl+Z" Click="Deshacer_Click"/>
-                <MenuItem Header="Rehacer" InputGestureText="Ctrl+Y" Click="Rehacer_Click"/>
+                <MenuItem Header="Deshacer" InputGestureText="Ctrl+Z" Click="Deshacer_Click"
+          IsEnabled="{Binding UndoRedo.PuedeDeshacer}"/>
+                <MenuItem Header="Rehacer" InputGestureText="Ctrl+Y" Click="Rehacer_Click"
+          IsEnabled="{Binding UndoRedo.PuedeRehacer}"/>
                 <Separator/>
                 <MenuItem Header="Cortar" InputGestureText="Ctrl+X" Click="Cortar_Click"/>
                 <MenuItem Header="Copiar" InputGestureText="Ctrl+C" Click="Copiar_Click"/>
