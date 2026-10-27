@@ -2371,13 +2371,7 @@ namespace VisualCommander
                         tokenAEliminar = tokenDestino;
                 }
 
-                int indiceDestino = CalcularIndiceInsercion(puntoCursor);
-
-                System.Diagnostics.Debug.WriteLine(
-                    $"[DROP] sustituir={sustituir}, " +
-                    $"origen={tokenOrigen.Texto}, " +
-                    $"eliminar={tokenAEliminar?.Texto ?? "null"}, " +
-                    $"indiceDestino={indiceDestino}");
+                int indiceDestino = CalcularIndiceInsercion(puntoCursor);         
 
                 ViewModel.MoverTokenConUndo(tokenOrigen, indiceDestino, tokenAEliminar);
                 e.Handled = true;
