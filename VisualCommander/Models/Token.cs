@@ -15,7 +15,8 @@ namespace VisualCommander.Models
         Comodin,
         Ruta,
         Texto,
-        Separador
+        Separador,
+        Prefijo
     }
     public enum EstadoToken
 {

@@ -187,6 +187,7 @@ Analogía: Excel es un editor de cálculos, no un intérprete.
 ### Tier 1 postpuesto
 
 - [X] Import desde `.bat`, `.ps1`, `.sh`.
+- [X] @ como TipoToken.Prefijo: parser, LineaComando, ImportadorBat
 - [ ] Plantillas de comandos (A3).
 - [ ] Comandos modulares (JSON por familias).
 
@@ -448,7 +449,13 @@ al usuario sin exponerlo a riesgos innecesarios.
 
 
 
-Nuevo ticket abierto: "Bug: prompts no reevaluados tras cambios estructurales del plan". Con el diagnóstico y el plan de fix que te dejé en este chat.
+Nuevo ticket abierto: "Bug: prompts no reevaluados tras cambios estructurales del plan". Con el diagnóstico y la lista de puntos donde llamar a RecalcularDirectorioTrabajo().
+
+Nuevo pendiente: "Jueves de comandos" con la lista de temas (operadores 2>/@/2>&1, tar, control de flujo, comandos personalizados, refactor de operadores hardcodeados en ComandoParser).
+
+Refactor menor pendiente: unificar CalcularDirectorioSiguiente entre LineaComando e ImportadorBat.
+
+Nota cosmética: @ con espacio intermedio en exportación (no bloqueante).
 
 Nuevo pendiente: "Revisión de JSON: operadores, @, 2>, 2>&1, :: como alias de rem, refactor del bloque hardcodeado de operadores en ComandoParser, reordenación ergonómica del catálogo".
 

@@ -117,10 +117,17 @@ namespace VisualCommander.Services
             var lista = tokens.ToList();
             if (lista.Count == 0) return null;
 
-            var primero = lista[0].Texto.ToLowerInvariant();
+            int i = 0;
+            // Saltar prefijos (@).
+            while (i < lista.Count && lista[i].Tipo == TipoToken.Prefijo)
+                i++;
+
+            if (i >= lista.Count) return null;
+
+            var primero = lista[i].Texto.ToLowerInvariant();
             if (primero != "cd" && primero != "pushd") return null;
 
-            for (int i = 1; i < lista.Count; i++)
+            for (i++; i < lista.Count; i++)
             {
                 var t = lista[i];
                 if (t.Tipo != TipoToken.Ruta) continue;

@@ -36,13 +36,50 @@ namespace VisualCommander.Models
             {
                 if (string.IsNullOrWhiteSpace(parte)) continue;
 
+                // ¿Estamos al inicio de un comando?
+                // Sí si: es el primer token real, o el token anterior fue un operador.
+                bool esInicioDeComando = primerToken
+                    || (resultado.Count > 0 && resultado[^1].Tipo == TipoToken.Operador);
+
+                // ¿Prefijo @? Solo si está al inicio del comando.
+                if (esInicioDeComando && parte.StartsWith("@"))
+                {
+                    // Emitir el prefijo.
+                    resultado.Add(new Token
+                    {
+                        Tipo = TipoToken.Prefijo,
+                        Texto = "@",
+                        Color = "D9D9D9",
+                        Icono = null,
+                        Descripcion = "Prefijo: silencia el eco de este comando en la consola"
+                    });
+
+                    // ¿Queda algo tras el @?
+                    var resto = parte.Substring(1);
+
+                    if (resto.Length > 0)
+                    {
+                        // Clasificar el resto como primer token real.
+                        var tokenResto = Clasificar(resto, dict, directorioTrabajo, true, comandoActual);
+
+                        if (tokenResto.Tipo == TipoToken.Comando && tokenResto.Origen is Comando c)
+                            comandoActual = c;
+                        if (tokenResto.Tipo == TipoToken.Operador)
+                            comandoActual = null;
+
+                        resultado.Add(tokenResto);
+                        primerToken = false;
+                    }
+                    // Si no queda nada, el siguiente trozo será el comando (o no).
+                    // No tocamos primerToken: sigue siendo el "inicio de comando".
+
+                    continue;
+                }
+
+                // Lógica normal.
                 var token = Clasificar(parte, dict, directorioTrabajo, primerToken, comandoActual);
-
-                // Actualizamos el comando activo si el token es un comando.
-                if (token.Tipo == TipoToken.Comando && token.Origen is Comando c)
-                    comandoActual = c;
-
-                // Si el token es un operador, reseteamos el comando actual.
+                if (token.Tipo == TipoToken.Comando && token.Origen is Comando c2)
+                    comandoActual = c2;
                 if (token.Tipo == TipoToken.Operador)
                     comandoActual = null;
 

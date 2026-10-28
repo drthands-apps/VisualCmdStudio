@@ -391,10 +391,17 @@ namespace VisualCommander.Models
         {
             if (Tokens.Count == 0) return null;
 
-            var primero = Tokens[0].Texto.ToLowerInvariant();
+            int i = 0;
+            // Saltar prefijos (@).
+            while (i < Tokens.Count && Tokens[i].Tipo == TipoToken.Prefijo)
+                i++;
+
+            if (i >= Tokens.Count) return null;
+
+            var primero = Tokens[i].Texto.ToLowerInvariant();
             if (primero != "cd" && primero != "pushd") return null;
 
-            for (int i = 1; i < Tokens.Count; i++)
+            for (i++; i < Tokens.Count; i++)
             {
                 var t = Tokens[i];
                 if (t.Tipo != TipoToken.Ruta) continue;
