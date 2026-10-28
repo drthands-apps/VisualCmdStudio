@@ -253,7 +253,7 @@ namespace VisualCommander
                 // Los parámetros siguen su lógica específica (marcar checkbox
                 // y añadirse al texto). NO los insertamos en la posición del cursor,
                 // porque los parámetros no suelen ir entre dos rutas.
-                pv.EstaSeleccionado = true;
+                ViewModel.CambiarSeleccionParametro(pv, true);
                 e.Handled = true;
                 return;
             }
@@ -374,6 +374,19 @@ namespace VisualCommander
             var datos = new DataObject(FormatoParametro, pv);
             DragDrop.DoDragDrop((DependencyObject)sender, datos, DragDropEffects.Copy);
         }
+        private void ModificadorCheck_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is not CheckBox cb) return;
+            if (cb.DataContext is not ParametroVista pv) return;
+
+            // Empujar el texto pendiente del editor de línea al modelo,
+            // por coherencia con el resto de acciones sobre la línea.
+            EmpujarEditorActivoAlModelo();
+
+            ViewModel.CambiarSeleccionParametro(pv, cb.IsChecked == true);
+        }
+
+
         private void NuevaLinea_Click(object sender, RoutedEventArgs e)
         {
             EmpujarEditorActivoAlModelo();   // ← empujar primero
@@ -1385,10 +1398,71 @@ namespace VisualCommander
         }
         private void ImportarDesdeArchivo_Click(object sender, RoutedEventArgs e)
         {
-            MostrarProximamente(
-                "Importar desde archivo",
-                "Permitirá importar planes desde archivos .bat, .ps1, .cmd y .sh, " +
-                "reconstruyendo los comandos en el editor visual.");
+            var dlg = new Microsoft.Win32.OpenFileDialog
+            {
+                Title = "Importar plan",
+                Filter = "Todos los formatos soportados|*.vcmd;*.bat;*.cmd;*.ps1;*.sh|" +
+                         "Sesión Visual CMD (*.vcmd)|*.vcmd|" +
+                         "Batch (*.bat;*.cmd)|*.bat;*.cmd|" +
+                         "PowerShell (*.ps1)|*.ps1|" +
+                         "Bash (*.sh)|*.sh|" +
+                         "Todos los archivos|*.*"
+            };
+
+            if (dlg.ShowDialog() != true) return;
+            ImportarConAvisoSiNecesario(dlg.FileName);
+        }
+
+        private void ImportarDesdeBat_Click(object sender, RoutedEventArgs e)
+            => ImportarConDialogo("Batch (*.bat)|*.bat|Todos los archivos|*.*", ".bat");
+
+        private void ImportarDesdeCmd_Click(object sender, RoutedEventArgs e)
+            => ImportarConDialogo("Script CMD (*.cmd)|*.cmd|Todos los archivos|*.*", ".cmd");
+
+        private void ImportarDesdePs1_Click(object sender, RoutedEventArgs e)
+            => ImportarConDialogo("PowerShell (*.ps1)|*.ps1|Todos los archivos|*.*", ".ps1");
+
+        private void ImportarDesdeSh_Click(object sender, RoutedEventArgs e)
+            => ImportarConDialogo("Bash (*.sh)|*.sh|Todos los archivos|*.*", ".sh");
+
+        private void ImportarConDialogo(string filtro, string ext)
+        {
+            var dlg = new Microsoft.Win32.OpenFileDialog
+            {
+                Title = $"Importar {ext}",
+                Filter = filtro,
+                DefaultExt = ext
+            };
+
+            if (dlg.ShowDialog() != true) return;
+            ImportarConAvisoSiNecesario(dlg.FileName);
+        }
+
+        private void ImportarConAvisoSiNecesario(string ruta)
+        {
+            // Si el plan actual tiene contenido, avisar.
+            var tieneContenido = ViewModel.Lineas.Any(l => !string.IsNullOrWhiteSpace(l.Texto));
+            if (tieneContenido)
+            {
+                var resp = MessageBox.Show(
+                    "La importación reemplazará el plan actual.\n\n" +
+                    "¿Deseas continuar?\n\n" +
+                    "(Puedes cancelar, guardar el plan con Ctrl+S y volver a importar.)",
+                    "Reemplazar plan",
+                    MessageBoxButton.YesNo,
+                    MessageBoxImage.Warning);
+
+                if (resp != MessageBoxResult.Yes) return;
+            }
+
+            EmpujarEditorActivoAlModelo();
+
+            if (ViewModel.ImportarPlan(ruta))
+            {
+                _rutaSesionActual = ruta;
+                ActualizarTituloVentana();
+                EnfocarEditorActivo();
+            }
         }
 
         private void NuevoDesdePlantilla_Click(object sender, RoutedEventArgs e)
@@ -1398,24 +1472,7 @@ namespace VisualCommander
                 "Permitirá crear un plan a partir de una plantilla predefinida " +
                 "(por ejemplo, backup, limpieza de disco, diagnóstico de red...).");
         }
-        private void ImportarDesdeBat_Click(object sender, RoutedEventArgs e)
-    => MostrarProximamente("Importar desde .bat",
-        "Permitirá reconstruir el plan visual a partir de un archivo .bat existente. " +
-        "Los comandos se parsearán y se generarán los tokens correspondientes.");
-
-        private void ImportarDesdeCmd_Click(object sender, RoutedEventArgs e)
-            => MostrarProximamente("Importar desde .cmd",
-                "Igual que la importación desde .bat, pero para archivos .cmd.");
-
-        private void ImportarDesdePs1_Click(object sender, RoutedEventArgs e)
-            => MostrarProximamente("Importar desde .ps1",
-                "Permitirá importar scripts de PowerShell, mostrando los cmdlets como " +
-                "comandos compatibles (con advertencia si no son de CMD).");
-
-        private void ImportarDesdeSh_Click(object sender, RoutedEventArgs e)
-            => MostrarProximamente("Importar desde .sh",
-                "Permitirá importar scripts de Bash. Los comandos que no tengan " +
-                "equivalente en Windows se mostrarán como texto con una advertencia.");
+        
         private void Deshacer_Click(object sender, RoutedEventArgs e)
      => ViewModel.DeshacerGlobal();
 

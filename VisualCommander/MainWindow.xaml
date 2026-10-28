@@ -604,10 +604,11 @@ IsEnabled="{Binding EstaEjecutando, Converter={StaticResource InverseBoolConvert
                                     PreviewMouseMove="Modificador_PreviewMouseMove">
 
                                                     <CheckBox Margin="0,2"
-                                          Content="{Binding Descripcion, StringFormat='{}{0}'}"
-                                          IsChecked="{Binding EstaSeleccionado, Mode=TwoWay}"
-                                          IsEnabled="{Binding EstaBloqueado, Converter={StaticResource InverseBoolConverter}}"
-                                          ToolTip="{Binding Descripcion}"/>
+          Content="{Binding Descripcion, StringFormat='{}{0}'}"
+          IsChecked="{Binding EstaSeleccionado, Mode=OneWay}"
+          IsEnabled="{Binding EstaBloqueado, Converter={StaticResource InverseBoolConverter}}"
+          Click="ModificadorCheck_Click"
+          ToolTip="{Binding Descripcion}"/>
                                                 </Border>
                                             </DataTemplate>
                                         </ItemsControl.ItemTemplate>

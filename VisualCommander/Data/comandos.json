@@ -1882,12 +1882,6 @@
       },
       {
         "nombre": "/f",
-        "descripcion": "Tipo de firmware (BIOS, UEFI, ALL)",
-        "tipo": "Lista",
-        "valoresPosibles": [ "BIOS", "UEFI", "ALL" ]
-      },
-      {
-        "nombre": "/f",
         "descripcion": "Tipo de firmware",
         "tipo": "Lista",
         "valoresPosibles": [ "BIOS", "UEFI", "ALL" ],

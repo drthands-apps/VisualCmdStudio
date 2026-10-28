@@ -3,6 +3,8 @@
 Documento vivo. Se resume periódicamente. El histórico completo está
 en los commits de Git; aquí solo se mantiene lo vigente.
 
+Última actualización: 2026-10-28
+
 ---
 
 ## Filosofía del proyecto
@@ -31,11 +33,10 @@ Analogía: Excel es un editor de cálculos, no un intérprete.
 
 ---
 
-## Estado actual (2026-10-21)
+## Estado actual
 
-### Completado
+### Completado — Editor visual
 
-**Editor visual:**
 - Catálogo JSON con ~55 comandos, agrupados por familia.
 - Multi-línea con contexto de directorio independiente.
 - Editor in-place de tokens (Texto, Ruta) con forma achaflanada + lápiz.
@@ -46,87 +47,165 @@ Analogía: Excel es un editor de cálculos, no un intérprete.
 - Dummies guía (Fase 3 completa): visuales, requeridos/opcionales,
   bloqueo al cerrar con requeridos, aviso pre-ejecución combinado.
 - Modo silencioso persistente (afecta solo a edición, no a ejecución).
+- Organizador de comandos (Por familia / A-Z / Frecuencia con
+  persistencia en `uso.json` y detección de comandos por texto).
+- Hover sobre tokens del constructor → info en panel derecho.
+- Ocultar paneles libera espacio (GridLength 0, MinWidth 0).
+- Drag & drop de variables/operadores/comodines desde panel derecho
+  al constructor, con posición exacta.
+- Clic simple para insertar al final (además de drag).
+- Flag `_dragEnCurso` para evitar el doble `DoDragDrop`.
+- Menú Ver reorganizado ("Constructor visual" y "Línea de comandos").
+- Auto-scroll al editor al añadir líneas / cambiar activa.
+- Botón ✕ por línea cerrada (visible al hover).
+- Modo aprendiz vs experto (Nivel 1 + Nivel 2 básico).
+- Undo/Redo global (Fases 9.A y 9.B): líneas y edición de texto.
+- Edición in-place con ComboBox para Constante / Variable / Comodín.
+- Ctrl+Drop para sustituir tokens; drag interno para reordenar.
+- Icono del programa (pavo real cyberpunk, `visualcmdstudio.ico`).
+- Indicador "🔇 Silencioso" en barra de estado.
 
-**Apariencia CMD:**
+### Completado — Apariencia CMD
+
 - Prompt dinámico coloreado (verde/amarillo/rojo).
 - Prompt acortado con tooltip.
 - Wrapping estilo CMD real.
 
-**Ejecución:**
+### Completado — Ejecución
+
 - Ejecución de línea individual y del plan completo (F5).
 - Estados por línea (○ ▶ ✓ ✗ ⊘) + toggle "Detener en error".
 - Buffer de salida (RangeObservableCollection).
 - Escape/Detener durante la ejecución.
 - Elevación UAC puntual para comandos `requiereAdmin`.
 - Indicador 🛡 en bloque y en barra de estado.
+- Conteo final: OK / errores.
 
-**Seguridad:**
+### Completado — Seguridad
+
 - Detección de comandos peligrosos (`peligroso: true`).
 - Simuladores específicos: del, rd/rmdir, taskkill.
 - Diálogo de confirmación con directorio y afectados.
 - Opción "No volver a preguntar para esta línea en esta sesión".
 
-**Sesiones y exportación:**
+### Completado — Sesiones y exportación
+
 - Guardar/Cargar sesión `.vcmd` (JSON legible, campo `firma` nullable
   preparado para Tier 3).
 - Metadatos: creador, verificado (aún no firma criptográfica).
 - Exportar a `.bat`, `.cmd`, `.ps1` (completo), `.sh` (para revisión).
+- Importar .vcmd/.bat/.cmd/.ps1/.sh. Marcando las limitaciones por el momento de los formatos no compatibles. Se aceptan como solo texto.
 - Diálogos con opciones y vista previa.
 - Atajos Ctrl+N/O/S/Shift+S.
 
-**Interfaz:**
+### Completado — Interfaz
+
 - Menú completo y funcional (Archivo, Editar, Ver, Herramientas, Ayuda).
 - Placeholders informativos para funciones no implementadas.
-- Panel izquierdo: modo (radio buttons placeholder), buscador, catálogo,
-  modificadores, árbol de archivos.
-- Panel derecho: comando activo, detalle del modificador (hover),
-  detalle del token (hover), insertar tokens (texto/operadores/variables/
-  constantes/comodines).
+- Panel izquierdo: modo, buscador, catálogo, modificadores, árbol.
+- Panel derecho: comando activo, detalle del modificador, detalle del
+  token, insertar tokens (texto/operadores/variables/constantes/comodines).
 - Panel inferior: comentarios, errores, salida, historial.
-- Panel derecho responde al comando activo y al hover de modificadores.
 - Botón "Insertar texto" con campo previo y Enter para confirmar.
-- Explicaciones ampliadas para valores de /A, /O y otros.
+- Explicaciones ampliadas para valores de `/A`, `/O` y otros.
 - Árbol de archivos con unidades reales (carga perezosa).
 - Drag & drop desde catálogo, panel de modificadores y árbol.
 
+### Completado — Catálogo de tokens desde JSON
 
-## Tier 2 — Avances 2026-10-21
+- `tokens.json` con constantes (9), variables (17), comodines (4) y
+  operadores (12). Metadatos: nombre, descripción, ejemplo, categoría.
+- `TokenInfo` y `CatalogoTokens` como modelos.
+- `CatalogoTokensService` carga desde JSON.
+- `MainViewModel.CatalogoTokens` disponible para la UI.
+- Panel derecho bindeado al catálogo.
+- Hover sobre cada elemento → descripción completa en panel derecho.
+- Doble clic → insertar al final; drag → insertar en posición.
 
-### Completado
-- [x] Organizador de comandos (Por familia / A-Z / Frecuencia con
-      persistencia en uso.json y detección de comandos por texto).
-- [x] Hover sobre tokens del constructor → info en panel derecho.
-- [x] Ocultar paneles libera espacio (GridLength 0, MinWidth 0).
-- [x] Menú Ver reorganizado: se elimina "Panel central" (no útil),
-      se añaden "Constructor visual" y "Línea de comandos".
-- [x] Drag & drop de variables/operadores/comodines desde panel derecho
-      al constructor, con posición exacta.
-- [x] Clic simple para insertar al final (además de drag).
-- [x] Flag _dragEnCurso para evitar el doble DoDragDrop.
+| Categoría | Cantidad | Archivo |
+|---|---|---|
+| Constantes | 9 | `tokens.json` |
+| Variables | 17 | `tokens.json` |
+| Comodines | 4 | `tokens.json` |
+| Operadores | 12 | `tokens.json` |
 
-### Pendiente Tier 2
-- [ ] Menú contextual (clic derecho sobre línea).
-- [ ] Undo/Redo global (operaciones sobre líneas: crear, mover, borrar).
-- [ ] Auto-scroll al editor al añadir líneas.
-- [ ] Botón ✕ por línea cerrada.
-- [ ] Modo aprendiz vs experto.
-- [ ] Historial con contexto.
-- [ ] Análisis contextual del parser (REM, ECHO, comillas sin cerrar).
-- [ ] Indicador visual permanente del modo silencioso.
-- [ ] Edición visual de parámetros con valor (`/A:D`, `/O:N`, `/FS:NTFS`)
-      mediante ComboBox homogéneo con constantes.
-- [ ] Modos de trabajo: conectar los radio buttons del panel izquierdo.
-- [ ] Drag & drop de tokens dentro del constructor (reordenar).
-      mediante ComboBox homogéneo con la edición de constantes.
+**Total**: 42 tokens editables desde JSON sin recompilar.
 
+### Completado — Lenguaje de gestos del editor
 
-### Pendiente (Tier 1 postpuesto)
+| Gesture | Resultado |
+|---------|-----------|
+| Arrastrar comando del catálogo | Insertar en posición |
+| Ctrl+Arrastrar comando del catálogo | Sustituir token bajo cursor |
+| Arrastrar token del constructor | Reordenar |
+| Ctrl+Arrastrar token del constructor | Eliminar destino, mover origen a su sitio |
+| Doble clic en token editable | Edición in-place (TextBox o ComboBox) |
+| Doble clic en variable/constante/comodín (panel derecho) | Insertar al final |
+| Drag desde panel derecho | Insertar en posición |
 
-- [ ] Import desde `.bat`, `.ps1`, `.sh`.
+### Completado — Undo/Redo
+
+**Dos sistemas conviven**:
+
+- **Global** (`UndoRedoManager`): operaciones sobre líneas (crear,
+  mover, borrar, duplicar, pegar) y cambios de texto vía
+  `CambiarTextoLineaAction` (añadir/eliminar comandos, rutas, textos,
+  mover/sustituir tokens, marcar/desmarcar parámetros con checkbox).
+- **Por línea** (`LineaComando`): edición de texto dentro de una línea
+  (usado cuando el foco está en el TextBox de la línea).
+
+**Comportamiento**:
+
+- `Ctrl+Z`: intenta global, luego línea.
+- `Ctrl+Y`: intenta global, luego línea.
+- Helper `EjecutarCambioTexto` envuelve cambios de texto en UndoRedo.
+
+**Limitación conocida (Opción C aceptada)**:
+
+- El orden no es cronológico global. Escenario: mover → escribir →
+  Ctrl+Z (deshace escribir) → Ctrl+Y (rehace mover, no escribir).
+  El usuario debe pulsar Ctrl+Y dos veces.
+- **Fase 9.C completada (2026-10-28)**: parámetros con checkbox ya se
+  apilan en UndoRedo global. Punto único
+  `MainViewModel.CambiarSeleccionParametro(pv, seleccionado)`.
+  CheckBox de la UI pasa de `IsChecked TwoWay` a `OneWay` + Click
+  handler (`ModificadorCheck_Click`). El Drop de parámetros y
+  `EliminarToken` de parámetro marcado también pasan por ahí.
+
+**Solución futura (Opción A, sesión dedicada)**:
+
+- Unificar en `UndoRedoManager` global.
+- Migrar undo por línea a `EditarTextoAction`.
+- Eliminar undo por línea.
+- Duración estimada: 2-3 horas.
+- Prioridad: alta.
+
+---
+
+## Pendiente
+
+### Tier 1 postpuesto
+
+- [X] Import desde `.bat`, `.ps1`, `.sh`.
 - [ ] Plantillas de comandos (A3).
 - [ ] Comandos modulares (JSON por familias).
 
-### Pendiente (Tier 3)
+### Tier 2
+
+- [ ] Menú contextual completo (revisar cobertura en todos los paneles).
+- [ ] Análisis contextual del parser (REM, ECHO, comillas sin cerrar).
+- [ ] Edición visual de parámetros con valor (`/A:D`, `/O:N`, `/FS:NTFS`)
+      mediante ComboBox homogéneo con constantes.
+- [ ] Drag & drop de tokens dentro del constructor con feedback visual
+      (línea de inserción, cursor, tooltip "Ctrl para sustituir").
+- [ ] Avisos "¿Sabías que...?" en modo aprendiz.
+- [ ] Tutorial de primer arranque.
+- [ ] Ampliar `MostrarInfoTokenInfo` con Categoria y Ejemplo (ya
+      implementado parcialmente; revisar).
+- [ ] Mejora de "Insertar comando" desde el constructor (opciones A/D
+      discutidas: popup contextual o Command Palette estilo VS Code).
+
+### Tier 3
 
 - [ ] Firma criptográfica del `.vcmd` (RSA-SHA256, lista de confianza).
 - [ ] Inserciones inteligentes de dummies (por tipo, no solo por orden).
@@ -142,11 +221,15 @@ Analogía: Excel es un editor de cálculos, no un intérprete.
 ### Refactorización pendiente
 
 - [ ] Dividir `comandos.json` (2000+ líneas) en archivos por familia.
-- [ ] Dividir `MainViewModel.cs` en partials por área funcional.
+- [ ] Dividir `MainViewModel.cs` en partials por área funcional
+      (sugerencia: `Ejecucion`, `Lineas`, `Tokens`, `Sesiones`,
+      `Catalogo`, `UndoRedo`, `Exportacion`).
 - [ ] Dividir `MainWindow.xaml` en `UserControl`s por panel.
+- [ ] Dividir `MainWindow.xaml.cs` en partials por área.
 - [ ] Extraer estilos a `ResourceDictionary`.
 
 Razón de esperar: no dividir código que aún va a cambiar mucho.
+**Momento sugerido**: al cerrar Tier 2.
 
 ---
 
@@ -164,13 +247,27 @@ Razón de esperar: no dividir código que aún va a cambiar mucho.
 - **Portapapeles**: doble (interno con metadatos + sistema texto plano).
   Pegar del sistema parsea como si el usuario hubiera escrito.
 
+### Edición con ComboBox (constantes, variables, comodines)
+
+- Un solo editor (`ComboBox IsEditable="True"`) para todos.
+- **Sin binding `Text`**: el texto se gestiona manualmente desde los
+  handlers (`IsVisibleChanged`, `SelectionChanged`, `PreviewKeyDown`,
+  `DropDownClosed`).
+- Razón: el binding `TwoWay` con `PropertyChanged` interfería con la
+  edición y provocaba que Escape no restaurara.
+- `[abc]` y `[a-z]` editables como texto; `*` y `?` seleccionables.
+- Snapshot de la línea para restaurar en Escape. `OlvidarSnapshotTexto()`
+  al confirmar.
+- **Filosofía**: el parser clasifica, no corrige. Si el texto editado
+  cambia de formato, el parser lo reclasifica.
+
 ### Undo/Redo
 
-- Cada línea tiene su propio historial (List<string> + índice, límite 100).
+- Cada línea tiene su propio historial (`List<string>` + índice, límite 100).
 - Se confirma después de cada acción: Enter, blur, cambio de línea,
   `＋ Nueva`, `✓ Cerrar`, ejecutar, drag & drop, checkbox, eliminar token.
 - NO se confirma al pulsar espacio solo.
-- Ctrl+Z deshace, Ctrl+Y / Ctrl+Shift+Z rehace.
+- `Ctrl+Z` deshace, `Ctrl+Y` / `Ctrl+Shift+Z` rehace.
 - Escape descarta cambios NO confirmados.
 
 ### Contexto de ejecución
@@ -205,6 +302,18 @@ Razón de esperar: no dividir código que aún va a cambiar mucho.
 - Persiste en `%APPDATA%\VisualCmdStudio\config.json`.
 - Silencia avisos de construcción/edición.
 - NO silencia avisos antes de ejecutar.
+- Indicador "🔇 Silencioso" en barra de estado.
+- Deshabilitado en modo aprendiz.
+
+### Modo aprendiz vs experto
+
+- Enum `ModoTrabajo` (`Aprendiz` / `Experto`) en `Configuracion.cs`.
+- **Aprendiz** (por defecto): modo silencioso no disponible, avisos
+  siempre, mensajes descriptivos con instrucciones.
+- **Experto**: modo silencioso disponible, mensajes concisos.
+- Sincronización completa: panel izquierdo ↔ `DialogoOpciones` ↔ menú
+  Herramientas.
+- Persistente entre sesiones.
 
 ### Elevación UAC
 
@@ -251,548 +360,97 @@ Razón de esperar: no dividir código que aún va a cambiar mucho.
 
 ## Visión futura
 
+### Constructor con todas las líneas (Tier 3)
+
+Que el constructor visual muestre **todas las líneas** del plan,
+apiladas verticalmente, igual que el cuerpo CMD. Cada línea con sus
+tokens. Colores alternos entre líneas lógicas; línea activa resaltada.
+Dummies visibles en todas las líneas. Menús contextuales unificados
+entre constructor y CMD.
+
+**Cuándo**: al refactorizar la interfaz en `UserControl`s (Tier 3).
+
 ### Pestaña de Utilidades (ConPTY)
+
 - Plugin = archivo JSON en carpeta `Plugins/`.
 - Motor ConPTY para utilidades interactivas (editores, REPLs).
 - Ejemplos: análisis de redes, comparación de ficheros, integridad,
   gestión de licencias, diskpart script, bcdboot, vi/vim.
 
 ### Port a Linux (futuro lejano)
+
 - El motor de tokens/texto es agnóstico de plataforma.
 - Catálogo distinto (bash/zsh), rutas (/, ~), variables ($VAR).
 - Muchas features reutilizables (simulación, undo/redo, multi-línea).
 
 ### Módulo traductor de comandos (Tier 3/4)
+
 - `.bat` → `.sh` con traducción automática de comandos.
 - Evaluar viabilidad técnica y coste.
 - No todos los comandos tienen equivalente directo.
 
-### Compromiso mutuo
-Como asistentes, no ayudamos a usuarios a realizar actividades
-maliciosas. Del mismo modo, diseñamos herramientas que empoderan
-al usuario sin exponerlo a riesgos innecesarios.
+### Visión v2.0: Editor multi-entorno
 
-### Tokens desde catálogo JSON (2026-10-22)
+**Estado actual (v1.0)**: solo CMD.
 
-**Completado**:
-- `tokens.json` con constantes (9), variables (17), comodines (4) y
-  operadores (12). Metadatos: nombre, descripción, ejemplo, categoría.
-- `TokenInfo` y `CatalogoTokens` como modelos.
-- `CatalogoTokensService` carga desde JSON.
-- `MainViewModel.CatalogoTokens` disponible para la UI.
-- Panel derecho bindeado al catálogo: variables, constantes, comodines.
-- Hover sobre cada elemento → descripción completa en panel derecho.
-- Doble clic → insertar al final (coherente con catálogo de comandos).
-- Clic simple → seleccionar (visual).
-- Drag → insertar en posición.
+**Visión (v2.0)**: CMD + PowerShell + Bash como "perfiles de entorno".
 
-**Patrón de interacción (consistente)**:
-- Clic simple: selecciona.
-- Doble clic: inserta al final.
-- Drag: inserta en posición.
-- Hover: info en panel derecho.
+- Cada `.vcmd` declara su entorno (campo `entorno`).
+- El entorno es inmutable dentro de un plan.
+- La importación infiere el entorno del formato (.bat→CMD, .ps1→PS, .sh→Bash).
+- Sin traducción automática entre entornos.
+- Catálogos separados por entorno.
+- Apariencia diferenciada (color, icono).
+- Selector visible en la UI.
 
-**Pendiente**:
-- [ ] Refactorizar `ComandoParser` para reconocer constantes/variables
-      desde el JSON en lugar de listas hardcodeadas.
-- [ ] Edición de constantes con ComboBox de valores (A1).
-- [ ] Edición de comodines con auto-corchetes (A2).
-- [ ] Edición de parámetros con valor `/A:D` (A3).
+**Fases para v2.0** (28-42h):
 
-## Migración completa al catálogo JSON (2026-10-22)
+- R.1-R.5: infraestructura.
+- R.6: catálogo PowerShell.
+- R.7: catálogo Bash.
+- R.8: parser PowerShell.
+- R.9: parser Bash.
+- R.10: import .ps1/.sh.
+- R.11-R.12: ejecución.
 
-### Estado
-Todos los tokens del panel derecho están bindeados al catálogo JSON:
+**Preparación en v1.0**:
 
-| Categoría | Cantidad | Archivo |
-|---|---|---|
-| Constantes | 9 | `tokens.json` |
-| Variables | 17 | `tokens.json` |
-| Comodines | 4 | `tokens.json` |
-| Operadores | 12 | `tokens.json` |
-
-**Total**: 42 tokens editables desde JSON sin recompilar.
-
-### Infraestructura
-- `Models/TokenInfo.cs` y `CatalogoTokens`.
-- `Services/CatalogoTokensService.cs` carga desde `Data/tokens.json`.
-- `MainViewModel.CatalogoTokens` disponible para la UI.
-
-### Patrón de interacción (unificado)
-- **Clic simple**: selecciona (visual).
-- **Doble clic**: inserta al final de la línea.
-- **Drag**: inserta en la posición de drop.
-- **Hover**: muestra la descripción en el panel derecho.
-
-### Presentación
-- Operadores: `UniformGrid` con 4 columnas (aspecto de botones).
-- Variables/Constantes: lista vertical.
-- Comodines: lista con nombre + descripción corta.
-
-### Ventajas del catálogo
-- Añadir un token: editar JSON.
-- Cambiar una descripción: editar JSON.
-- Traducir a otros idiomas: editar JSON (futuro).
-- Sin recompilar.
-## Hito: Tarea 4 completada + arquitectura de información (2026-10-22)
-
-### Completado
-- Tarea 4: descripciones enriquecidas de /A y /O.
-- TokenInfo + CatalogoTokens cargados desde tokens.json.
-- Tres métodos de info en el panel derecho, cada uno con su contexto.
-
-### Arquitectura
-- Panel derecho = centro de información único.
-- Tres contextos: modificador, token insertado, elemento pendiente.
-- Cada método tiene su responsabilidad. No hay duplicación.
-
-### Mejoras futuras (Tier 2)
-- [ ] Ampliar MostrarInfoTokenInfo con Categoria y Ejemplo.
-- [ ] Ampliar tokens.json con categoria y ejemplo para cada elemento.
-- [ ] Renombrar MostrarInfoTokenInfo a algo más claro (opcional).
-
-### Pendiente próxima sesión
-
-- Tarea 5: drag de constantes sobre tokens existentes.
-- Tarea 6: drag & drop de tokens (reordenar).
-- Tarea 7: edición in-place de más tipos.
-- ### Tarea 3 — Comodines parametrizados (2026-10-23)
-
-**Problema**: los comodines `[abc]` y `[a-z]` tienen contenido editable.
-Con el ComboBox normal, no se puede cambiar.
-
-**Solución**: `ComboBox` con `IsEditable="True"`.
-- El usuario puede seleccionar de la lista o escribir su propio texto.
-- Con `Text` binding en lugar de `SelectedItem`.
-- Handler `PreviewKeyDown` para Enter/Escape.
-
-**Alternativa futura**: dos editores según el tipo de comodín
-(simple → ComboBox, parametrizado → TextBox).
-
-### Tarea 3 completada (2026-10-23)
-
-**Completado**:
-- Campo `ValoresDesplegable` en Token.
-- Poblado desde `CatalogoTokens` en `Clasificar` (constantes, variables, comodines).
-- ComboBox in-place al doble clic sobre Constante/Variable/Comodín.
-- `ComboBox` con `IsEditable="True"`: seleccionar de la lista o escribir.
-- Binding por `Text` (no `SelectedItem`) para permitir escritura libre.
-- Handlers `PreviewKeyDown` (Enter/Escape), `SelectionChanged`, `DropDownClosed`.
-
-**Comportamiento**:
-- Si el texto editado mantiene el formato → se queda como Comodín/Constante.
-- Si cambia a otro formato → el parser lo reclasifica (puede pasar a Texto).
-- **Filosofía**: el parser clasifica, no corrige. El usuario es responsable.
-- Validación semántica (informar de errores) → Tier 2/3.
-
-**Bug transitorio observado (1 de 12 veces)**:
-- El ComboBox se cerró de golpe al editar la primera vez.
-- No reproducible sistemáticamente.
-- Posible causa: timing del IsDropDownOpen en IsVisibleChanged.
-- **Pendiente**: si vuelve a ocurrir, añadir delay o cambiar a Loaded.
-
-### Comodines parametrizados
-- `[abc]` y `[a-z]` son editables como texto.
-- `*` y `?` seleccionables de la lista.
-- Un solo editor (ComboBox editable) para todos.
-- ### Tarea 3 completada (2026-10-23)
-
-**Completado**:
-- ComboBox in-place al doble clic sobre Constante, Variable o Comodín.
-- El ComboBox permite seleccionar de la lista o escribir (IsEditable=True).
-- **Sin binding Text**: el texto se gestiona manualmente desde los handlers.
-  Razón: el binding TwoWay con PropertyChanged interfería con la edición
-  y provocaba que Escape no restaurara.
-- `IsVisibleChanged` asigna el texto inicial.
-- `SelectionChanged` actualiza `cb.Text` al seleccionar de la lista.
-- `PreviewKeyDown`: Enter confirma (`token.Texto = cb.Text`), Escape descarta.
-- `DropDownClosed`: descarta o confirma según el caso.
-- Snapshot de la línea para restaurar en Escape.
-- `OlvidarSnapshotTexto()` al confirmar.
-
-**Comportamiento**:
-- Seleccionar de la lista → confirma.
-- Escribir + Enter → confirma.
-- Escribir + Escape → descarta.
-- Escribir + clic fuera → descarta (según `DropDownClosed`).
-- Texto que no cumple el formato → se reclasifica (esperado).
-
-**Lección**: con `ComboBox` editable, mejor **control manual** del texto
-que binding TwoWay. El binding interfiere con la edición.
-
-### Comodines parametrizados
-- `[abc]` y `[a-z]` editables como texto.
-- `*` y `?` seleccionables de la lista.
-- Un solo editor (ComboBox editable) para todos.
-
-### Bug transitorio (1 de 12 veces)
-- El ComboBox se cerró de golpe al editar la primera vez.
-- No reproducible. Posible timing del IsDropDownOpen.
-- Pendiente: si vuelve a ocurrir, añadir delay.
-- ### Ctrl+Drop para sustituir tokens (2026-10-23)
-
-**Concepto**:
-- Drop normal → insertar token en la posición del cursor.
-- Ctrl+Drop → sustituir el token existente bajo el cursor.
-
-**Decisiones de diseño**:
-- Coherente con otros editores (Photoshop, VS Code).
-- Sin estado previo (no hace falta "token seleccionado").
-- Predecible y descubrible.
-- Aplicable a cualquier tipo de token.
-
-**Implementación (no invasiva)**:
-- Se usa `PreviewDrop` (antes del `Drop`).
-- Si Ctrl NO está pulsado → no hace nada, el `Drop` original funciona.
-- Si Ctrl SÍ está pulsado:
-  - Busca el token bajo el cursor con `ObtenerTokenBajoPunto`.
-  - Si hay token → sustituye con `SustituirToken` y marca `e.Handled = true`.
-  - Si no hay token (espacio vacío o dummie) → no hace nada, el `Drop` original inserta.
-- **No se modifica `PanelBloques_Drop`** (que funcionaba bien).
-
-**Helpers añadidos**:
-- `ObtenerTokenBajoPunto(Point)`: hit-test sobre `PanelBloques`, ignorando dummies.
-- `SustituirToken(Token, Token)`: reemplaza el token en `Tokens` y reconstruye.
-
-**Comportamiento**:
-- Los dummies NO se sustituyen (se rellenan como siempre).
-- Los parámetros NO se sustituyen (se marcan/desmarcan).
-- El token sustituido se reclasifica automáticamente (el parser hace su trabajo).
-
-**Resultado**: la Tarea 5 (drag de constantes sobre tokens existentes)
-queda cubierta por esta funcionalidad. Solo queda pendiente la Tarea 6
-(reordenar tokens dentro del constructor).
-
-### Icono del programa (2026-10-24)
-
-- Icono: pavo real con plumas de terminal (`>_`) y código (`{}`).
-- Estética cyberpunk/futurista, encaja con la filosofía del proyecto.
-- Archivo: `icono.ico` (multi-resolución: 16, 32, 48, 256).
-- Build Action: `Resource`.
-- Configurado en `.csproj` (`<ApplicationIcon>`) y `MainWindow.xaml` (`Icon=`).
-- Los diálogos heredan el icono del ejecutable.
-- ### Tarea 6 — Reordenar tokens con drag interno (2026-10-24)
-
-**Completado**:
-- Drag interno de tokens dentro del constructor.
-- Sin Ctrl → mover (reordenar).
-- Ctrl+Drag → eliminar el token destino + mover el origen a su posición.
-- Método unificado `MoverToken(tokenOrigen, indiceDestino, tokenAEliminar)`.
-- Reajuste de índices tras eliminar y quitar el origen.
-- Ignora dummies (no son arrastrables).
-
-**Comportamiento**:
-- Arrastrar token → mover a nueva posición.
-- Ctrl+Arrastrar token sobre otro → el origen ocupa el lugar del destino,
-  el destino se elimina.
-- Sin Ctrl → no se elimina nada, solo se reordena.
-- Mover al mismo sitio → no hace nada.
-
-**Interacción completa (lenguaje de gestos del editor)**:
-| Gesture | Resultado |
-|---------|-----------|
-| Arrastrar comando del catálogo | Insertar en posición |
-| Ctrl+Arrastrar comando del catálogo | Sustituir token bajo cursor |
-| Arrastrar token del constructor | Reordenar |
-| Ctrl+Arrastrar token del constructor | Eliminar destino, mover origen a su sitio |
-
-**Pendiente (opcional)**:
-- [ ] Feedback visual durante el drag (línea de inserción, cursor).
-- [ ] Tooltip al arrastrar: "Ctrl para sustituir".
-
-### Icono del programa (2026-10-24)
-
-- Icono: pavo real con plumas de terminal (`>_`) y código (`{}`).
-- Estética cyberpunk/futurista, coherente con la filosofía del proyecto.
-- Archivo: `icono.ico` con resoluciones 16, 32, 48, 64, 128 y 256.
-- Build Action: `Resource`.
-- Configurado en `.csproj` (`<ApplicationIcon>`) y `MainWindow.xaml` (`Icon=`).
-- Los diálogos heredan el icono del ejecutable.
-- PNG original convertido a ICO online en convertico.com.
-- GIMP usado para retoques previos.
+- Campo `entorno` en `.vcmd` (ya implementado).
+- Avisos claros al exportar/importar `.ps1`/`.sh`.
+- Documentación de limitaciones.
 
 ### Web del proyecto (preparada, no publicada)
 
-**Ubicación prevista**: `drthands.com` (temporalmente; futuro dominio propio).
+**Ubicación prevista**: `drthands.com` (temporalmente; futuro dominio
+propio).
+
 **Estado**: primera versión preparada, pendiente de:
+
 - Eliminar telemetría de Google (auto-hospedar fuentes, Tailwind, imágenes).
-- Actualizar datos ficticios (stars, versión, tamaños) por placeholders honestos.
+- Actualizar datos ficticios por placeholders honestos.
 - Añadir `<link rel="icon">` para favicon.
 - Añadir meta tags SEO (`description`, `og:image`, `twitter:card`).
 - Añadir página de privacidad / términos.
 - Compilar Tailwind localmente (requiere Node.js).
 - Reemplazar imágenes de `lh3.googleusercontent.com` por locales.
 
-**Estética**: cyberpunk/futurista, coherente con el icono.
-**Nodos a favor**: narrativa técnica, elementos de confianza (SHA-256,
-sandbox, zero telemetry, MIT license), detalles de producto (winget,
-múltiples formatos de descarga, icono descargable).
-
 **Nota**: la web declara "Zero Telemetry" pero carga CDNs de Google.
 Incoherencia a resolver antes de publicar.
 
+### Compromiso mutuo
 
-### Visión: constructor con todas las líneas (Tier 3)
-
-**Idea**: que el constructor visual muestre **todas las líneas** del plan,
-apiladas verticalmente, igual que el cuerpo CMD. Cada línea con sus tokens.
-
-**Ventajas**:
-- Vista global del plan.
-- Coherencia visual: constructor = CMD, uno en bloques, otro en texto.
-- Menús contextuales unificados.
-- Edición in-place sobre cualquier línea (no solo la activa).
-**Detalles de diseño discutidos**:
-- **Colores alternos** entre líneas (blanco / azul claro) para marcar límites.
-  Razón: una línea lógica puede ocupar 2-3 líneas visuales si es muy larga.
-  Los colores alternos ayudan a distinguir dónde empieza/termina cada línea lógica.
-- **Línea activa resaltada** con el mismo sistema de colores (por ejemplo,
-  color más intenso o borde de acento).
-- **Dummies visibles en TODAS las líneas**, no solo en la activa.
-  Razón: ayudan a recordar qué líneas están incompletas.
-- **Menús contextuales** unificados entre constructor y CMD.
-
-**Cuándo**: al refactorizar la interfaz en UserControls (Tier 3).
-Razón: tener el código dividido permite implementar el sistema con control.
-
-**Implicación para menús contextuales de hoy**:
-Los menús deben diseñarse pensando en que mañana estarán disponibles
-TANTO en el CMD COMO en el constructor. Los handlers deben ser
-reutilizables y no depender del "lugar" donde se invocan.
-### Mejora pendiente: "Insertar comando" desde el constructor (Tier 2/3)
-
-**Problema**: al pulsar "Insertar comando" en el menú contextual del
-constructor, el foco va al buscador del panel izquierdo. Puede no ser
-visible si el usuario ha colapsado ese panel.
-
-**Opciones**:
-- A) Popup con buscador en el propio constructor (contextual).
-- B) Panel de búsqueda desplegable en el PanelBloques (inline).
-- C) Feedback visual al enfocar el buscador izquierdo (parpadeo).
-- D) Command Palette estilo VS Code (Ctrl+Shift+P).
-
-**Recomendación**: Opción A o D. Contextual y visual.
-**Prioridad**: Media. El caso actual es funcional pero no óptimo.
-### Tarea E — Indicador visual del modo silencioso (2026-10-25)
-
-**Implementado**:
-- StatusBarItem con "🔇 Silencioso" en naranja.
-- Visible solo si `ModoSilencioso == true` (DataTrigger).
-- ToolTip explicativo.
-- Persiste entre sesiones.
-
-**Cambio de título**: DESCARTADO.
-Motivo: la barra de estado es suficiente. El título ya se usa para
-mostrar el nombre del archivo abierto. Añadir un sufijo puede
-saturar el título y duplicar la señal.
-
-### Tarea D — Auto-scroll al editor (2026-10-25)
-
-**Implementado**:
-- Suscripción a `PropertyChanged` de `LineaActiva` en `MainWindow`.
-- Método `ScrollALineaActiva` que:
-  - Busca el contenedor del `ItemsControl` (`PanelLineas`).
-  - Llama a `BringIntoView()` con `DispatcherPriority.Background`.
-- Se dispara al cambiar `LineaActiva`.
-
-**Comportamiento verificado**:
-- Al crear una nueva línea (fuera de la vista) → scroll automático.
-- Al cambiar de línea activa (con scroll manual) → scroll automático.
-- Al ejecutar el plan (la activa cambia en cada iteración) → scroll sigue.
-- Al escribir en la línea activa fuera de la vista → scroll la trae.
-
-**Requisito**: el `ItemsControl` de líneas debe tener `x:Name="PanelLineas"`
-y estar dentro de un `ScrollViewer` con `VerticalScrollBarVisibility="Auto"`.
-
-**Estado**: completada.
-
-### Tarea C — Botón ✕ por línea cerrada (2026-10-25)
-
-**Implementado**:
-- Botón ✕ en cada línea cerrada (visible al hover).
-- Handler `EliminarLinea_PreviewMouseLeftButtonDown` (sin parpadeo).
-- `EliminarLinea_Click` se mantiene para la botonera superior.
-
-**Sobre el ContextMenu del TextBox**:
-- `TextoEdicion` (editor de líneas): **mantiene el binding**
-  `ContextMenu="{Binding ContextMenu, ElementName=LineaContenedor}"`.
-  Esto permite que el clic derecho sobre el comando muestre el menú
-  del `Border` (9 opciones en activa, 8 en prompt).
-- `EditorInPlace` (editor de tokens): **`ContextMenu="{x:Null}"`**
-  (ya estaba así desde ayer).
-
-**Lección**: en WPF, el `ContextMenu` en un `TextBox` puede bindearse al
-del padre con `ElementName`, y funciona si el nombre está en el mismo
-`DataTemplate`. **NO poner `{x:Null}`** si quieres que el clic derecho
-muestre el menú del padre.
-
-**Estado**: completada.
-### Tarea B — Modo aprendiz vs experto (Nivel 1, 2026-10-25)
-
-**Implementado**:
-- Enum `ModoTrabajo` (Aprendiz / Experto) en `Configuracion.cs`.
-- `MainViewModel.ModoTrabajo` persistente.
-- Radio buttons en el panel izquierdo (reemplazan los 4 placeholders).
-- Check "Modo silencioso" en el panel izquierdo.
-- El check se deshabilita automáticamente en modo aprendiz.
-- Bloqueo defensivo: si alguien intenta activar el silencioso en
-  aprendiz, se rechaza.
-- Al cambiar a aprendiz con silencioso activo, se desactiva.
-- Sincronización completa: panel ↔ DialogoOpciones ↔ menú Herramientas.
-
-**Comportamiento**:
-- **Aprendiz**: modo silencioso no disponible, siempre avisa al cerrar
-  con dummies requeridos, más mensajes descriptivos (pendiente Nivel 2).
-- **Experto**: modo silencioso disponible, avisos solo si no está
-  silencioso.
-
-**Diseño**:
-- Modo por defecto: Aprendiz (usuario nuevo empieza con ayuda).
-- Cambio de modo persistente entre sesiones.
-
-### Nivel 2 (futuro)
-- [ ] Mensajes de estado adaptados en todos los sitios.
-- [ ] Avisos "¿Sabías que...?" en modo aprendiz.
-- [ ] Tutorial de primer arranque.
-- [ ] Modo "tour" guiado.
-- [ ] Ocultar opciones avanzadas en aprendiz.
-
-### Fix: Ctrl+Enter no creaba nueva línea con texto pendiente (2026-10-25)
-
-**Síntoma**: al pulsar Ctrl+Enter con texto en el TextBox (sin
-espacio/Enter previo), la nueva línea no se creaba o se creaba sin
-la última palabra.
-
-**Causa**: se llamaba directamente a `ViewModel.CerrarYCrearSiguiente()`
-sin empujar primero el texto del TextBox al modelo.
-
-**Fix**: usar `NuevaLinea_Click` (que ya hace el empujón) o crear un
-método auxiliar `EmpujarYCrearNuevaLinea()` sin parámetros.
-
-**Lección**: cualquier acción sobre la línea activa debe empujar el
-texto del TextBox al modelo primero. Es el patrón establecido en el
-proyecto.
-### Tarea 13 — Modo aprendiz Nivel 2 (2026-10-26)
-
-**Implementado**:
-- `SetStatusSegunModo(aprendiz, experto)` en MainViewModel.
-- Mensajes adaptados en los 10+ sitios clave:
-  · Agregar comando, ejecutar línea/plan, guardar, exportar,
-    limpiar, eliminar token, crear/copiar/cortar/pegar/duplicar línea.
-- Modo aprendiz: mensajes descriptivos con instrucciones.
-- Modo experto: mensajes concisos.
-
-**Fix**: plan vacío
-- `EjecutarPlanAsync` detecta si todas las líneas están en blanco.
-- Mensaje claro en vez de "0 OK, 0 errores".
-
-**Pendiente (13.3 y 13.4)**:
-- [ ] Avisos "¿Sabías que...?" en modo aprendiz.
-- [ ] Tutorial de primer arranque.
-
-**Estado**: Nivel 2 básico completado.
+Como asistentes, no ayudamos a usuarios a realizar actividades
+maliciosas. Del mismo modo, diseñamos herramientas que empoderan
+al usuario sin exponerlo a riesgos innecesarios.
 
 
-### Undo/Redo — Comportamiento actual (Fase 9.A, 2026-10-27)
 
-**Dos sistemas conviven**:
-- **Global** (`UndoRedoManager`): operaciones sobre líneas
-  (mover, borrar, duplicar, crear).
-- **Por línea** (`LineaComando`): edición de texto dentro de una línea.
 
-**Ctrl+Z**:
-1. Intenta deshacer en el global.
-2. Si no hay, deshace en la línea activa.
 
-**Ctrl+Y**:
-1. Intenta rehacer en el global.
-2. Si no hay, rehace en la línea activa.
 
-**Limitación conocida**: el orden de undo/redo **no es cronológico
-global**. Si el usuario hace "mover línea" y luego "escribir texto",
-Ctrl+Z deshace primero el texto (porque está en el undo por línea),
-luego el movimiento (porque está en el global). Pero si el orden
-fuera "escribir texto" y luego "mover línea", Ctrl+Z deshace primero
-el movimiento (global), luego el texto (línea). **El orden es
-correcto en cada caso porque Ctrl+Z siempre deshace lo último**.
+Nuevo ticket abierto: "Bug: prompts no reevaluados tras cambios estructurales del plan". Con el diagnóstico y el plan de fix que te dejé en este chat.
 
-**Problema con Ctrl+Y**: si el usuario hace "mover" y luego "escribir",
-Ctrl+Z deshace "escribir", y Ctrl+Y rehace "mover" (porque el global
-tiene el movimiento), **no "escribir"**. El orden es incorrecto.
+Nuevo pendiente: "Revisión de JSON: operadores, @, 2>, 2>&1, :: como alias de rem, refactor del bloque hardcodeado de operadores en ComandoParser, reordenación ergonómica del catálogo".
 
-**Solución futura**: unificar ambos sistemas en un solo `UndoRedoManager`
-global (Opción A). Requiere migrar el undo por línea a acciones globales.
+Corregir el bug del CargarSesion en el histórico de notas (por si vuelve a aparecer).
 
-**Prioridad**: alta, pero requiere sesión completa.
-### Undo/Redo — Estado actual (Fase 9.A, 2026-10-27)
-
-**Dos sistemas conviven**:
-- Global (UndoRedoManager): operaciones sobre líneas.
-- Por línea (LineaComando): edición de texto.
-
-**Comportamiento**:
-- Ctrl+Z: intenta global, luego línea.
-- Ctrl+Y: intenta global, luego línea.
-
-**Limitación conocida (Opción C aceptada)**:
-- El orden no es cronológico global.
-- Escenario: mover → escribir → Ctrl+Z (deshace escribir) →
-  Ctrl+Y (rehace mover, no escribir). El usuario tiene que pulsar
-  Ctrl+Y dos veces.
-- No es intuitivo, pero es funcional.
-
-**Solución futura (Opción A, sesión dedicada)**:
-- Unificar en UndoRedoManager global.
-- Migrar undo por línea a EditarTextoAction.
-- Eliminar undo por línea.
-- Duración: 2-3 horas.
-- Prioridad: alta.
-
-**Fixes aplicados**:
-- LimpiarHistorial al cargar sesión (global y por línea).
-- Mensajes "Deshecho (edición de línea)" vs "Deshecho: [acción]".
-- Menú Editar con IsEnabled bindeado.
-
-### Limitación: parámetros con checkbox no son deshacibles (2026-10-27)
-
-Los parámetros que se marcan con checkbox (`/S`, `/B`...) no se apilan
-en `UndoRedo` global. Solo se modifica el texto, pero no se crea
-acción deshacible.
-
-**Consecuencia**: si el usuario marca `/S` y luego `Ctrl+Z`, deshace
-la última acción global (por ejemplo, añadir `dir`), y `/S` desaparece
-con él.
-
-**Solución futura**: migrar `AgregarTokenParametro` y
-`QuitarTokenParametro` a `UndoRedo`. Requiere coordinar con el
-checkbox.
-
-**Prioridad**: media.
-
-### Fase 9.B completada (2026-10-27)
-
-**Acciones migradas al UndoRedo global**:
-- Agregar/Eliminar línea.
-- Mover línea arriba/abajo.
-- Duplicar/Pegar línea.
-- Editar texto de línea (vía EditarTextoAction).
-- Agregar/eliminar comandos, rutas, textos.
-- Mover/sustituir tokens.
-
-**Helper `EjecutarCambioTexto`**:
-Patrón reutilizable para envolver cambios de texto en UndoRedo.
-Ahorra repetición y garantiza que siempre se guarda el texto anterior.
-
-**Limitación WPF descubierta**:
-Durante `DoDragDrop`, `Keyboard.Modifiers` NO se actualiza (bucle
-modal). Solución: capturar Ctrl en `PreviewMouseMove` ANTES de
-iniciar el drag. El usuario debe pulsar Ctrl ANTES de arrastrar.
-
-**Limitaciones aceptadas (Opción C)**:
-- Parámetros con checkbox (`/S`, `/B`...) no se apilan en undo global.
-- Orden entre undo global y por línea no es cronológico perfecto.
-- Solución futura: Opción A (unificar todo en UndoRedoManager).
-
-**Próximo paso (Tarea 9.C)**:
-- Migrar parámetros con checkbox a UndoRedo (si se quiere).
-- O unificar todo en UndoRedoManager (Opción A).

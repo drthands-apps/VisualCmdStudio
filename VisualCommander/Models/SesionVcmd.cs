@@ -16,6 +16,13 @@ namespace VisualCommander.Models
         /// <summary>Nombre de la aplicación que generó el archivo.</summary>
         public string Aplicacion { get; set; } = "Visual CMD Studio";
 
+        /// <summary>
+        /// Entorno de trabajo del plan (cmd, powershell, bash).
+        /// En v1.0 solo se usa "cmd". Preparado para v2.0.
+        /// </summary>
+        public string Entorno { get; set; } = "cmd";
+
+
         /// <summary>Fecha de creación (ISO 8601 UTC).</summary>
         public DateTime Fecha { get; set; } = DateTime.UtcNow;
 

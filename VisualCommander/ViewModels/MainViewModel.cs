@@ -596,19 +596,19 @@ namespace VisualCommander.ViewModels
         public void EliminarToken(Token token)
         {
             var linea = LineaActiva;
-
             // Caso especial: parámetro con checkbox. El checkbox se encarga.
             if (token.Tipo == TipoToken.Parametro && token.Origen is Parametro p)
             {
                 var pv = linea.Modificadores.FirstOrDefault(m => m.Parametro == p);
                 if (pv is { EstaSeleccionado: true })
                 {
-                    pv.EstaSeleccionado = false;
-                    SetStatusSegunModo(
-                        $"Eliminado: {token.Texto}. Puedes deshacer con Ctrl+Z.",
-                        $"Eliminado: {token.Texto}");
+                    CambiarSeleccionParametro(pv, false);
                     return;
                 }
+                SetStatusSegunModo(
+                        $"Eliminado: {token.Texto}. Puedes deshacer con Ctrl+Z.",
+                        $"Eliminado: {token.Texto}");
+                return;
             }
 
             // Caso normal.
@@ -620,6 +620,32 @@ namespace VisualCommander.ViewModels
             SetStatusSegunModo(
                 $"Eliminado: {token.Texto}. Puedes deshacer con Ctrl+Z.",
                 $"Eliminado: {token.Texto}");
+        }
+
+        /// <summary>
+        /// Marca o desmarca un parámetro con checkbox, dentro de UndoRedo global.
+        /// Sustituye el binding directo del CheckBox en la UI.
+        /// </summary>
+        public void CambiarSeleccionParametro(ParametroVista pv, bool seleccionado)
+        {
+            if (pv.EstaSeleccionado == seleccionado) return;
+
+            var linea = LineaActiva;
+
+            EjecutarCambioTexto(
+                linea,
+                () => pv.EstaSeleccionado = seleccionado,
+                seleccionado
+                    ? $"Marcar parámetro: {pv.Nombre}"
+                    : $"Desmarcar parámetro: {pv.Nombre}");
+
+            SetStatusSegunModo(
+                seleccionado
+                    ? $"Parámetro añadido: {pv.Nombre}. Puedes deshacer con Ctrl+Z."
+                    : $"Parámetro eliminado: {pv.Nombre}. Puedes deshacer con Ctrl+Z.",
+                seleccionado
+                    ? $"Parámetro añadido: {pv.Nombre}"
+                    : $"Parámetro eliminado: {pv.Nombre}");
         }
 
         /// <summary>
@@ -1779,6 +1805,7 @@ namespace VisualCommander.ViewModels
             {
                 var sesion = new SesionVcmd
                 {
+                    Entorno = _configuracion.Entorno,
                     Creador = creador ?? Environment.UserName,
                     ModoSilencioso = ModoSilencioso,
                     LineaActivaIndice = Math.Max(0, Lineas.IndexOf(LineaActiva)),
@@ -1812,6 +1839,7 @@ namespace VisualCommander.ViewModels
 
                 SesionService.Guardar(ruta, sesion);
 
+
                 SetStatusSegunModo(
      $"Sesión guardada en: {ruta}. Puedes recuperarla con 'Archivo → Abrir sesión' (Ctrl+O).",
      $"Sesión guardada: {ruta}");
@@ -1823,6 +1851,116 @@ namespace VisualCommander.ViewModels
                 return false;
             }
         }
+
+        /// <summary>
+        /// Importa un plan desde distintos formatos:
+        /// - .vcmd: carga nativa completa.
+        /// - .bat/.cmd: parsea respetando el contenido original.
+        /// - .ps1/.sh: importa como texto plano (previa confirmación del usuario).
+        /// Devuelve true si se importó algo.
+        /// </summary>
+        public bool ImportarPlan(string ruta)
+        {
+            var ext = Path.GetExtension(ruta).ToLowerInvariant();
+
+            // .vcmd: delegar en CargarSesion.
+            if (ext == ".vcmd")
+                return CargarSesion(ruta);
+
+            List<LineaSesion>? lineas = null;
+
+            if (ext == ".bat" || ext == ".cmd")
+            {
+                try
+                {
+                    lineas = ImportadorBat.Importar(ruta, Comandos);
+                }
+                catch (Exception ex)
+                {
+                    SetStatus($"Error al importar .bat/.cmd: {ex.Message}");
+                    return false;
+                }
+            }
+            else if (ext == ".ps1" || ext == ".sh")
+            {
+                // Diálogo de soporte limitado (persistente con "no volver a preguntar").
+                if (!_configuracion.AvisoImportacionLimitadaSilenciado)
+                {
+                    var dialogo = new DialogoImportacionLimitada(ext)
+                    {
+                        Owner = System.Windows.Application.Current?.MainWindow
+                    };
+                    if (dialogo.ShowDialog() != true)
+                    {
+                        SetStatus("Importación cancelada");
+                        return false;
+                    }
+                    if (dialogo.NoVolverAMostrar)
+                    {
+                        _configuracion.AvisoImportacionLimitadaSilenciado = true;
+                        ConfiguracionService.Guardar(_configuracion);
+                    }
+                }
+
+                try
+                {
+                    lineas = ImportadorTextoPlano.Importar(ruta);
+                }
+                catch (Exception ex)
+                {
+                    SetStatus($"Error al importar: {ex.Message}");
+                    return false;
+                }
+            }
+            else
+            {
+                SetStatus($"Formato no soportado: {ext}");
+                return false;
+            }
+
+            if (lineas == null || lineas.Count == 0)
+            {
+                SetStatus("El archivo no contiene líneas importables");
+                return false;
+            }
+
+            // Reemplazar plan actual.
+            Lineas.Clear();
+            UndoRedo.Limpiar();
+
+            foreach (var ls in lineas)
+            {
+                var linea = new LineaComando
+                {
+                    DirectorioTrabajo = string.IsNullOrWhiteSpace(ls.DirectorioTrabajo)
+                        ? Environment.CurrentDirectory
+                        : ls.DirectorioTrabajo
+                };
+
+                linea.ActualizarDesdeTexto(ls.Comando ?? "");
+                linea.LimpiarHistorial();
+
+                Lineas.Add(linea);
+                ConfigurarNuevaLinea(linea);
+            }
+
+            if (Lineas.Count == 0)
+            {
+                var vacia = new LineaComando();
+                vacia.ConfirmarEstado();
+                Lineas.Add(vacia);
+            }
+
+            LineaActiva = Lineas[0];
+            LineaActiva.EsActiva = true;
+
+            SetStatusSegunModo(
+                $"Importado desde {Path.GetFileName(ruta)}: {Lineas.Count} línea(s). Revisa los directorios de trabajo si el script usaba rutas relativas.",
+                $"Importado: {Lineas.Count} línea(s)");
+
+            return true;
+        }
+
         /// <summary>
         /// Carga una sesión desde el archivo indicado.
         /// Reemplaza el contenido actual del editor.
@@ -1833,18 +1971,38 @@ namespace VisualCommander.ViewModels
             try
             {
                 var sesion = SesionService.Cargar(ruta);
+
                 if (sesion == null)
                 {
                     SetStatus($"No se pudo leer el archivo: {ruta}");
                     return false;
                 }
 
+                // Verificar entorno (en v1.0 solo "cmd").
+                if (sesion.Entorno != "cmd")
+                {
+                    var resp = MessageBox.Show(
+                        $"Este plan está creado para el entorno '{sesion.Entorno}'.\n\n" +
+                        "La versión actual de Visual CMD Studio solo soporta CMD. " +
+                        "El plan se cargará como texto, pero los comandos específicos del " +
+                        $"entorno '{sesion.Entorno}' no serán reconocidos.\n\n" +
+                        "¿Deseas cargarlo igualmente?",
+                        "Entorno no soportado",
+                        MessageBoxButton.YesNo,
+                        MessageBoxImage.Warning);
+
+                    if (resp != MessageBoxResult.Yes)
+                    {
+                        SetStatus("Carga cancelada por el usuario");
+                        return false;
+                    }
+                }
+
                 // Limpiar el estado actual.
                 Lineas.Clear();
-
                 UndoRedo.Limpiar();
 
-                // Reconstruir las líneas (si hay).
+                // Reconstruir las líneas.
                 if (sesion.Lineas != null)
                 {
                     foreach (var lineaSesion in sesion.Lineas)

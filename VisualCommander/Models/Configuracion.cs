@@ -26,5 +26,13 @@ namespace VisualCommander.Models
         /// NO silencia avisos antes de ejecutar.
         /// </summary>
         public bool ModoSilencioso { get; set; } = false;
+
+
+        /// <summary>
+        /// Entorno de trabajo actual. En v1.0 solo "cmd".
+        /// </summary>
+        public string Entorno { get; set; } = "cmd";
+
+        public bool AvisoImportacionLimitadaSilenciado { get; set; }
     }
 }
