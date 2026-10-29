@@ -398,19 +398,19 @@ IsEnabled="{Binding EstaEjecutando, Converter={StaticResource InverseBoolConvert
                             <RowDefinition Height="Auto" MinHeight="90"/>
                             <!-- Modo de trabajo -->
                             <RowDefinition Height="5"/>
-                            <!-- Separador -->
-                            <RowDefinition Height=".4*"   MinHeight="40"/>
+                            <!-- Splitter -->
+                            <RowDefinition Height=".4*" MinHeight="40"/>
                             <!-- Buscador -->
                             <RowDefinition Height="5"/>
-                            <!-- Separador -->
-                            <RowDefinition Height="2*"   MinHeight="100"/>
+                            <!-- Splitter -->
+                            <RowDefinition Height="2*" MinHeight="100"/>
                             <!-- Lista comandos -->
                             <RowDefinition Height="5"/>
-                            <!-- Separador -->
-                            <RowDefinition Height="Auto"   MinHeight="80"/>
+                            <!-- Splitter -->
+                            <RowDefinition Height="Auto" MinHeight="80" MaxHeight="400"/>
                             <!-- Modificadores -->
                             <RowDefinition Height="5"/>
-                            <!-- Separador -->
+                            <!-- Splitter -->
                             <RowDefinition Height="2*" MinHeight="120"/>
                             <!-- Árbol -->
                         </Grid.RowDefinitions>
@@ -583,12 +583,12 @@ IsEnabled="{Binding EstaEjecutando, Converter={StaticResource InverseBoolConvert
                   ShowsPreview="True"/>
 
                         <!-- ==== Modificadores ==== -->
-                        <Border Grid.Row="6" Style="{StaticResource Pane}">
+                        <Border Grid.Row="6" Style="{StaticResource Pane}" >
                             <DockPanel>
                                 <TextBlock DockPanel.Dock="Top"
                        Text="{Binding LineaActiva.TituloModificadores}"
                        Style="{StaticResource SectionHeader}"/>
-                                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                                <ScrollViewer VerticalScrollBarVisibility="Auto" MaxHeight="240">
                                     <ItemsControl x:Name="ListaModificadores"
                               ItemsSource="{Binding LineaActiva.Modificadores}"
                               Margin="10,6">

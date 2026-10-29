@@ -125,7 +125,10 @@ namespace VisualCommander.Models
                 if (comandoActual != null)
                 {
                     param = comandoActual.Parametros.FirstOrDefault(p =>
+                        string.Equals(p.Nombre, limpio, StringComparison.Ordinal))
+                    ?? comandoActual.Parametros.FirstOrDefault(p =>
                         string.Equals(p.Nombre, limpio, StringComparison.OrdinalIgnoreCase));
+                    
                 }
 
                 return new Token

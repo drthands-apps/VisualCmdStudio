@@ -188,6 +188,7 @@ Analogía: Excel es un editor de cálculos, no un intérprete.
 
 - [X] Import desde `.bat`, `.ps1`, `.sh`.
 - [X] @ como TipoToken.Prefijo: parser, LineaComando, ImportadorBat
+- [X] Plantillas de comandos fase 1, incluido tar y control de flujo, iconos nuevos para organigrama
 - [ ] Plantillas de comandos (A3).
 - [ ] Comandos modulares (JSON por familias).
 
@@ -386,6 +387,7 @@ entre constructor y CMD.
 
 ### Módulo traductor de comandos (Tier 3/4)
 
+-Renombrar comandos.json a comandoscmd.json, crear comandosps.json y comandossh.json.
 - `.bat` → `.sh` con traducción automática de comandos.
 - Evaluar viabilidad técnica y coste.
 - No todos los comandos tienen equivalente directo.
@@ -461,3 +463,4 @@ Nuevo pendiente: "Revisión de JSON: operadores, @, 2>, 2>&1, :: como alias de r
 
 Corregir el bug del CargarSesion en el histórico de notas (por si vuelve a aparecer).
 
+Nuevo ticket abierto: "Problema ergonomico: en fondos de token oscuros, el texto oscuro es difícil de leer, se aconseja establecer un control de luminancia para cambiar el texto automaticamente y priorizar tokens de color brillante".

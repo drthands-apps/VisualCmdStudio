@@ -1466,7 +1466,7 @@
     "id": "sfc",
     "nombre": "sfc",
     "familia": "Integridad",
-    "colorFamilia": "16A085",
+    "colorFamilia": "F4FF00",
     "icono": "🛡",
     "resumen": "Verificador de archivos de sistema",
     "descripcion": "Comprueba y repara archivos de sistema protegidos de Windows. Puede tardar bastante tiempo.",
@@ -1496,7 +1496,7 @@
     "id": "dism",
     "nombre": "dism",
     "familia": "Integridad",
-    "colorFamilia": "16A085",
+    "colorFamilia": "F4FF00",
     "icono": "🛡",
     "resumen": "Servicio de imágenes y mantenimiento",
     "descripcion": "Repara la imagen de Windows, gestiona características y paquetes del sistema.",
@@ -2106,65 +2106,438 @@
     "ejemplos": [ "set", "set NOMBRE=Juan", "set /p RUTA=Introduce ruta: " ]
   },
   {
-    "id": "call",
-    "nombre": "call",
-    "familia": "Control",
-    "colorFamilia": "7F8C8D",
-    "icono": "💬",
-    "resumen": "Invoca otro script",
-    "descripcion": "Ejecuta otro script .bat o .cmd desde el actual y vuelve al terminar.",
-    "sintaxis": "call [unidad:][ruta]script [argumentos]",
+    "id": "tar",
+    "nombre": "tar",
+    "familia": "Compresión",
+    "colorFamilia": "D35400",
+    "icono": "📦",
+    "resumen": "Archiva y comprime archivos",
+    "descripcion": "Crea, lista y extrae archivos .tar, .tar.gz, .zip y .7z. Incluido en Windows 10 1803+ y Windows 11. Basado en bsdtar (libarchive).",
+    "sintaxis": "tar [-c|-r|-t|-u|-x] [-f archivo] [-v] [-a] [-z|-j|-J|--lzma] [-C dir] [--exclude patrón] [archivos...]",
     "peligroso": false,
     "parametros": [
       {
-        "nombre": ":label",
-        "descripcion": "Llamar a una etiqueta del mismo script",
-        "tipo": "Texto"
-      }
-    ],
-    "ejemplos": [ "call backup.bat", "call :subrutina" ]
-  },
-  {
-    "id": "exit",
-    "nombre": "exit",
-    "familia": "Control",
-    "colorFamilia": "7F8C8D",
-    "icono": "💬",
-    "resumen": "Sale del script o consola",
-    "descripcion": "Termina el intérprete de comandos o el script actual con el código de salida indicado.",
-    "sintaxis": "exit [/b] [código]",
-    "peligroso": false,
-    "parametros": [
-      {
-        "nombre": "/b",
-        "descripcion": "Salir del script actual, no del CMD",
+        "nombre": "-c",
+        "descripcion": "Crear un archivo nuevo",
         "tipo": "Bandera"
       },
       {
-        "nombre": "código",
-        "descripcion": "Código de salida numérico",
-        "tipo": "Numero"
-      }
-    ],
-    "ejemplos": [ "exit", "exit /b 0", "exit 1" ]
-  },
-  {
-    "id": "goto",
-    "nombre": "goto",
-    "familia": "Control",
-    "colorFamilia": "7F8C8D",
-    "icono": "💬",
-    "resumen": "Salta a una etiqueta del script",
-    "descripcion": "Transfiere el control a una etiqueta dentro del mismo script .bat.",
-    "sintaxis": "goto [:]etiqueta",
-    "peligroso": false,
-    "parametros": [
+        "nombre": "-r",
+        "descripcion": "Añadir o reemplazar archivos en un archivo existente",
+        "tipo": "Bandera"
+      },
       {
-        "nombre": "etiqueta",
-        "descripcion": "Nombre de la etiqueta destino",
+        "nombre": "-t",
+        "descripcion": "Listar el contenido del archivo",
+        "tipo": "Bandera"
+      },
+      {
+        "nombre": "-u",
+        "descripcion": "Añadir solo archivos más nuevos que la copia existente",
+        "tipo": "Bandera"
+      },
+      {
+        "nombre": "-x",
+        "descripcion": "Extraer el contenido del archivo",
+        "tipo": "Bandera"
+      },
+      {
+        "nombre": "-f",
+        "descripcion": "Ubicación del archivo (obligatorio en la práctica)",
         "tipo": "Texto"
+      },
+      {
+        "nombre": "-v",
+        "descripcion": "Mostrar archivos procesados (verbose)",
+        "tipo": "Bandera"
+      },
+      {
+        "nombre": "-a",
+        "descripcion": "Auto-detectar formato de compresión por la extensión del archivo",
+        "tipo": "Bandera"
+      },
+      {
+        "nombre": "-b",
+        "descripcion": "Número de registros de 512 bytes por bloque de I/O",
+        "tipo": "Numero"
+      },
+      {
+        "nombre": "-w",
+        "descripcion": "Preguntar confirmación para cada acción",
+        "tipo": "Bandera"
+      },
+      {
+        "nombre": "-z",
+        "descripcion": "Comprimir con gzip (solo -c)",
+        "tipo": "Bandera"
+      },
+      {
+        "nombre": "-j",
+        "descripcion": "Comprimir con bzip2 (solo -c)",
+        "tipo": "Bandera"
+      },
+      {
+        "nombre": "-J",
+        "descripcion": "Comprimir con xz (solo -c)",
+        "tipo": "Bandera"
+      },
+      {
+        "nombre": "--lzma",
+        "descripcion": "Comprimir con lzma (solo -c)",
+        "tipo": "Bandera"
+      },
+      {
+        "nombre": "--format",
+        "descripcion": "Formato del archivo: ustar, pax, cpio, shar (solo -c)",
+        "tipo": "Lista",
+        "valoresPosibles": [ "ustar", "pax", "cpio", "shar" ]
+      },
+      {
+        "nombre": "--exclude",
+        "descripcion": "Excluir archivos que coincidan con el patrón (solo -c)",
+        "tipo": "Texto"
+      },
+      {
+        "nombre": "-C",
+        "descripcion": "Cambiar a directorio antes de procesar (solo -c)",
+        "tipo": "Ruta"
+      },
+      {
+        "nombre": "-k",
+        "descripcion": "No sobrescribir archivos existentes (solo -x)",
+        "tipo": "Bandera"
+      },
+      {
+        "nombre": "-m",
+        "descripcion": "No restaurar fechas de modificación (solo -x)",
+        "tipo": "Bandera"
+      },
+      {
+        "nombre": "-O",
+        "descripcion": "Escribir a stdout en lugar de disco (solo -x)",
+        "tipo": "Bandera"
+      },
+      {
+        "nombre": "-p",
+        "descripcion": "Restaurar permisos, ACLs, propietario y flags (solo -x)",
+        "tipo": "Bandera"
       }
     ],
-    "ejemplos": [ "goto fin", "goto :inicio" ]
-  }
+    "ejemplos": [
+      "tar -cf backup.tar C:\\datos",
+      "tar -czf backup.tar.gz C:\\datos",
+      "tar -xf backup.tar.gz",
+      "tar -tf backup.tar.gz",
+      "tar -caf backup.zip C:\\datos"
+    ]
+  },
+  
+    {
+      "id": "if",
+      "nombre": "if",
+      "familia": "Control de flujo",
+      "colorFamilia": "2C3E50",
+      "icono": "◇",
+      "resumen": "Ejecuta un comando condicionalmente",
+      "descripcion": "Ejecuta un comando si se cumple una condición. Soporta comparaciones de cadenas, existencia de archivos/carpetas, ERRORLEVEL y comparaciones numéricas. El bloque puede tener un ELSE opcional.",
+      "sintaxis": "if [not] condición (comando) [else (comando2)]",
+      "peligroso": false,
+      "parametros": [
+        {
+          "nombre": "exist",
+          "descripcion": "Comprueba si existe un archivo o carpeta",
+          "tipo": "Texto"
+        },
+        {
+          "nombre": "defined",
+          "descripcion": "Comprueba si una variable está definida",
+          "tipo": "Texto"
+        },
+        {
+          "nombre": "errorlevel",
+          "descripcion": "Comprueba el código de salida del comando anterior",
+          "tipo": "Numero"
+        },
+        {
+          "nombre": "cmdextversion",
+          "descripcion": "Comprueba la versión de extensiones de comando",
+          "tipo": "Numero"
+        },
+        {
+          "nombre": "/I",
+          "descripcion": "Ignorar mayúsculas/minúsculas en comparaciones de cadena",
+          "tipo": "Bandera"
+        },
+        {
+          "nombre": "not",
+          "descripcion": "Invierte la condición",
+          "tipo": "Bandera"
+        },
+        {
+          "nombre": "equ",
+          "descripcion": "Igual a",
+          "tipo": "Texto"
+        },
+        {
+          "nombre": "neq",
+          "descripcion": "Distinto de",
+          "tipo": "Texto"
+        },
+        {
+          "nombre": "lss",
+          "descripcion": "Menor que",
+          "tipo": "Texto"
+        },
+        {
+          "nombre": "leq",
+          "descripcion": "Menor o igual que",
+          "tipo": "Texto"
+        },
+        {
+          "nombre": "gtr",
+          "descripcion": "Mayor que",
+          "tipo": "Texto"
+        },
+        {
+          "nombre": "geq",
+          "descripcion": "Mayor o igual que",
+          "tipo": "Texto"
+        },
+        {
+          "nombre": "else",
+          "descripcion": "Rama alternativa si la condición es falsa",
+          "tipo": "Bandera"
+        }
+      ],
+      "ejemplos": [
+        "if exist archivo.txt echo Existe",
+        "if not exist carpeta md carpeta",
+        "if %ERRORLEVEL% NEQ 0 echo Error",
+        "if \"%1\"==\"\" (echo Falta argumento) else (echo OK)"
+      ]
+    },
+    {
+      "id": "for",
+      "nombre": "for",
+      "familia": "Control de flujo",
+      "colorFamilia": "2C3E50",
+      "icono": "⬡",
+      "resumen": "Ejecuta un comando para cada elemento",
+      "descripcion": "Ejecuta un comando para cada archivo, carpeta, cadena o número de un conjunto. Soporta varios modificadores (/D, /R, /L, /F) y opciones avanzadas (tokens, delims, skip).",
+      "sintaxis": "for [/D|/R|/L|/F] %%var in (conjunto) do comando",
+      "peligroso": false,
+      "parametros": [
+        {
+          "nombre": "/D",
+          "descripcion": "Iterar sobre directorios en lugar de archivos",
+          "tipo": "Bandera"
+        },
+        {
+          "nombre": "/R",
+          "descripcion": "Recursivo: incluye subdirectorios",
+          "tipo": "Bandera"
+        },
+        {
+          "nombre": "/L",
+          "descripcion": "Iterar sobre un rango numérico (inicio,paso,fin)",
+          "tipo": "Bandera"
+        },
+        {
+          "nombre": "/F",
+          "descripcion": "Iterar sobre líneas de un archivo, comando o cadena",
+          "tipo": "Bandera"
+        },
+        {
+          "nombre": "usebackq",
+          "descripcion": "Permitir comillas invertidas en /F",
+          "tipo": "Bandera"
+        },
+        {
+          "nombre": "skip=",
+          "descripcion": "Saltar N líneas al inicio (solo /F)",
+          "tipo": "Numero"
+        },
+        {
+          "nombre": "eol=",
+          "descripcion": "Carácter de fin de línea (solo /F)",
+          "tipo": "Texto"
+        },
+        {
+          "nombre": "delims=",
+          "descripcion": "Delimitadores de token (solo /F)",
+          "tipo": "Texto"
+        },
+        {
+          "nombre": "tokens=",
+          "descripcion": "Tokens a extraer (solo /F)",
+          "tipo": "Texto"
+        }
+      ],
+      "ejemplos": [
+        "for %%f in (*.txt) do echo %%f",
+        "for /D %%d in (*) do echo %%d",
+        "for /R C:\\datos %%f in (*.log) do echo %%f",
+        "for /L %%i in (1,1,10) do echo %%i",
+        "for /F \"tokens=1,2 delims=,\" %%a in (datos.csv) do echo %%a %%b"
+      ]
+    },
+    {
+      "id": "goto",
+      "nombre": "goto",
+      "familia": "Control de flujo",
+      "colorFamilia": "2C3E50",
+      "icono": "○",
+      "resumen": "Salta a una etiqueta del script",
+      "descripcion": "Transfiere el control a una etiqueta dentro del mismo script. La etiqueta se define con dos puntos (ej. :fin). Si la etiqueta no existe, el script termina.",
+      "sintaxis": "goto [: ]etiqueta",
+      "peligroso": false,
+      "parametros": [
+        {
+          "nombre": "etiqueta",
+          "descripcion": "Nombre de la etiqueta destino",
+          "tipo": "Texto"
+        },
+        {
+          "nombre": ":eof",
+          "descripcion": "Salta al final del script",
+          "tipo": "Bandera"
+        }
+      ],
+      "ejemplos": [
+        "goto fin",
+        "goto :inicio",
+        "if errorlevel 1 goto error"
+      ]
+    },
+    {
+      "id": "call",
+      "nombre": "call",
+      "familia": "Control de flujo",
+      "colorFamilia": "2C3E50",
+      "icono": "▯▯",
+      "resumen": "Invoca otro script o etiqueta",
+      "descripcion": "Ejecuta otro script .bat o .cmd desde el actual y vuelve al terminar. También permite llamar a una etiqueta del mismo script. Sin 'call', invocar un .bat transferiría el control y no volvería.",
+      "sintaxis": "call [unidad:][ruta]script [argumentos] | call :etiqueta [argumentos]",
+      "peligroso": false,
+      "parametros": [
+        {
+          "nombre": ":etiqueta",
+          "descripcion": "Llamar a una etiqueta del mismo script",
+          "tipo": "Texto"
+        },
+        {
+          "nombre": "argumentos",
+          "descripcion": "Argumentos que se pasan al script o etiqueta",
+          "tipo": "Texto"
+        }
+      ],
+      "ejemplos": [
+        "call backup.bat",
+        "call :subrutina arg1 arg2",
+        "call C:\\Scripts\\limpiar.cmd"
+      ]
+    },
+    {
+      "id": "setlocal",
+      "nombre": "setlocal",
+      "familia": "Control de flujo",
+      "colorFamilia": "2C3E50",
+      "icono": "⌈⌉",
+      "resumen": "Inicia un ámbito local de variables",
+      "descripcion": "Inicia la localización de variables de entorno en un archivo batch. Los cambios hechos después no afectan al entorno global. Requiere 'endlocal' (explícito o al terminar el script) para cerrar el ámbito.",
+      "sintaxis": "setlocal [enableextensions | disableextensions] [enabledelayedexpansion | disabledelayedexpansion]",
+      "peligroso": false,
+      "parametros": [
+        {
+          "nombre": "enableextensions",
+          "descripcion": "Activar extensiones de comando",
+          "tipo": "Bandera"
+        },
+        {
+          "nombre": "disableextensions",
+          "descripcion": "Desactivar extensiones de comando",
+          "tipo": "Bandera"
+        },
+        {
+          "nombre": "enabledelayedexpansion",
+          "descripcion": "Activar expansión retardada de variables (!var!)",
+          "tipo": "Bandera"
+        },
+        {
+          "nombre": "disabledelayedexpansion",
+          "descripcion": "Desactivar expansión retardada",
+          "tipo": "Bandera"
+        }
+      ],
+      "ejemplos": [
+        "setlocal",
+        "setlocal enabledelayedexpansion"
+      ]
+    },
+    {
+      "id": "endlocal",
+      "nombre": "endlocal",
+      "familia": "Control de flujo",
+      "colorFamilia": "2C3E50",
+      "icono": "⌊⌋",
+      "resumen": "Cierra el ámbito local de variables",
+      "descripcion": "Finaliza la localización de variables iniciada por 'setlocal'. Restaura las variables al estado previo. Se ejecuta automáticamente al terminar el script.",
+      "sintaxis": "endlocal",
+      "peligroso": false,
+      "parametros": [],
+      "ejemplos": [
+        "endlocal"
+      ]
+    },
+    {
+      "id": "shift",
+      "nombre": "shift",
+      "familia": "Control de flujo",
+      "colorFamilia": "2C3E50",
+      "icono": "⇄",
+      "resumen": "Desplaza los argumentos posicionales",
+      "descripcion": "Desplaza los argumentos posicionales %0-%9 una posición a la izquierda. Útil para procesar argumentos variables en bucles. Con /n, desplaza n posiciones.",
+      "sintaxis": "shift [/n]",
+      "peligroso": false,
+      "parametros": [
+        {
+          "nombre": "/n",
+          "descripcion": "Número de posiciones a desplazar (1-8)",
+          "tipo": "Numero"
+        }
+      ],
+      "ejemplos": [
+        "shift",
+        "shift /3"
+      ]
+    },
+    {
+      "id": "exit",
+      "nombre": "exit",
+      "familia": "Control de flujo",
+      "colorFamilia": "2C3E50",
+      "icono": "⬭",
+      "resumen": "Sale del script o consola",
+      "descripcion": "Termina el intérprete de comandos o el script actual con el código de salida indicado. Con /b sale del script sin cerrar la consola.",
+      "sintaxis": "exit [/b] [código]",
+      "peligroso": false,
+      "parametros": [
+        {
+          "nombre": "/b",
+          "descripcion": "Salir del script actual, no del CMD",
+          "tipo": "Bandera"
+        },
+        {
+          "nombre": "código",
+          "descripcion": "Código de salida numérico",
+          "tipo": "Numero"
+        }
+      ],
+      "ejemplos": [
+        "exit",
+        "exit /b 0",
+        "exit /b 1"
+      ]
+    }
+  
 ]

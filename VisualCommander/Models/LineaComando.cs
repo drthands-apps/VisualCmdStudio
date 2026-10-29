@@ -507,9 +507,18 @@ namespace VisualCommander.Models
                     .Select(t => (Parametro)t.Origen!)
             );
 
+            var nombresPresentes = new HashSet<string>(
+                Tokens
+                    .Where(t => t.Tipo == TipoToken.Parametro)
+                    .Select(t => t.Texto),
+                StringComparer.Ordinal
+            );
+
             foreach (var pv in Modificadores)
             {
-                var deberia = parametrosPresentes.Contains(pv.Parametro);
+                var deberia = parametrosPresentes.Contains(pv.Parametro)
+                           || nombresPresentes.Contains(pv.Nombre);
+
                 if (pv.EstaSeleccionado != deberia)
                 {
                     // Desuscribimos para no disparar AgregarTokenParametro/QuitarTokenParametro.
@@ -533,18 +542,27 @@ namespace VisualCommander.Models
             if (ComandoActivo?.Origen is not Comando cmd) return;
 
             // ¿Qué parámetros están presentes en la línea ahora mismo?
+            // Dos criterios: por referencia (si el parser resolvió el Parametro)
+            // y por nombre exacto (si el Origen quedó null o hay ambigüedad).
             var parametrosPresentes = new HashSet<Parametro>(
                 Tokens
                     .Where(t => t.Tipo == TipoToken.Parametro && t.Origen is Parametro)
                     .Select(t => (Parametro)t.Origen!)
             );
 
+            var nombresPresentes = new HashSet<string>(
+                Tokens
+                    .Where(t => t.Tipo == TipoToken.Parametro)
+                    .Select(t => t.Texto),
+                StringComparer.Ordinal   // exacto, no IgnoreCase
+            );
+
             foreach (var p in cmd.Parametros)
             {
                 var pv = new ParametroVista(p)
                 {
-                    // Marcamos según el estado real de la línea.
                     EstaSeleccionado = parametrosPresentes.Contains(p)
+                                    || nombresPresentes.Contains(p.Nombre)
                 };
                 pv.PropertyChanged += ParametroVista_PropertyChanged;
                 Modificadores.Add(pv);
@@ -564,7 +582,14 @@ namespace VisualCommander.Models
 
         private void AgregarTokenParametro(ParametroVista pv)
         {
-            ConfirmarEstado();  // guarda el estado ANTES de añadir el parámetro
+            // ¿Ya está el parámetro en la línea?
+            if (Tokens.Any(t => t.Tipo == TipoToken.Parametro &&
+                                string.Equals(t.Texto, pv.Nombre, StringComparison.Ordinal)))
+            {
+                return;   // ya está, no duplicar
+            }
+
+            ConfirmarEstado();
             var nuevoTexto = string.IsNullOrWhiteSpace(Texto)
                 ? pv.Nombre
                 : Texto + " " + pv.Nombre;
@@ -574,9 +599,10 @@ namespace VisualCommander.Models
 
         private void QuitarTokenParametro(ParametroVista pv)
         {
-            ConfirmarEstado();  // guarda el estado ANTES de quitar el parámetro
+            ConfirmarEstado();
             var partes = Tokens
-                .Where(t => !(t.Tipo == TipoToken.Parametro && ReferenceEquals(t.Origen, pv.Parametro)))
+                .Where(t => !(t.Tipo == TipoToken.Parametro &&
+                              string.Equals(t.Texto, pv.Nombre, StringComparison.Ordinal)))
                 .Select(t => t.Texto);
             ActualizarDesdeTexto(string.Join(" ", partes));
             ConfirmarEstado();
