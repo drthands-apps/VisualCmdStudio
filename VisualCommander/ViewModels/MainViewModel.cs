@@ -715,25 +715,112 @@ namespace VisualCommander.ViewModels
             var ruta = Path.Combine(System.AppContext.BaseDirectory, "Data", "comandos.json");
             if (!File.Exists(ruta))
                 ruta = Path.Combine(System.AppContext.BaseDirectory, "comandos.json");
-            if (!File.Exists(ruta)) return;
-
-            var json = File.ReadAllText(ruta);
-            var opciones = new JsonSerializerOptions
+            if (!File.Exists(ruta))
             {
-                PropertyNameCaseInsensitive = true,
-                ReadCommentHandling = JsonCommentHandling.Skip,
-                AllowTrailingCommas = true
-            };
+                SetStatus($"No se encontró comandos.json en {ruta}");
+                return;
+            }
 
-            var lista = JsonSerializer.Deserialize<System.Collections.Generic.List<Comando>>(json, opciones);
-            if (lista == null) return;
+            System.Collections.Generic.List<Comando>? lista = null;
+
+            // ---- NIVEL 1: deserialización ----
+            try
+            {
+                var json = File.ReadAllText(ruta);
+                var opciones = new JsonSerializerOptions
+                {
+                    PropertyNameCaseInsensitive = true,
+                    ReadCommentHandling = JsonCommentHandling.Skip,
+                    AllowTrailingCommas = true
+                };
+
+                lista = JsonSerializer.Deserialize<System.Collections.Generic.List<Comando>>(json, opciones);
+            }
+            catch (JsonException jex)
+            {
+                System.Windows.MessageBox.Show(
+                    $"Error de sintaxis en comandos.json:\n\n" +
+                    $"{jex.Message}\n\n" +
+                    $"Línea: {jex.LineNumber}, posición: {jex.BytePositionInLine}",
+                    "Error de JSON",
+                    System.Windows.MessageBoxButton.OK,
+                    System.Windows.MessageBoxImage.Error);
+                SetStatus("Error de sintaxis en comandos.json");
+                return;
+            }
+            catch (Exception ex)
+            {
+                System.Windows.MessageBox.Show(
+                    $"Error inesperado al leer comandos.json:\n\n{ex.GetType().Name}: {ex.Message}",
+                    "Error de lectura",
+                    System.Windows.MessageBoxButton.OK,
+                    System.Windows.MessageBoxImage.Error);
+                SetStatus("Error al leer comandos.json");
+                return;
+            }
+
+            // ---- NIVEL 2: lista nula o vacía ----
+            if (lista == null)
+            {
+                System.Windows.MessageBox.Show(
+                    "JsonSerializer devolvió null al deserializar comandos.json.\n" +
+                    "Esto suele indicar que el JSON raíz no es un array o está mal formado.",
+                    "Catálogo vacío",
+                    System.Windows.MessageBoxButton.OK,
+                    System.Windows.MessageBoxImage.Warning);
+                SetStatus("El catálogo de comandos está vacío");
+                return;
+            }
+
+            if (lista.Count == 0)
+            {
+                SetStatus("comandos.json no contiene comandos");
+                return;
+            }
+
+            // ---- NIVEL 3: iteración (aquí ponemos el debug) ----
+            int añadidos = 0;
+            int fallidos = 0;
+            var errores = new System.Text.StringBuilder();
 
             foreach (var c in lista.OrderBy(c => c.Familia).ThenBy(c => c.Nombre))
             {
-                if (_registroUso.Comandos.TryGetValue(c.Nombre, out var usos))
-                    c.Usos = usos;
+                try
+                {
+                    // Validación mínima defensiva
+                    if (string.IsNullOrWhiteSpace(c.Nombre))
+                    {
+                        errores.AppendLine($"• Comando sin nombre (familia: '{c.Familia}')");
+                        fallidos++;
+                        continue;
+                    }
 
-                Comandos.Add(c);
+                    if (_registroUso.Comandos.TryGetValue(c.Nombre, out var usos))
+                        c.Usos = usos;
+
+                    Comandos.Add(c);
+                    añadidos++;
+                }
+                catch (Exception ex)
+                {
+                    errores.AppendLine($"• '{c.Nombre}': {ex.GetType().Name}: {ex.Message}");
+                    fallidos++;
+                }
+            }
+
+            // ---- NIVEL 4: reporte de errores ----
+            if (fallidos > 0)
+            {
+                System.Windows.MessageBox.Show(
+                    $"Cargados {añadidos} comando(s). Fallaron {fallidos}:\n\n{errores}",
+                    "Errores al cargar comandos",
+                    System.Windows.MessageBoxButton.OK,
+                    System.Windows.MessageBoxImage.Warning);
+                SetStatus($"Catálogo: {añadidos} OK, {fallidos} con error");
+            }
+            else
+            {
+                SetStatus($"Catálogo cargado: {añadidos} comando(s)");
             }
         }
 

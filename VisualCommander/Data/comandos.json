@@ -462,9 +462,34 @@
     "icono": "⚙️",
     "resumen": "Lista procesos activos",
     "descripcion": "Muestra las aplicaciones y servicios en ejecución.",
-    "sintaxis": "tasklist [/V] [/FI filtro] [/FO formato]",
+    "sintaxis": "tasklist [/S sistema] [/U usuario] [/P contraseña] [/M módulo] [/SVC] [/V] [/FI filtro] [/FO formato] [/NH]",
     "peligroso": false,
     "parametros": [
+      {
+        "nombre": "/S",
+        "descripcion": "Sistema remoto (nombre o IP). Se usa /S equipo",
+        "tipo": "Texto"
+      },
+      {
+        "nombre": "/U",
+        "descripcion": "Usuario para el contexto de ejecución (dominio\\usuario). Se usa /U dominio\\usuario",
+        "tipo": "Texto"
+      },
+      {
+        "nombre": "/P",
+        "descripcion": "Contraseña para el contexto de usuario (se pide si se omite)",
+        "tipo": "Bandera"
+      },
+      {
+        "nombre": "/M",
+        "descripcion": "Nombre de módulo: enumera tareas que usan ese módulo. Se usa /M módulo.dll",
+        "tipo": "Texto"
+      },
+      {
+        "nombre": "/SVC",
+        "descripcion": "Muestra los servicios hospedados en cada proceso",
+        "tipo": "Bandera"
+      },
       {
         "nombre": "/V",
         "descripcion": "Información detallada",
@@ -472,7 +497,7 @@
       },
       {
         "nombre": "/FI",
-        "descripcion": "Aplica un filtro",
+        "descripcion": "Aplica un filtro. Se usa /FI \"STATUS eq RUNNING\"",
         "tipo": "Texto"
       },
       {
@@ -485,9 +510,19 @@
           "LIST": "Lista vertical con clave: valor",
           "CSV": "Valores separados por comas (para hojas de cálculo)"
         }
+      },
+      {
+        "nombre": "/NH",
+        "descripcion": "No mostrar encabezado de columna",
+        "tipo": "Bandera"
+      },
+      {
+        "nombre": "/?",
+        "descripcion": "Muestra un mensaje de ayuda",
+        "tipo": "Bandera"
       }
     ],
-    "ejemplos": [ "tasklist", "tasklist /FI \"STATUS eq RUNNING\"" ]
+    "ejemplos": [ "tasklist", "tasklist /FI \"STATUS eq RUNNING\"", "tasklist /FO CSV /NH" ]
   },
   {
     "id": "taskkill",
