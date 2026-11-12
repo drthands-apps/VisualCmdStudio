@@ -34,5 +34,8 @@ namespace VisualCommander.Models
         public string Entorno { get; set; } = "cmd";
 
         public bool AvisoImportacionLimitadaSilenciado { get; set; }
+
+        public string DirectorioInicialPorDefecto { get; set; } =
+            Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
     }
 }

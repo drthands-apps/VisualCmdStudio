@@ -1078,14 +1078,14 @@ IsEnabled="{Binding EstaEjecutando, Converter={StaticResource InverseBoolConvert
                                Foreground="#FF9A9A9A"
                                VerticalAlignment="Center"
                                Margin="0,0,6,0"/>
-                                        <TextBlock Text="{Binding DirectorioTrabajo}"
+                                        <TextBlock Text="{Binding DirectorioInicialPlan}"
                                FontFamily="Consolas"
                                FontSize="11"
                                Foreground="{StaticResource CmdTexto}"
                                VerticalAlignment="Center"
                                TextTrimming="CharacterEllipsis"
                                MaxWidth="400"
-                               ToolTip="{Binding DirectorioTrabajo}"/>
+                               ToolTip="{Binding DirectorioInicialPlan}"/>
                                         <Button Content="Cambiar..."
                             Margin="10,0,0,0"
                             Padding="8,1"

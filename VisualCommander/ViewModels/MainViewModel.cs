@@ -74,7 +74,6 @@ namespace VisualCommander.ViewModels
                 }
 
                 OnPropertyChanged();
-                OnPropertyChanged(nameof(DirectorioTrabajo));
                 OnPropertyChanged(nameof(PromptCmd));
                 OnPropertyChanged(nameof(NivelPeligroDirectorio));
                 OnPropertyChanged(nameof(PuedeSubirActiva));
@@ -110,6 +109,14 @@ namespace VisualCommander.ViewModels
         /// <summary>Directorio de trabajo de la línea activa.</summary>
         public string DirectorioTrabajo => LineaActiva.DirectorioTrabajo;
 
+        /// <summary>
+        /// Directorio inicial del plan. Es el punto de partida para el cálculo
+        /// en cadena de los DirectorioTrabajo de cada línea.
+        /// Se actualiza al crear una sesión nueva, cargar o importar un plan,
+        /// y cuando el usuario cambia manualmente el directorio de la primera línea.
+        /// </summary>
+        private string _directorioInicialPlan = Environment.CurrentDirectory;
+
         /// <summary>Prompt de la línea activa.</summary>
         public string PromptCmd => LineaActiva.PromptCmd;
 
@@ -128,9 +135,23 @@ namespace VisualCommander.ViewModels
                 return;
             }
 
+            // Solo la primera línea puede cambiar su directorio manualmente.
+            if (!ReferenceEquals(LineaActiva, Lineas[0]))
+            {
+                SetStatusSegunModo(
+                    "El directorio de trabajo solo se puede cambiar en la primera línea (es el punto de partida del plan). " +
+                    "Para cambiar de directorio a partir de una línea concreta, usa el comando 'cd'.",
+                    "Solo la primera línea. Usa 'cd' para el resto.");
+                return;
+            }
+
             try
             {
                 var full = System.IO.Path.GetFullPath(nuevaRuta);
+
+                // Normalizar "C:" a "C:\".
+                if (full.Length == 2 && full[1] == ':')
+                    full += "\\";
 
                 if (!System.IO.Directory.Exists(full))
                 {
@@ -138,7 +159,9 @@ namespace VisualCommander.ViewModels
                     return;
                 }
 
-                LineaActiva.DirectorioTrabajo = full;
+                _directorioInicialPlan = full;
+                RecalcularDirectoriosTrabajo();
+
                 SetStatus($"Directorio de trabajo: {full}");
             }
             catch (Exception ex)
@@ -303,6 +326,13 @@ namespace VisualCommander.ViewModels
                     : "") +
                   $"Parámetros válidos ({ComandoSeleccionado.Parametros.Count}):";
 
+        /// <summary>
+        /// Directorio inicial del plan. Es el punto de partida para el cálculo
+        /// en cadena de los DirectorioTrabajo de cada línea.
+        /// Es el que se muestra en el panel derecho.
+        /// </summary>
+        public string DirectorioInicialPlan => _directorioInicialPlan;
+
         // ==== Constructor ====
 
         public MainViewModel()
@@ -350,6 +380,35 @@ namespace VisualCommander.ViewModels
             }
         }
 
+        /// <summary>
+        /// Recalcula el DirectorioTrabajo de todas las líneas en cadena,
+        /// partiendo del directorio de la primera línea.
+        /// Se llama tras cambios estructurales (eliminar, mover, duplicar,
+        /// pegar, undo/redo, importar) para evitar que los prompts muestren
+        /// rutas obsoletas.
+        /// </summary>
+        private void RecalcularDirectoriosTrabajo()
+        {
+            if (Lineas.Count == 0) return;
+
+            var directorioActual = _directorioInicialPlan;
+
+            for (int i = 0; i < Lineas.Count; i++)
+            {
+                var linea = Lineas[i];
+
+                linea.DirectorioTrabajo = directorioActual;
+
+                var siguiente = linea.CalcularDirectorioSiguiente();
+                if (siguiente != null)
+                    directorioActual = siguiente;
+            }
+
+            OnPropertyChanged(nameof(DirectorioTrabajo));
+            OnPropertyChanged(nameof(PromptCmd));
+            OnPropertyChanged(nameof(NivelPeligroDirectorio));
+        }
+
         // ==== Gestión de líneas ====
 
         /// <summary>
@@ -389,8 +448,9 @@ namespace VisualCommander.ViewModels
             if (idx < 0) idx = Lineas.Count - 1;
             var action = new AgregarLineaAction(Lineas, nueva, idx + 1);
             UndoRedo.Ejecutar(action);
-
+            RecalcularDirectoriosTrabajo();
             LineaActiva = nueva;
+
 
             if (nuevoDir != null)
                 SetStatus($"Nueva línea en {nuevoDir}");
@@ -399,6 +459,8 @@ namespace VisualCommander.ViewModels
     $"Nueva línea creada en {nueva.DirectorioTrabajo}. Puedes empezar a escribir o arrastrar comandos del catálogo.",
     $"Nueva línea en {nueva.DirectorioTrabajo}");
             ConfigurarNuevaLinea(nueva);
+
+
         }
 
         /// <summary>
@@ -451,6 +513,7 @@ namespace VisualCommander.ViewModels
             }
 
             SetStatus("Línea cerrada");
+            RecalcularDirectoriosTrabajo();
         }
 
         /// <summary>
@@ -503,6 +566,7 @@ namespace VisualCommander.ViewModels
             SetStatusSegunModo(
                 $"Línea eliminada ({Lineas.Count} restantes). Puedes deshacer con Ctrl+Z.",
                 $"Línea eliminada ({Lineas.Count} restantes)");
+            RecalcularDirectoriosTrabajo();
         }
 
         /// <summary>
@@ -675,8 +739,11 @@ namespace VisualCommander.ViewModels
                 textoNuevo,
                 descripcion);
 
+
             UndoRedo.Ejecutar(undoAction);
-        }
+           
+            RecalcularDirectoriosTrabajo();
+         }
 
 
         public void LimpiarTokens()
@@ -1766,6 +1833,7 @@ namespace VisualCommander.ViewModels
             LineaActiva = aPegar;
 
             SetStatus($"Pegado como línea {aPegar.NumeroLinea}");
+            RecalcularDirectoriosTrabajo();
         }
 
         /// <summary>Duplica la línea activa justo después.</summary>
@@ -1783,6 +1851,7 @@ namespace VisualCommander.ViewModels
             SetStatusSegunModo(
                 $"Línea duplicada como {copia.NumeroLinea}. Puedes deshacer con Ctrl+Z.",
                 $"Línea duplicada como {copia.NumeroLinea}");
+            RecalcularDirectoriosTrabajo();
         }
         // ==== Reordenación ====
 
@@ -1809,6 +1878,7 @@ namespace VisualCommander.ViewModels
 
             OnPropertyChanged(nameof(PuedeSubirActiva));
             OnPropertyChanged(nameof(PuedeBajarActiva));
+            RecalcularDirectoriosTrabajo();
         }
 
         /// <summary>Mueve la línea activa una posición abajo.</summary>
@@ -1826,6 +1896,7 @@ namespace VisualCommander.ViewModels
 
             OnPropertyChanged(nameof(PuedeSubirActiva));
             OnPropertyChanged(nameof(PuedeBajarActiva));
+            RecalcularDirectoriosTrabajo();
         }
 
         /// <summary>
@@ -1896,6 +1967,7 @@ namespace VisualCommander.ViewModels
                     Creador = creador ?? Environment.UserName,
                     ModoSilencioso = ModoSilencioso,
                     LineaActivaIndice = Math.Max(0, Lineas.IndexOf(LineaActiva)),
+                    DirectorioInicial = _directorioInicialPlan,
                     Lineas = new List<LineaSesion>()
                 };
 
@@ -2041,8 +2113,14 @@ namespace VisualCommander.ViewModels
             LineaActiva = Lineas[0];
             LineaActiva.EsActiva = true;
 
+            // El directorio inicial del plan es el de la primera línea importada.
+            if (ext == ".bat" || ext == ".cmd")
+            {
+                _directorioInicialPlan = Path.GetDirectoryName(ruta) ?? _directorioInicialPlan;
+            }
+
             SetStatusSegunModo(
-                $"Importado desde {Path.GetFileName(ruta)}: {Lineas.Count} línea(s). Revisa los directorios de trabajo si el script usaba rutas relativas.",
+                $"Importado desde {Path.GetFileName(ruta)}: {Lineas.Count} línea(s).",
                 $"Importado: {Lineas.Count} línea(s)");
 
             return true;
@@ -2117,10 +2195,19 @@ namespace VisualCommander.ViewModels
                     Lineas.Add(vacia);
                 }
 
+
                 // Activar la línea que estaba activa al guardar.
                 int indiceActiva = Math.Clamp(sesion.LineaActivaIndice, 0, Lineas.Count - 1);
                 LineaActiva = Lineas[indiceActiva];
                 LineaActiva.EsActiva = true;
+
+                _directorioInicialPlan = string.IsNullOrWhiteSpace(sesion.DirectorioInicial)
+                      ? (string.IsNullOrWhiteSpace(_configuracion.DirectorioInicialPorDefecto)
+                      ? Environment.GetFolderPath(Environment.SpecialFolder.UserProfile)
+                      : _configuracion.DirectorioInicialPorDefecto)
+                : sesion.DirectorioInicial;
+
+                // NO llamar a RecalcularDirectoriosTrabajo() aquí: respeta lo guardado.
 
                 // Restaurar el modo silencioso.
                 ModoSilencioso = sesion.ModoSilencioso;
@@ -2140,8 +2227,16 @@ namespace VisualCommander.ViewModels
         public void NuevaSesionVacia()
         {
             Lineas.Clear();
+            UndoRedo.Limpiar();
 
-            var primera = new LineaComando();
+            _directorioInicialPlan = string.IsNullOrWhiteSpace(_configuracion.DirectorioInicialPorDefecto)
+                ? Environment.GetFolderPath(Environment.SpecialFolder.UserProfile)
+                : _configuracion.DirectorioInicialPorDefecto;
+
+            var primera = new LineaComando
+            {
+                DirectorioTrabajo = _directorioInicialPlan
+            };
             primera.EsActiva = true;
             primera.ConfirmarEstado();
 
@@ -2482,6 +2577,7 @@ namespace VisualCommander.ViewModels
                 SetStatusSegunModo(
                     $"Deshecho: {UndoRedo.DescripcionRehacer ?? "acción"}",
                     "Deshecho");
+                RecalcularDirectoriosTrabajo();
                 return;
             }
 
@@ -2511,6 +2607,7 @@ namespace VisualCommander.ViewModels
                 SetStatusSegunModo(
                     $"Rehecho: {UndoRedo.DescripcionDeshacer ?? "acción"}",
                     "Rehecho");
+                RecalcularDirectoriosTrabajo();
                 return;
             }
 
@@ -2543,5 +2640,6 @@ namespace VisualCommander.ViewModels
                     : "Token movido. Puedes deshacer con Ctrl+Z.",
                 tokenAEliminar != null ? "Token sustituido" : "Token movido");
         }
+
     }
 }

@@ -519,8 +519,8 @@ namespace VisualCommander
         {
             var dialogo = new Microsoft.Win32.OpenFolderDialog
             {
-                Title = "Seleccionar directorio de trabajo",
-                InitialDirectory = ViewModel.DirectorioTrabajo
+                Title = "Seleccionar directorio inicial del plan",
+                InitialDirectory = ViewModel.DirectorioInicialPlan   // ← CAMBIO
             };
 
             if (dialogo.ShowDialog() == true)
@@ -589,7 +589,7 @@ namespace VisualCommander
             var tokens = ComandoParser.Parsear(
                 texto,
                 ViewModel.Comandos,
-                linea.DirectorioTrabajo);
+                ViewModel.DirectorioInicialPlan);
 
             linea.ReemplazarCon(tokens);
 

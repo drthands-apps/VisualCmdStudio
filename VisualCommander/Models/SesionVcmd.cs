@@ -34,6 +34,10 @@ namespace VisualCommander.Models
 
         /// <summary>Índice de la línea activa al guardar (0-based).</summary>
         public int LineaActivaIndice { get; set; } = 0;
+        /// <summary>
+        /// Linea  en la que iniciamos la ejecucion.
+        /// </summary>
+        public string DirectorioInicial { get; set; } = "";
 
         /// <summary>Líneas del plan, en orden.</summary>
         public List<LineaSesion> Lineas { get; set; } = new();
@@ -59,6 +63,8 @@ namespace VisualCommander.Models
         [JsonPropertyOrder(2)]
         public string Comando { get; set; } = "";
     }
+
+
 
     /// <summary>
     /// Firma criptográfica de un archivo .vcmd.

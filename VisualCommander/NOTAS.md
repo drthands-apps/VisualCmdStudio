@@ -464,3 +464,16 @@ Nuevo pendiente: "Revisión de JSON: operadores, @, 2>, 2>&1, :: como alias de r
 Corregir el bug del CargarSesion en el histórico de notas (por si vuelve a aparecer).
 
 Nuevo ticket abierto: "Problema ergonomico: en fondos de token oscuros, el texto oscuro es difícil de leer, se aconseja establecer un control de luminancia para cambiar el texto automaticamente y priorizar tokens de color brillante".
+
+### Bug de prompts: resuelto (2026-11-12)
+
+- Nuevo campo `_directorioInicialPlan` en MainViewModel. Es el punto
+  de partida del plan.
+- `RecalcularDirectoriosTrabajo()` recalcula en cadena desde ese campo.
+  Se llama tras eliminar, mover, duplicar, pegar, undo/redo, importar.
+- `CambiarDirectorioTrabajo` solo acepta cambios en `Lineas[0]`.
+  Para el resto, usar `cd`.
+- `LineaComando.EsPrimeraLinea` + binding en el botón "Cambiar...".
+- CargarSesion inicializa `_directorioInicialPlan` desde el archivo,
+  pero NO recalcula (respeta lo guardado).
+- ImportarPlan inicializa `_directorioInicialPlan` y recalcula.
