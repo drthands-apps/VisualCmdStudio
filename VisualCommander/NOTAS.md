@@ -477,3 +477,25 @@ Nuevo ticket abierto: "Problema ergonomico: en fondos de token oscuros, el texto
 - CargarSesion inicializa `_directorioInicialPlan` desde el archivo,
   pero NO recalcula (respeta lo guardado).
 - ImportarPlan inicializa `_directorioInicialPlan` y recalcula.
+
+Completado:
+
+Bug de prompts: resuelto. El directorio inicial del plan es una propiedad separada (_directorioInicialPlan), persistida en .vcmd, no depende de la línea activa.
+
+RecalcularDirectoriosTrabajo() se llama desde todos los puntos que modifican la estructura o el texto de una línea.
+
+CambiarDirectorioTrabajo() solo modifica _directorioInicialPlan.
+
+El panel derecho muestra el directorio inicial del plan, no el de la línea activa.
+
+Importar .bat establece _directorioInicialPlan al directorio del .bat.
+
+Pendiente (para la próxima):
+
+Refactor de operadores en ComandoParser.Clasificar.
+
+Comandos personalizados.
+
+Comprobaciones de rangos en parámetros con valor (/R:n, /t:n).
+
+Campo Shape real (post-refactor de la vista).

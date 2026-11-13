@@ -142,8 +142,11 @@ namespace VisualCommander.Models
                 };
             }
 
-            // 3) Operadores
-            if (limpio is "|" or "&" or "&&" or "||" or ">" or ">>" or "<" or "^" or "%" or "==" or "NEQ" or "EQU")
+            // 3) Operadores (desde el catálogo JSON)
+            var operadorInfo = CatalogoTokens?.Operadores?
+                .FirstOrDefault(o => string.Equals(o.Nombre, limpio, StringComparison.OrdinalIgnoreCase));
+
+            if (operadorInfo != null)
             {
                 return new Token
                 {
@@ -151,7 +154,8 @@ namespace VisualCommander.Models
                     Texto = trozo,
                     Color = "FCE4D6",
                     Icono = "⏵",
-                    Descripcion = $"Operador: {limpio}"
+                    Descripcion = operadorInfo.Descripcion,
+                    Origen = operadorInfo
                 };
             }
             // 4) Constantes 

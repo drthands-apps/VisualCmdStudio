@@ -1941,32 +1941,28 @@ namespace VisualCommander
             InfoModificadorNombre.Text = operador;
             InfoModificadorNombre.Visibility = Visibility.Visible;
 
-            InfoModificadorDescripcion.Text = ObtenerDescripcionOperador(operador);
+            // Buscar el operador en el catálogo JSON.
+            var info = ViewModel.CatalogoTokens?.Operadores?
+                .FirstOrDefault(o => string.Equals(o.Nombre, operador, StringComparison.OrdinalIgnoreCase));
+
+            InfoModificadorDescripcion.Text = info?.Descripcion ?? $"Operador: {operador}";
             InfoModificadorDescripcion.Visibility = Visibility.Visible;
 
-            PanelValoresPosibles.Visibility = Visibility.Collapsed;
+            // Si el operador tiene ejemplo, mostrarlo en el panel de valores.
+            if (!string.IsNullOrEmpty(info?.Ejemplo))
+            {
+                InfoModificadorValores.Text = "Ejemplo: " + info.Ejemplo;
+                PanelValoresPosibles.Visibility = Visibility.Visible;
+            }
+            else
+            {
+                PanelValoresPosibles.Visibility = Visibility.Collapsed;
+            }
+
             InfoSinModificador.Visibility = Visibility.Collapsed;
         }
 
-        private string ObtenerDescripcionOperador(string operador)
-        {
-            return operador switch
-            {
-                "&" => "Ejecuta el comando en segundo plano (sin esperar a que termine).",
-                "&&" => "Ejecuta el segundo comando SOLO si el primero tiene éxito (código 0).",
-                "||" => "Ejecuta el segundo comando SOLO si el primero falla (código distinto de 0).",
-                "|" => "Conecta la salida del primer comando a la entrada del segundo (pipe).",
-                ">" => "Redirige la salida del comando a un archivo (sobrescribe).",
-                ">>" => "Redirige la salida del comando a un archivo (añade al final).",
-                "<" => "Redirige la entrada del comando desde un archivo.",
-                "^" => "Escapa el carácter siguiente (le quita su significado especial).",
-                "%" => "Delimita variables de entorno (%VARIABLE%).",
-                "==" => "Compara dos valores (usado en if).",
-                "NEQ" => "Compara dos valores: distinto (usado en if).",
-                "EQU" => "Compara dos valores: igual (usado en if).",
-                _ => $"Operador: {operador}"
-            };
-        }
+       
        
 
         private string ObtenerDescripcionVariable(string variable)
